@@ -1,0 +1,8 @@
+{
+  "matic": {
+    "StabilityDaoProxy": {
+      "address": "0xb2a0737ef27b5Cc474D24c779af612159b1c3e60",
+      "startBlock": 50613040
+    }
+  }
+}

@@ -1,0 +1,24 @@
+specVersion: 0.0.5
+schema:
+  file: schema.graphql
+dataSources:
+  - kind: ethereum
+    name: StabilityDaoProxy
+    network: matic
+    source:
+      address: "0xb2a0737ef27b5Cc474D24c779af612159b1c3e60"
+      abi: StabilityDaoProxy
+      startBlock: 50613040
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Upgraded
+      abis:
+        - name: StabilityDaoProxy
+          file: StabilityDaoProxy\abis\StabilityDaoProxy.json
+      eventHandlers:
+        - event: Upgraded(indexed address)
+          handler: handleUpgraded
+      file: StabilityDaoProxy\StabilityDaoProxy.wasm
