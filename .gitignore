@@ -1,0 +1,6 @@
+# Compiler files
+node_modules/
+
+# Dotenv file
+.env
+
