@@ -28,6 +28,60 @@ export class Upgraded__Params {
   }
 }
 
+export class VaultAndStrategy extends ethereum.Event {
+  get params(): VaultAndStrategy__Params {
+    return new VaultAndStrategy__Params(this);
+  }
+}
+
+export class VaultAndStrategy__Params {
+  _event: VaultAndStrategy;
+
+  constructor(event: VaultAndStrategy) {
+    this._event = event;
+  }
+
+  get deployer(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get vaultType(): string {
+    return this._event.parameters[1].value.toString();
+  }
+
+  get strategyId(): string {
+    return this._event.parameters[2].value.toString();
+  }
+
+  get vault(): Address {
+    return this._event.parameters[3].value.toAddress();
+  }
+
+  get strategy(): Address {
+    return this._event.parameters[4].value.toAddress();
+  }
+
+  get name(): string {
+    return this._event.parameters[5].value.toString();
+  }
+
+  get symbol(): string {
+    return this._event.parameters[6].value.toString();
+  }
+
+  get assets(): Array<Address> {
+    return this._event.parameters[7].value.toAddressArray();
+  }
+
+  get deploymentKey(): Bytes {
+    return this._event.parameters[8].value.toBytes();
+  }
+
+  get vaultManagerTokenId(): BigInt {
+    return this._event.parameters[9].value.toBigInt();
+  }
+}
+
 export class StabilityDaoProxy extends ethereum.SmartContract {
   static bind(address: Address): StabilityDaoProxy {
     return new StabilityDaoProxy("StabilityDaoProxy", address);

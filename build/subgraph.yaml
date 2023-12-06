@@ -15,10 +15,14 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - Upgraded
+        - VaultAndStrategy
       abis:
         - name: StabilityDaoProxy
           file: StabilityDaoProxy\abis\StabilityDaoProxy.json
       eventHandlers:
         - event: Upgraded(indexed address)
           handler: handleUpgraded
+        - event: VaultAndStrategy(indexed
+            address,string,string,address,address,string,string,address[],bytes32,uint256)
+          handler: handleVaultAndStrategy
       file: StabilityDaoProxy\StabilityDaoProxy.wasm

@@ -5,3 +5,17 @@ type Upgraded @entity(immutable: true) {
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
+
+type VaultAndStrategy @entity(immutable: true) {
+  id: Bytes!
+  deployer: Bytes! # address
+  vaultType: String!
+  strategyId: String!
+  vault: Bytes! # address
+  strategy: Bytes! # address
+  name: String!
+  symbol: String!
+  assets: Bytes! # address[]
+  deploymentKey: Bytes!
+  vaultManagerTokenId: BigInt! 
+}
