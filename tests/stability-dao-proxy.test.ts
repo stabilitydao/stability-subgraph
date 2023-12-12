@@ -8,7 +8,7 @@ import {
 } from "matchstick-as/assembly/index"
 import { Address } from "@graphprotocol/graph-ts"
 import { Upgraded } from "../generated/schema"
-import { Upgraded as UpgradedEvent } from "../generated/StabilityDaoProxy/StabilityDaoProxy"
+import { Upgraded as UpgradedEvent } from "../generated/Stability/Stability"
 import { handleUpgraded } from "../src/stability-dao-proxy"
 import { createUpgradedEvent } from "./stability-dao-proxy-utils"
 

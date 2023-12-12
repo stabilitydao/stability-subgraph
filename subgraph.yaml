@@ -3,25 +3,42 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum
-    name: StabilityDaoProxy
+    name: FactoryData
     network: matic
     source:
-      address: "0xb2a0737ef27b5Cc474D24c779af612159b1c3e60"
-      abi: StabilityDaoProxy
+      address: "0xa14EaAE76890595B3C7ea308dAEBB93863480EAD"
+      abi: FactoryABI
       startBlock: 50613040
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
-        - Upgraded
-        - VaultAndStrategy
+        - VaultsListEntity
       abis:
-        - name: StabilityDaoProxy
-          file: ./abis/StabilityDaoProxy.json
+        - name: FactoryABI
+          file: ./abis/FactoryABI.json
       eventHandlers:
-        - event: Upgraded(indexed address)
-          handler: handleUpgraded
         - event: VaultAndStrategy(indexed address,string,string,address,address,string,string,address[],bytes32,uint256)
           handler: handleVaultAndStrategy
+      file: ./src/stability-dao-proxy.ts
+  - kind: ethereum
+    name: InitializeData
+    network: matic
+    source:
+      address: "0xb2a0737ef27b5Cc474D24c779af612159b1c3e60"
+      abi: ProxyDataABI
+      startBlock: 50613040
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - InitializeEntity
+      abis:
+        - name: ProxyDataABI
+          file: ./abis/ProxyDataABI.json
+      eventHandlers:
+        - event: ContractInitialized(address,uint256,uint256)
+          handler: handleInitializeEntity
       file: ./src/stability-dao-proxy.ts

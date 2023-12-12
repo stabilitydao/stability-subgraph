@@ -1,12 +1,4 @@
-type Upgraded @entity(immutable: true) {
-  id: Bytes!
-  implementation: Bytes! # address
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type VaultAndStrategy @entity(immutable: true) {
+type VaultsListEntity @entity {
   id: Bytes!
   deployer: Bytes! # address
   vaultType: String!
@@ -15,7 +7,14 @@ type VaultAndStrategy @entity(immutable: true) {
   strategy: Bytes! # address
   name: String!
   symbol: String!
-  assets: Bytes! # address[]
+  assets: [Bytes!] # address[]
   deploymentKey: Bytes!
   vaultManagerTokenId: BigInt! 
+}
+
+type InitializeEntity @entity {
+  id: Bytes!
+  platform: Bytes! # address
+  ts: BigInt!
+  block: BigInt!
 }

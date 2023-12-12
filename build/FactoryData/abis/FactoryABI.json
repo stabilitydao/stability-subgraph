@@ -1,18 +1,13 @@
 [
-  { "inputs": [], "name": "ImplementationIsNotContract", "type": "error" },
-  { "inputs": [], "name": "NotPlatform", "type": "error" },
   {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "implementation",
-        "type": "address"
-      }
-    ],
-    "name": "Upgraded",
-    "type": "event"
+    "inputs": [],
+    "name": "ImplementationIsNotContract",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotPlatform",
+    "type": "error"
   },
   {
     "anonymous": false,
@@ -81,17 +76,30 @@
     "name": "VaultAndStrategy",
     "type": "event"
   },
-  { "stateMutability": "payable", "type": "fallback" },
+  {
+    "stateMutability": "payable",
+    "type": "fallback"
+  },
   {
     "inputs": [],
     "name": "implementation",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "logic_", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "logic_",
+        "type": "address"
+      }
     ],
     "name": "initProxy",
     "outputs": [],
@@ -111,5 +119,8 @@
     "stateMutability": "nonpayable",
     "type": "function"
   },
-  { "stateMutability": "payable", "type": "receive" }
+  {
+    "stateMutability": "payable",
+    "type": "receive"
+  }
 ]
