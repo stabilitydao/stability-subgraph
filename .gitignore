@@ -1,6 +1,7 @@
 # Compiler files
 node_modules/
 generated/
+build/
 
 # Dotenv file
 .env

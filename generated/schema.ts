@@ -11,7 +11,7 @@ import {
   BigDecimal
 } from "@graphprotocol/graph-ts";
 
-export class VaultsListEntity extends Entity {
+export class VaultEntity extends Entity {
   constructor(id: Bytes) {
     super();
     this.set("id", Value.fromBytes(id));
@@ -19,25 +19,25 @@ export class VaultsListEntity extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save VaultsListEntity entity without an ID");
+    assert(id != null, "Cannot save VaultEntity entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.BYTES,
-        `Entities of type VaultsListEntity must have an ID of type Bytes but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type VaultEntity must have an ID of type Bytes but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("VaultsListEntity", id.toBytes().toHexString(), this);
+      store.set("VaultEntity", id.toBytes().toHexString(), this);
     }
   }
 
-  static loadInBlock(id: Bytes): VaultsListEntity | null {
-    return changetype<VaultsListEntity | null>(
-      store.get_in_block("VaultsListEntity", id.toHexString())
+  static loadInBlock(id: Bytes): VaultEntity | null {
+    return changetype<VaultEntity | null>(
+      store.get_in_block("VaultEntity", id.toHexString())
     );
   }
 
-  static load(id: Bytes): VaultsListEntity | null {
-    return changetype<VaultsListEntity | null>(
-      store.get("VaultsListEntity", id.toHexString())
+  static load(id: Bytes): VaultEntity | null {
+    return changetype<VaultEntity | null>(
+      store.get("VaultEntity", id.toHexString())
     );
   }
 
@@ -91,19 +91,6 @@ export class VaultsListEntity extends Entity {
 
   set strategyId(value: string) {
     this.set("strategyId", Value.fromString(value));
-  }
-
-  get vault(): Bytes {
-    let value = this.get("vault");
-    if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
-    } else {
-      return value.toBytes();
-    }
-  }
-
-  set vault(value: Bytes) {
-    this.set("vault", Value.fromBytes(value));
   }
 
   get strategy(): Bytes {
@@ -189,7 +176,7 @@ export class VaultsListEntity extends Entity {
   }
 }
 
-export class InitializeEntity extends Entity {
+export class PlatformEntity extends Entity {
   constructor(id: Bytes) {
     super();
     this.set("id", Value.fromBytes(id));
@@ -197,25 +184,25 @@ export class InitializeEntity extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save InitializeEntity entity without an ID");
+    assert(id != null, "Cannot save PlatformEntity entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.BYTES,
-        `Entities of type InitializeEntity must have an ID of type Bytes but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type PlatformEntity must have an ID of type Bytes but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("InitializeEntity", id.toBytes().toHexString(), this);
+      store.set("PlatformEntity", id.toBytes().toHexString(), this);
     }
   }
 
-  static loadInBlock(id: Bytes): InitializeEntity | null {
-    return changetype<InitializeEntity | null>(
-      store.get_in_block("InitializeEntity", id.toHexString())
+  static loadInBlock(id: Bytes): PlatformEntity | null {
+    return changetype<PlatformEntity | null>(
+      store.get_in_block("PlatformEntity", id.toHexString())
     );
   }
 
-  static load(id: Bytes): InitializeEntity | null {
-    return changetype<InitializeEntity | null>(
-      store.get("InitializeEntity", id.toHexString())
+  static load(id: Bytes): PlatformEntity | null {
+    return changetype<PlatformEntity | null>(
+      store.get("PlatformEntity", id.toHexString())
     );
   }
 
@@ -232,8 +219,277 @@ export class InitializeEntity extends Entity {
     this.set("id", Value.fromBytes(value));
   }
 
-  get platform(): Bytes {
+  get factory(): Bytes | null {
+    let value = this.get("factory");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set factory(value: Bytes | null) {
+    if (!value) {
+      this.unset("factory");
+    } else {
+      this.set("factory", Value.fromBytes(<Bytes>value));
+    }
+  }
+
+  get vaultManager(): Bytes | null {
+    let value = this.get("vaultManager");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set vaultManager(value: Bytes | null) {
+    if (!value) {
+      this.unset("vaultManager");
+    } else {
+      this.set("vaultManager", Value.fromBytes(<Bytes>value));
+    }
+  }
+
+  get strategyLogic(): Bytes | null {
+    let value = this.get("strategyLogic");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set strategyLogic(value: Bytes | null) {
+    if (!value) {
+      this.unset("strategyLogic");
+    } else {
+      this.set("strategyLogic", Value.fromBytes(<Bytes>value));
+    }
+  }
+
+  get buildingPermitToken(): Bytes | null {
+    let value = this.get("buildingPermitToken");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set buildingPermitToken(value: Bytes | null) {
+    if (!value) {
+      this.unset("buildingPermitToken");
+    } else {
+      this.set("buildingPermitToken", Value.fromBytes(<Bytes>value));
+    }
+  }
+
+  get buildingPayPerVaultToken(): Bytes | null {
+    let value = this.get("buildingPayPerVaultToken");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set buildingPayPerVaultToken(value: Bytes | null) {
+    if (!value) {
+      this.unset("buildingPayPerVaultToken");
+    } else {
+      this.set("buildingPayPerVaultToken", Value.fromBytes(<Bytes>value));
+    }
+  }
+
+  get governance(): Bytes | null {
+    let value = this.get("governance");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set governance(value: Bytes | null) {
+    if (!value) {
+      this.unset("governance");
+    } else {
+      this.set("governance", Value.fromBytes(<Bytes>value));
+    }
+  }
+
+  get multisig(): Bytes | null {
+    let value = this.get("multisig");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set multisig(value: Bytes | null) {
+    if (!value) {
+      this.unset("multisig");
+    } else {
+      this.set("multisig", Value.fromBytes(<Bytes>value));
+    }
+  }
+
+  get platform(): Bytes | null {
     let value = this.get("platform");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set platform(value: Bytes | null) {
+    if (!value) {
+      this.unset("platform");
+    } else {
+      this.set("platform", Value.fromBytes(<Bytes>value));
+    }
+  }
+
+  get zap(): Bytes | null {
+    let value = this.get("zap");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set zap(value: Bytes | null) {
+    if (!value) {
+      this.unset("zap");
+    } else {
+      this.set("zap", Value.fromBytes(<Bytes>value));
+    }
+  }
+
+  get bridge(): Bytes | null {
+    let value = this.get("bridge");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set bridge(value: Bytes | null) {
+    if (!value) {
+      this.unset("bridge");
+    } else {
+      this.set("bridge", Value.fromBytes(<Bytes>value));
+    }
+  }
+
+  get swapper(): Bytes | null {
+    let value = this.get("swapper");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set swapper(value: Bytes | null) {
+    if (!value) {
+      this.unset("swapper");
+    } else {
+      this.set("swapper", Value.fromBytes(<Bytes>value));
+    }
+  }
+
+  get dexAggreagators(): Array<Bytes> | null {
+    let value = this.get("dexAggreagators");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytesArray();
+    }
+  }
+
+  set dexAggreagators(value: Array<Bytes> | null) {
+    if (!value) {
+      this.unset("dexAggreagators");
+    } else {
+      this.set("dexAggreagators", Value.fromBytesArray(<Array<Bytes>>value));
+    }
+  }
+
+  get bcAssets(): Array<Bytes> | null {
+    let value = this.get("bcAssets");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytesArray();
+    }
+  }
+
+  set bcAssets(value: Array<Bytes> | null) {
+    if (!value) {
+      this.unset("bcAssets");
+    } else {
+      this.set("bcAssets", Value.fromBytesArray(<Array<Bytes>>value));
+    }
+  }
+
+  get version(): string | null {
+    let value = this.get("version");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
+  }
+
+  set version(value: string | null) {
+    if (!value) {
+      this.unset("version");
+    } else {
+      this.set("version", Value.fromString(<string>value));
+    }
+  }
+}
+
+export class SwapperEntity extends Entity {
+  constructor(id: Bytes) {
+    super();
+    this.set("id", Value.fromBytes(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save SwapperEntity entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.BYTES,
+        `Entities of type SwapperEntity must have an ID of type Bytes but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("SwapperEntity", id.toBytes().toHexString(), this);
+    }
+  }
+
+  static loadInBlock(id: Bytes): SwapperEntity | null {
+    return changetype<SwapperEntity | null>(
+      store.get_in_block("SwapperEntity", id.toHexString())
+    );
+  }
+
+  static load(id: Bytes): SwapperEntity | null {
+    return changetype<SwapperEntity | null>(
+      store.get("SwapperEntity", id.toHexString())
+    );
+  }
+
+  get id(): Bytes {
+    let value = this.get("id");
     if (!value || value.kind == ValueKind.NULL) {
       throw new Error("Cannot return null for a required field.");
     } else {
@@ -241,33 +497,35 @@ export class InitializeEntity extends Entity {
     }
   }
 
-  set platform(value: Bytes) {
-    this.set("platform", Value.fromBytes(value));
+  set id(value: Bytes) {
+    this.set("id", Value.fromBytes(value));
   }
 
-  get ts(): BigInt {
-    let value = this.get("ts");
-    if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
-    } else {
-      return value.toBigInt();
-    }
+  get platform(): PlatformEntityLoader {
+    return new PlatformEntityLoader(
+      "SwapperEntity",
+      this.get("id")!
+        .toBytes()
+        .toHexString(),
+      "platform"
+    );
+  }
+}
+
+export class PlatformEntityLoader extends Entity {
+  _entity: string;
+  _field: string;
+  _id: string;
+
+  constructor(entity: string, id: string, field: string) {
+    super();
+    this._entity = entity;
+    this._id = id;
+    this._field = field;
   }
 
-  set ts(value: BigInt) {
-    this.set("ts", Value.fromBigInt(value));
-  }
-
-  get block(): BigInt {
-    let value = this.get("block");
-    if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
-    } else {
-      return value.toBigInt();
-    }
-  }
-
-  set block(value: BigInt) {
-    this.set("block", Value.fromBigInt(value));
+  load(): PlatformEntity[] {
+    let value = store.loadRelated(this._entity, this._id, this._field);
+    return changetype<PlatformEntity[]>(value);
   }
 }

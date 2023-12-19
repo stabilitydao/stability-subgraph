@@ -3,18 +3,41 @@ schema:
   file: schema.graphql
 dataSources:
   - kind: ethereum
-    name: FactoryData
+    name: PlatformData
     network: matic
     source:
-      address: "0xa14EaAE76890595B3C7ea308dAEBB93863480EAD"
-      abi: FactoryABI
+      address: "0xb2a0737ef27b5Cc474D24c779af612159b1c3e60"
+      abi: PlatformABI
       startBlock: 50613040
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
-        - VaultsListEntity
+        - PlatformEntity
+      abis:
+        - name: PlatformABI
+          file: PlatformData\abis\PlatformABI.json
+      eventHandlers:
+        - event: Addresses(address,address,address,address,address,address,address,address,address,address,address,address)
+          handler: handleAddresses
+        - event: ContractInitialized(address,uint256,uint256)
+          handler: handleContractInitialized
+        - event: PlatformVersion(string)
+          handler: handlePlatformVersion
+      file: PlatformData\PlatformData.wasm
+templates:
+  - kind: ethereum
+    name: FactoryData
+    network: matic
+    source:
+      abi: FactoryABI
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - VaultEntity
       abis:
         - name: FactoryABI
           file: FactoryData\abis\FactoryABI.json
@@ -22,24 +45,22 @@ dataSources:
         - event: VaultAndStrategy(indexed
             address,string,string,address,address,string,string,address[],bytes32,uint256)
           handler: handleVaultAndStrategy
-      file: FactoryData\FactoryData.wasm
+      file: PlatformData\PlatformData.wasm
   - kind: ethereum
-    name: InitializeData
+    name: SwapperData
     network: matic
     source:
-      address: "0xb2a0737ef27b5Cc474D24c779af612159b1c3e60"
-      abi: ProxyDataABI
-      startBlock: 50613040
+      abi: SwapperABI
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
-        - InitializeEntity
+        - SwapperEntity
       abis:
-        - name: ProxyDataABI
-          file: InitializeData\abis\ProxyDataABI.json
+        - name: SwapperABI
+          file: SwapperData\abis\SwapperABI.json
       eventHandlers:
-        - event: ContractInitialized(address,uint256,uint256)
-          handler: handleInitializeEntity
-      file: FactoryData\FactoryData.wasm
+        - event: BlueChipAdded((address,address,address,address))
+          handler: handleBlueChipAdded
+      file: PlatformData\PlatformData.wasm

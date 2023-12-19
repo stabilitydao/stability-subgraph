@@ -1,9 +1,8 @@
-type VaultsListEntity @entity {
+type VaultEntity @entity {
   id: Bytes!
   deployer: Bytes! # address
   vaultType: String!
   strategyId: String!
-  vault: Bytes! # address
   strategy: Bytes! # address
   name: String!
   symbol: String!
@@ -12,9 +11,25 @@ type VaultsListEntity @entity {
   vaultManagerTokenId: BigInt! 
 }
 
-type InitializeEntity @entity {
-  id: Bytes!
-  platform: Bytes! # address
-  ts: BigInt!
-  block: BigInt!
+type PlatformEntity @entity {
+  id: Bytes! #address platform
+  factory: Bytes # address
+  vaultManager: Bytes # address
+  strategyLogic: Bytes # address
+  buildingPermitToken: Bytes # address
+  buildingPayPerVaultToken: Bytes # address 
+  governance: Bytes # address 
+  multisig: Bytes # address
+  platform: SwapperEntity # address
+  zap: Bytes # address
+  bridge: Bytes # address
+  swapper: Bytes # address
+  dexAggreagators: [Bytes!] # address[]
+  bcAssets: [Bytes!] # address[]
+  version: String
+}
+
+type SwapperEntity @entity {
+  id: Bytes! #address
+  platform: PlatformEntity  @derivedFrom(field: "platform") #address
 }
