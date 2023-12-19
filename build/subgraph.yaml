@@ -25,6 +25,8 @@ dataSources:
           handler: handleContractInitialized
         - event: PlatformVersion(string)
           handler: handlePlatformVersion
+        - event: AddDexAggregator(address)
+          handler: handleAddDexAggregator
       file: PlatformData\PlatformData.wasm
 templates:
   - kind: ethereum

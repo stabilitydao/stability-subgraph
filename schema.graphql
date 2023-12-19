@@ -20,7 +20,6 @@ type PlatformEntity @entity {
   buildingPayPerVaultToken: Bytes # address 
   governance: Bytes # address 
   multisig: Bytes # address
-  platform: SwapperEntity # address
   zap: Bytes # address
   bridge: Bytes # address
   swapper: Bytes # address
@@ -31,5 +30,4 @@ type PlatformEntity @entity {
 
 type SwapperEntity @entity {
   id: Bytes! #address
-  platform: PlatformEntity  @derivedFrom(field: "platform") #address
 }

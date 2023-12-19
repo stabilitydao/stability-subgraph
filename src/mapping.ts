@@ -5,6 +5,7 @@ import {
   Addresses as AddressesEvent,
   ContractInitialized as ContractInitializedEvent,
   PlatformVersion as PlatformVersionEvent,
+  AddDexAggregator as AddDexAggregatorEvent,
   PlatformABI as PlatformContract 
 } from "../generated/PlatformData/PlatformABI"
 
@@ -15,6 +16,8 @@ import {
 } from "../generated/schema"
 
 import { SwapperData } from '../generated/templates'
+
+const platformAddress = '0xb2a0737ef27b5cc474d24c779af612159b1c3e60'
 
 export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
   let entity = new VaultEntity(
@@ -36,9 +39,9 @@ export function handleAddresses(event: AddressesEvent): void {
     let platform = PlatformEntity.load(event.address) as PlatformEntity;
     let platformContract = PlatformContract.bind(event.address); 
     let result = platformContract.getData();
-    
+    let swapper = new SwapperEntity(event.params.swapper_);
     SwapperData.create(event.params.swapper_);
-    platform.platform = event.address
+
     platform.multisig = event.params.multisig_
     platform.factory = event.params.factory_
     platform.vaultManager = event.params.vaultManager_
@@ -49,8 +52,8 @@ export function handleAddresses(event: AddressesEvent): void {
     platform.swapper = event.params.swapper_
     platform.buildingPayPerVaultToken = result.value0[4]
     platform.governance = result.value0[5]
-    platform.dexAggreagators = changetype<Bytes[]>(result.value2)
     platform.save()
+    swapper.save()
 }
 
 export function handleContractInitialized(event: ContractInitializedEvent): void {
@@ -58,19 +61,26 @@ export function handleContractInitialized(event: ContractInitializedEvent): void
   platform.save()
 }
 
-
 export function handlePlatformVersion(event: PlatformVersionEvent): void {
   let platform = PlatformEntity.load(event.address) as PlatformEntity;
   platform.version = event.params.version
   platform.save()
 }
 
-
 export function handleBlueChipAdded(event: BlueChipAddedEvent): void {
-  let swapper = SwapperEntity.load(event.address) as SwapperEntity;
-  //SwapperData.create(event.address);
-  let platform = PlatformEntity.load(Address.fromString("0xb2a0737ef27b5cc474d24c779af612159b1c3e60")) as PlatformEntity;
-  platform.bcAssets = changetype<Bytes[]>(event.params.poolData)
+  let platform = PlatformEntity.load(Address.fromString(platformAddress)) as PlatformEntity;
+  platform.bcAssets = changetype<Bytes[]>([event.params.poolData.tokenIn,event.params.poolData.tokenOut])
   platform.save()
 }  
 
+export function handleAddDexAggregator(event: AddDexAggregatorEvent): void {
+  let platform = PlatformEntity.load(Address.fromString(platformAddress)) as PlatformEntity;
+
+  let dexAggreagators = platform.dexAggreagators
+  if (!dexAggreagators) {
+    dexAggreagators = [];
+  }
+  dexAggreagators.push(event.params.router)
+  platform.dexAggreagators = dexAggreagators
+  platform.save()
+}

@@ -338,23 +338,6 @@ export class PlatformEntity extends Entity {
     }
   }
 
-  get platform(): Bytes | null {
-    let value = this.get("platform");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toBytes();
-    }
-  }
-
-  set platform(value: Bytes | null) {
-    if (!value) {
-      this.unset("platform");
-    } else {
-      this.set("platform", Value.fromBytes(<Bytes>value));
-    }
-  }
-
   get zap(): Bytes | null {
     let value = this.get("zap");
     if (!value || value.kind == ValueKind.NULL) {
@@ -499,33 +482,5 @@ export class SwapperEntity extends Entity {
 
   set id(value: Bytes) {
     this.set("id", Value.fromBytes(value));
-  }
-
-  get platform(): PlatformEntityLoader {
-    return new PlatformEntityLoader(
-      "SwapperEntity",
-      this.get("id")!
-        .toBytes()
-        .toHexString(),
-      "platform"
-    );
-  }
-}
-
-export class PlatformEntityLoader extends Entity {
-  _entity: string;
-  _field: string;
-  _id: string;
-
-  constructor(entity: string, id: string, field: string) {
-    super();
-    this._entity = entity;
-    this._id = id;
-    this._field = field;
-  }
-
-  load(): PlatformEntity[] {
-    let value = store.loadRelated(this._entity, this._id, this._field);
-    return changetype<PlatformEntity[]>(value);
   }
 }
