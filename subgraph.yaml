@@ -68,3 +68,39 @@ templates:
         - event: BlueChipAdded((address,address,address,address))
           handler: handleBlueChipAdded
       file: ./src/mapping.ts
+  - kind: ethereum
+    name: VaultData
+    network: matic
+    source:
+      abi: VaultABI
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - VaultEntity
+      abis:
+        - name: VaultABI
+          file: ./abis/VaultABI.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+      file: ./src/mapping.ts
+  - kind: ethereum
+    name: StrategyData
+    network: matic
+    source:
+      abi: StrategyLibABI
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - VaultEntity
+      abis:
+        - name: StrategyLibABI
+          file: ./abis/StrategyLibABI.json
+      eventHandlers:
+        - event: HardWork(uint256,uint256,uint256,uint256,uint256,uint256,uint256[])
+          handler: handleHardWork
+      file: ./src/mapping.ts

@@ -1,14 +1,13 @@
 type VaultEntity @entity {
-  id: Bytes!
-  deployer: Bytes! # address
+  id: Bytes! #address
+  apr: BigInt!
+  tvl: BigInt!
+  sharePrice: BigInt!
   vaultType: String!
   strategyId: String!
-  strategy: Bytes! # address
-  name: String!
-  symbol: String!
-  assets: [Bytes!] # address[]
-  deploymentKey: Bytes!
-  vaultManagerTokenId: BigInt! 
+  totalSupply: BigInt!
+  strategy: Bytes! #address
+  assetsProportions: [BigInt!]
 }
 
 type PlatformEntity @entity {

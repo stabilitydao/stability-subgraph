@@ -54,17 +54,43 @@ export class VaultEntity extends Entity {
     this.set("id", Value.fromBytes(value));
   }
 
-  get deployer(): Bytes {
-    let value = this.get("deployer");
+  get apr(): BigInt {
+    let value = this.get("apr");
     if (!value || value.kind == ValueKind.NULL) {
       throw new Error("Cannot return null for a required field.");
     } else {
-      return value.toBytes();
+      return value.toBigInt();
     }
   }
 
-  set deployer(value: Bytes) {
-    this.set("deployer", Value.fromBytes(value));
+  set apr(value: BigInt) {
+    this.set("apr", Value.fromBigInt(value));
+  }
+
+  get tvl(): BigInt {
+    let value = this.get("tvl");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set tvl(value: BigInt) {
+    this.set("tvl", Value.fromBigInt(value));
+  }
+
+  get sharePrice(): BigInt {
+    let value = this.get("sharePrice");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set sharePrice(value: BigInt) {
+    this.set("sharePrice", Value.fromBigInt(value));
   }
 
   get vaultType(): string {
@@ -93,6 +119,19 @@ export class VaultEntity extends Entity {
     this.set("strategyId", Value.fromString(value));
   }
 
+  get totalSupply(): BigInt {
+    let value = this.get("totalSupply");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set totalSupply(value: BigInt) {
+    this.set("totalSupply", Value.fromBigInt(value));
+  }
+
   get strategy(): Bytes {
     let value = this.get("strategy");
     if (!value || value.kind == ValueKind.NULL) {
@@ -106,73 +145,24 @@ export class VaultEntity extends Entity {
     this.set("strategy", Value.fromBytes(value));
   }
 
-  get name(): string {
-    let value = this.get("name");
-    if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
-    } else {
-      return value.toString();
-    }
-  }
-
-  set name(value: string) {
-    this.set("name", Value.fromString(value));
-  }
-
-  get symbol(): string {
-    let value = this.get("symbol");
-    if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
-    } else {
-      return value.toString();
-    }
-  }
-
-  set symbol(value: string) {
-    this.set("symbol", Value.fromString(value));
-  }
-
-  get assets(): Array<Bytes> | null {
-    let value = this.get("assets");
+  get assetsProportions(): Array<BigInt> | null {
+    let value = this.get("assetsProportions");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toBytesArray();
+      return value.toBigIntArray();
     }
   }
 
-  set assets(value: Array<Bytes> | null) {
+  set assetsProportions(value: Array<BigInt> | null) {
     if (!value) {
-      this.unset("assets");
+      this.unset("assetsProportions");
     } else {
-      this.set("assets", Value.fromBytesArray(<Array<Bytes>>value));
+      this.set(
+        "assetsProportions",
+        Value.fromBigIntArray(<Array<BigInt>>value)
+      );
     }
-  }
-
-  get deploymentKey(): Bytes {
-    let value = this.get("deploymentKey");
-    if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
-    } else {
-      return value.toBytes();
-    }
-  }
-
-  set deploymentKey(value: Bytes) {
-    this.set("deploymentKey", Value.fromBytes(value));
-  }
-
-  get vaultManagerTokenId(): BigInt {
-    let value = this.get("vaultManagerTokenId");
-    if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
-    } else {
-      return value.toBigInt();
-    }
-  }
-
-  set vaultManagerTokenId(value: BigInt) {
-    this.set("vaultManagerTokenId", Value.fromBigInt(value));
   }
 }
 
