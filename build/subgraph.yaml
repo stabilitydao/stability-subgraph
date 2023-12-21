@@ -40,13 +40,20 @@ templates:
       language: wasm/assemblyscript
       entities:
         - VaultEntity
+        - VaultTypeEntity
       abis:
         - name: FactoryABI
           file: FactoryData\abis\FactoryABI.json
+        - name: PlatformABI
+          file: FactoryData\abis\PlatformABI.json
+        - name: VaultABI
+          file: FactoryData\abis\VaultABI.json
       eventHandlers:
         - event: VaultAndStrategy(indexed
             address,string,string,address,address,string,string,address[],bytes32,uint256)
           handler: handleVaultAndStrategy
+        - event: VaultConfigChanged(string,address,bool,bool,bool)
+          handler: handleVaultConfigChanged
       file: PlatformData\PlatformData.wasm
   - kind: ethereum
     name: SwapperData

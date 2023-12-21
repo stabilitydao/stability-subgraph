@@ -1,15 +1,3 @@
-type VaultEntity @entity {
-  id: Bytes! #address
-  apr: BigInt!
-  tvl: BigInt!
-  sharePrice: BigInt!
-  vaultType: String!
-  strategyId: String!
-  totalSupply: BigInt!
-  strategy: Bytes! #address
-  assetsProportions: [BigInt!]
-}
-
 type PlatformEntity @entity {
   id: Bytes! #address platform
   factory: Bytes # address
@@ -27,6 +15,30 @@ type PlatformEntity @entity {
   version: String
 }
 
-type SwapperEntity @entity {
+type VaultEntity @entity {
   id: Bytes! #address
+  apr: BigInt!
+  tvl: BigInt!
+  sharePrice: BigInt!
+  vaultType: String!
+  strategyId: String!
+  totalSupply: BigInt!
+  strategy: Bytes! #address
+  assetsProportions: [BigInt!]
+  deployAllowed: Boolean!
+  upgradeAllowed: Boolean!
+  color: Bytes!
+  colorBackground: Bytes!
+  vaultBuildingPrice: BigInt!
+  version: String! 
+}
+
+type VaultTypeEntity @entity {
+  id: String! #VaultType
+  deployAllowed: Boolean!
+  upgradeAllowed: Boolean!
+  color: Bytes!
+  colorBackground: Bytes!
+  vaultBuildingPrice: BigInt!
+  version: String! 
 }
