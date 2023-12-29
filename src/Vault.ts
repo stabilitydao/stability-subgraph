@@ -1,5 +1,5 @@
 import { Address } from "@graphprotocol/graph-ts"
-import { VaultEntity } from "../generated/schema"
+import { VaultEntity, VaultHistoryEntity} from "../generated/schema"
 import { addressZero, oneEther } from './constants'
 
 import { 
@@ -16,6 +16,15 @@ export function handleDepositAssets(event: DepositAssetsEvent): void {
     vault.tvl = newTVL
     vault.sharePrice = newTVL.times(oneEther).div(vault.totalSupply)
     vault.save()
+
+    let vaultHistoryEntity = new VaultHistoryEntity(
+        event.transaction.hash.concatI32(event.logIndex.toI32())
+    )
+    vaultHistoryEntity.address = event.address
+    vaultHistoryEntity.sharePrice = vault.sharePrice
+    vaultHistoryEntity.TVL = vault.tvl
+    vaultHistoryEntity.timestamp = event.block.timestamp
+    vaultHistoryEntity.save()
 }
 
 export function handleWithdrawAssets(event: WithdrawAssetsEvent): void {
@@ -25,6 +34,15 @@ export function handleWithdrawAssets(event: WithdrawAssetsEvent): void {
     vault.tvl = newTVL
     vault.sharePrice = newTVL.times(oneEther).div(vault.totalSupply)
     vault.save()
+
+    let vaultHistoryEntity = new VaultHistoryEntity(
+        event.transaction.hash.concatI32(event.logIndex.toI32())
+    )
+    vaultHistoryEntity.address = event.address
+    vaultHistoryEntity.sharePrice = vault.sharePrice
+    vaultHistoryEntity.TVL = vault.tvl
+    vaultHistoryEntity.timestamp = event.block.timestamp
+    vaultHistoryEntity.save()
 }
 
 export function handleTransfer(event: TransferEvent): void {

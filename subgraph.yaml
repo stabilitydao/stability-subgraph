@@ -90,6 +90,7 @@ templates:
       language: wasm/assemblyscript
       entities:
         - VaultEntity
+        - VaultHistoryEntity
       abis:
         - name: VaultABI
           file: ./abis/VaultABI.json
