@@ -30,7 +30,15 @@ type VaultEntity @entity {
   color: Bytes!
   colorBackground: Bytes!
   vaultBuildingPrice: BigInt!
-  version: String! 
+  version: String!
+  name: String!
+  symbol: String!
+  underlying: Bytes! 
+  strategySpecific: String!
+  strategyAssets: [Bytes!]! #addresses
+  assetsWithApr: [Bytes!]! #addresses
+  assetsAprs: [BigInt!]!
+  lastHardWork: BigInt!
 }
 
 type VaultTypeEntity @entity {
@@ -41,4 +49,20 @@ type VaultTypeEntity @entity {
   colorBackground: Bytes!
   vaultBuildingPrice: BigInt!
   version: String! 
+}
+
+type StategyEntity @entity {
+  id: String! #strategyId
+  tokenId: Bytes! #address #IStrategyLogic.mint()
+  shortName: String! #??
+  color: Bytes! #getData
+  colorBackground: Bytes! #getData
+  version: String! #StrategyLogic.VERSION()
+}
+
+type AssetHistoryEntity @entity(immutable: true) {
+  id: Bytes!
+  address: Bytes! #address
+  price: BigInt!
+  timestamp: BigInt!
 }

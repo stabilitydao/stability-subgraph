@@ -48,13 +48,17 @@ templates:
           file: FactoryData\abis\PlatformABI.json
         - name: VaultABI
           file: FactoryData\abis\VaultABI.json
+        - name: StrategyBaseABI
+          file: FactoryData\abis\StrategyBaseABI.json
+        - name: VaultManagerABI
+          file: FactoryData\abis\VaultManagerABI.json
       eventHandlers:
         - event: VaultAndStrategy(indexed
             address,string,string,address,address,string,string,address[],bytes32,uint256)
           handler: handleVaultAndStrategy
         - event: VaultConfigChanged(string,address,bool,bool,bool)
           handler: handleVaultConfigChanged
-      file: PlatformData\PlatformData.wasm
+      file: templates\FactoryData\FactoryData.wasm
   - kind: ethereum
     name: SwapperData
     network: matic
@@ -72,7 +76,7 @@ templates:
       eventHandlers:
         - event: BlueChipAdded((address,address,address,address))
           handler: handleBlueChipAdded
-      file: PlatformData\PlatformData.wasm
+      file: templates\SwapperData\SwapperData.wasm
   - kind: ethereum
     name: VaultData
     network: matic
@@ -90,12 +94,16 @@ templates:
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
-      file: PlatformData\PlatformData.wasm
+        - event: DepositAssets(indexed address,address[],uint256[],uint256)
+          handler: handleDepositAssets
+        - event: WithdrawAssets(indexed address,address[],uint256,uint256[])
+          handler: handleWithdrawAssets
+      file: templates\VaultData\VaultData.wasm
   - kind: ethereum
-    name: StrategyData
+    name: VaultManagerData
     network: matic
     source:
-      abi: StrategyLibABI
+      abi: VaultManagerABI
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -103,9 +111,26 @@ templates:
       entities:
         - VaultEntity
       abis:
-        - name: StrategyLibABI
-          file: StrategyData\abis\StrategyLibABI.json
+        - name: VaultManagerABI
+          file: VaultManagerData\abis\VaultManagerABI.json
+      file: templates\VaultManagerData\VaultManagerData.wasm
+  - kind: ethereum
+    name: StrategyData
+    network: matic
+    source:
+      abi: StrategyBaseABI
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - StategyEntity
+      abis:
+        - name: StrategyBaseABI
+          file: StrategyData\abis\StrategyBaseABI.json
+        - name: VaultManagerABI
+          file: StrategyData\abis\VaultManagerABI.json
       eventHandlers:
         - event: HardWork(uint256,uint256,uint256,uint256,uint256,uint256,uint256[])
           handler: handleHardWork
-      file: PlatformData\PlatformData.wasm
+      file: templates\StrategyData\StrategyData.wasm
