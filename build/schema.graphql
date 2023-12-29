@@ -1,7 +1,78 @@
-type Upgraded @entity(immutable: true) {
+type PlatformEntity @entity {
+  id: Bytes! #address platform
+  factory: Bytes # address
+  vaultManager: Bytes # address
+  strategyLogic: Bytes # address
+  buildingPermitToken: Bytes # address
+  buildingPayPerVaultToken: Bytes # address 
+  governance: Bytes # address 
+  multisig: Bytes # address
+  zap: Bytes # address
+  bridge: Bytes # address
+  swapper: Bytes # address
+  dexAggreagators: [Bytes!] # address[]
+  bcAssets: [Bytes!] # address[]
+  version: String
+}
+
+type VaultEntity @entity {
+  id: Bytes! #address
+  apr: BigInt!
+  tvl: BigInt!
+  sharePrice: BigInt!
+  vaultType: String!
+  strategyId: String!
+  totalSupply: BigInt!
+  strategy: Bytes! #address
+  strategyDescription: String!
+  assetsProportions: [BigInt!]
+  deployAllowed: Boolean!
+  upgradeAllowed: Boolean!
+  color: Bytes!
+  colorBackground: Bytes!
+  vaultBuildingPrice: BigInt!
+  version: String!
+  name: String!
+  symbol: String!
+  underlying: Bytes! 
+  strategySpecific: String!
+  strategyAssets: [Bytes!]! #addresses
+  assetsWithApr: [Bytes!]! #addresses
+  assetsAprs: [BigInt!]!
+  lastHardWork: BigInt!
+}
+
+type VaultTypeEntity @entity {
+  id: String! #VaultType
+  deployAllowed: Boolean!
+  upgradeAllowed: Boolean!
+  color: Bytes!
+  colorBackground: Bytes!
+  vaultBuildingPrice: BigInt!
+  version: String! 
+}
+
+type StategyEntity @entity {
+  id: Bytes! #address
+  strategyId: String!
+  tokenId: Bytes! #address totalSupply() - 1
+  shortName: String! #??
+  color: Bytes! #getData
+  colorBackground: Bytes! #getData
+  version: String! #StrategyLogic.VERSION()
+} 
+
+type AssetHistoryEntity @entity(immutable: true) {
   id: Bytes!
-  implementation: Bytes! # address
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+  address: Bytes! #address
+  price: BigInt!
+  timestamp: BigInt!
+}
+
+type VaultHistoryEntity @entity(immutable: true) {
+  id: Bytes!
+  address: Bytes! #address
+  sharePrice: BigInt!
+  TVL: BigInt!
+  timestamp: BigInt!
 }

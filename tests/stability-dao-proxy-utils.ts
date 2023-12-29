@@ -1,6 +1,6 @@
 import { newMockEvent } from "matchstick-as"
 import { ethereum, Address } from "@graphprotocol/graph-ts"
-import { Upgraded } from "../generated/StabilityDaoProxy/StabilityDaoProxy"
+import { Upgraded } from "../generated/Stability/Stability"
 
 export function createUpgradedEvent(implementation: Address): Upgraded {
   let upgradedEvent = changetype<Upgraded>(newMockEvent())
