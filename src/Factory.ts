@@ -1,24 +1,32 @@
-import { Address, Bytes, BigInt } from "@graphprotocol/graph-ts"
-import { platformAddress, vaultManagerAddress } from './constants'
-import { VaultTypeEntity, VaultEntity, StategyEntity } from "../generated/schema"
+import { Address, Bytes, BigInt, crypto, ByteArray } from "@graphprotocol/graph-ts"
+import { addressZero, platformAddress, vaultManagerAddress } from './constants'
+import { VaultTypeEntity, VaultEntity, StrategyEntity, StrategyConfigEntity } from "../generated/schema"
 import { VaultData, StrategyData } from '../generated/templates'
 
-import { PlatformABI        as PlatformContract        } from "../generated/PlatformData/PlatformABI"
-import { VaultABI           as VaultContract           } from "../generated/templates/VaultData/VaultABI"
-import { VaultConfigChanged as VaultConfigChangedEvent } from "../generated/templates/FactoryData/FactoryABI"
-import { StrategyBaseABI    as StrategyContract        } from "../generated/templates/StrategyData/StrategyBaseABI"
-import { VaultManagerABI    as VaultManagerContract    } from "../generated/templates/VaultManagerData/VaultManagerABI"
-import { VaultAndStrategy   as VaultAndStrategyEvent   } from "../generated/templates/FactoryData/FactoryABI"
+import { PlatformABI           as PlatformContract        } from "../generated/PlatformData/PlatformABI"
+import { VaultABI              as VaultContract           } from "../generated/templates/VaultData/VaultABI"
+import { VaultConfigChanged    as VaultConfigChangedEvent,
+         VaultStatus           as VaultStatusEvent,
+         VaultProxyUpgraded    as VaultProxyUpgradedEvent,
+         StrategyProxyUpgraded as StrategyProxyUpgradedEvent,
+         StrategyLogicConfigChanged as StrategyLogicConfigChangedEvent,
+         FactoryABI            as FactoryContract         } from "../generated/templates/FactoryData/FactoryABI"
+import { StrategyBaseABI       as StrategyContract        } from "../generated/templates/StrategyData/StrategyBaseABI"
+import { VaultManagerABI       as VaultManagerContract    } from "../generated/templates/VaultManagerData/VaultManagerABI"
+import { VaultAndStrategy      as VaultAndStrategyEvent   } from "../generated/templates/FactoryData/FactoryABI"
 
 export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
     const vault = new VaultEntity(event.params.vault);
-    const vaultTypeEntity = VaultTypeEntity.load(event.params.vaultType) as VaultTypeEntity;
+    const strategyEntity = new StrategyEntity(event.params.strategy);
 
-    //const stategyEntity = StategyEntity.load(event.params.strategy) as StategyEntity;
+    const vaultTypeEntity = VaultTypeEntity.load(event.params.vaultType) as VaultTypeEntity;
     const strategyContract = StrategyContract.bind(event.params.strategy); 
 
     const vaultManagerContract = VaultManagerContract.bind(Address.fromString(vaultManagerAddress)); 
     const _vaultInfo = vaultManagerContract.vaultInfo(event.params.vault)
+    const vaultContract = VaultContract.bind(event.params.vault); 
+    const factoryContract = FactoryContract.bind(event.address);
+
     VaultData.create(event.params.vault);
     StrategyData.create(event.params.strategy);
     
@@ -36,7 +44,7 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
     vault.colorBackground     = vaultTypeEntity.colorBackground
     vault.deployAllowed       = vaultTypeEntity.deployAllowed
     vault.upgradeAllowed      = vaultTypeEntity.upgradeAllowed
-    vault.version             = vaultTypeEntity.version
+    vault.version             = vaultContract.VERSION()
     vault.vaultBuildingPrice  = vaultTypeEntity.vaultBuildingPrice
     vault.underlying          = strategyContract.underlying()
     vault.strategySpecific    = strategyContract.getSpecificName().value0
@@ -45,8 +53,39 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
     vault.strategyAssets      = changetype<Bytes[]>(_vaultInfo.value1)
     vault.assetsWithApr       = changetype<Bytes[]>(_vaultInfo.value3)
     vault.assetsAprs          = _vaultInfo.value4
-    
+    vault.vaultStatus         = factoryContract.vaultStatus(event.params.vault)
     vault.save()
+
+
+    //STRATEGY ENTITY
+    let strategies = factoryContract.strategies()
+    let index = strategies.value0.indexOf(event.params.strategyId)
+
+    const colorBytes = strategies.value6[index]
+    const color = changetype<Bytes>(colorBytes.slice(0, 3));
+    const colorBackground = changetype<Bytes>(colorBytes.slice(3, 6));
+
+    strategyEntity.strategyId = event.params.strategyId
+    strategyEntity.version = strategyContract.VERSION()
+    strategyEntity.tokenId = strategies.value4[index]
+    //strategyEntity.shortName = 
+    strategyEntity.color = color
+    strategyEntity.colorBackground = colorBackground
+    strategyEntity.save()
+
+    //STRATEGY CONFIG ENTITY
+    let stategyConfigEntity: StrategyConfigEntity
+    if(!StrategyConfigEntity.load(event.params.strategyId)){
+      stategyConfigEntity = new StrategyConfigEntity(event.params.strategyId);
+    } else {
+      stategyConfigEntity = StrategyConfigEntity.load(event.params.strategyId) as StrategyConfigEntity;
+    }
+    stategyConfigEntity.version = strategyContract.VERSION()
+    stategyConfigEntity.save()
+
+
+    //stategyEntity.tokenId = strategyContract.total
+
    /*  
     const platformContract = PlatformContract.bind(Address.fromString(platformAddress)); 
     const platformData     = platformContract.getData();
@@ -55,7 +94,7 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
     stategyEntity.strategyId = platformData
 
 
-    strategyId - getData
+    strategyId - VaultAndStrategy.stratgyId
     tokenId - totalSupply - 1
     shortName - getSpecificName()
     color, bgColor (strategyExtra) - getData
@@ -87,4 +126,36 @@ export function handleVaultConfigChanged(event: VaultConfigChangedEvent): void {
     vaultTypeEntity.vaultBuildingPrice = platformData.value5[index]
 
     vaultTypeEntity.save()
+  }
+
+  export function handleVaultStatus(event: VaultStatusEvent): void {
+    const vault = VaultEntity.load(event.params.vault) as VaultEntity;
+    vault.vaultStatus = event.params.newStatus;
+    vault.save() 
+  }
+
+  export function handleVaultProxyUpgraded(event: VaultProxyUpgradedEvent): void {
+    const vault = VaultEntity.load(event.params.proxy) as VaultEntity;
+    const vaultContract = VaultContract.bind(event.params.proxy); 
+    vault.version = vaultContract.VERSION();
+    vault.save() 
+  }
+
+  export function handleStrategyProxyUpgraded(event: StrategyProxyUpgradedEvent): void {
+    const strategy = StrategyEntity.load(event.params.proxy) as StrategyEntity;
+    const strategyContract = StrategyContract.bind(event.params.proxy); 
+    strategy.version = strategyContract.VERSION();
+    strategy.save() 
+  }
+
+  export function handleStrategyLogicConfigChanged(event: StrategyLogicConfigChangedEvent): void {
+      let stategyConfigEntity: StrategyConfigEntity
+      if(!StrategyConfigEntity.load(event.params.id)){
+        stategyConfigEntity = new StrategyConfigEntity(event.params.id);
+      } else {
+        stategyConfigEntity = StrategyConfigEntity.load(event.params.id) as StrategyConfigEntity;
+      }
+      const strategyContract = StrategyContract.bind(event.params.implementation); 
+      stategyConfigEntity.version = strategyContract.VERSION();
+      stategyConfigEntity.save() 
   }

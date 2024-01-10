@@ -44,6 +44,8 @@ templates:
       entities:
         - VaultEntity
         - VaultTypeEntity
+        - StrategyEntity
+        - StrategyConfigEntity
       abis:
         - name: FactoryABI
           file: ./abis/FactoryABI.json
@@ -54,12 +56,24 @@ templates:
         - name: StrategyBaseABI
           file: ./abis/StrategyBaseABI.json
         - name: VaultManagerABI
-          file: ./abis/VaultManagerABI.json 
+          file: ./abis/VaultManagerABI.json
+        - name: StrategyLogicABI
+          file: ./abis/StrategyLogicABI.json
+        - name: IStrategyProxyABI
+          file: ./abis/IStrategyProxyABI.json 
       eventHandlers:
         - event: VaultAndStrategy(indexed address,string,string,address,address,string,string,address[],bytes32,uint256)
           handler: handleVaultAndStrategy
         - event: VaultConfigChanged(string,address,bool,bool,bool)
           handler: handleVaultConfigChanged
+        - event: VaultStatus(indexed address,uint256)
+          handler: handleVaultStatus
+        - event: VaultProxyUpgraded(address,address,address)
+          handler: handleVaultProxyUpgraded
+        - event: StrategyProxyUpgraded(address,address,address)
+          handler: handleStrategyProxyUpgraded
+        - event: StrategyLogicConfigChanged(string,address,bool,bool,bool)
+          handler: handleStrategyLogicConfigChanged
       file: ./src/Factory.ts
   - kind: ethereum
     name: SwapperData
@@ -99,8 +113,31 @@ templates:
           handler: handleTransfer
         - event: DepositAssets(indexed address,address[],uint256[],uint256)
           handler: handleDepositAssets
-        - event: WithdrawAssets(indexed address,address[],uint256,uint256[])
+        - event: WithdrawAssets(indexed address,indexed address,address[],uint256,uint256[])
           handler: handleWithdrawAssets
+        - event: VaultName(string)
+          handler: handleVaultName
+        - event: VaultSymbol(string)
+          handler: handleVaultSymbol
+      file: ./src/Vault.ts
+  - kind: ethereum
+    name: deprecatedData
+    network: matic
+    source:
+      abi: deprecatedABI
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - VaultEntity
+        - VaultHistoryEntity
+      abis:
+        - name: deprecatedABI
+          file: ./abis/deprecatedABI.json
+      eventHandlers:
+        - event: WithdrawAssets(indexed address,address[],uint256,uint256[])
+          handler: handleWithdrawAssetsOld
       file: ./src/Vault.ts
   - kind: ethereum
     name: VaultManagerData
@@ -127,10 +164,13 @@ templates:
       apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
-        - StategyEntity
+        - StrategyEntity
+        - StrategyConfigEntity
       abis:
         - name: StrategyBaseABI
           file: ./abis/StrategyBaseABI.json
+        - name: StrategyLogicABI
+          file: ./abis/StrategyLogicABI.json
         - name: VaultManagerABI
           file: ./abis/VaultManagerABI.json 
       eventHandlers:
