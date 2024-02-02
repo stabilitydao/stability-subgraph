@@ -1,7 +1,7 @@
-import { Address, Bytes, BigInt, crypto, ByteArray } from "@graphprotocol/graph-ts"
-import { addressZero, platformAddress, vaultManagerAddress } from './constants'
-import { VaultTypeEntity, VaultEntity, StrategyEntity, StrategyConfigEntity } from "../generated/schema"
-import { VaultData, StrategyData } from '../generated/templates'
+import { Address, Bytes, BigInt } from "@graphprotocol/graph-ts"
+import { ZeroBigInt, platformAddress, vaultManagerAddress } from './constants'
+import { VaultTypeEntity, VaultEntity, StrategyEntity, StrategyConfigEntity, ALMRebalanceEntity } from "../generated/schema"
+import { VaultData, StrategyData, IchiQuickSwapMerklFarmData } from '../generated/templates'
 
 import { PlatformABI           as PlatformContract        } from "../generated/PlatformData/PlatformABI"
 import { VaultABI              as VaultContract           } from "../generated/templates/VaultData/VaultABI"
@@ -15,6 +15,8 @@ import { StrategyBaseABI       as StrategyContract        } from "../generated/t
 import { VaultManagerABI       as VaultManagerContract    } from "../generated/templates/VaultManagerData/VaultManagerABI"
 import { VaultAndStrategy      as VaultAndStrategyEvent   } from "../generated/templates/FactoryData/FactoryABI"
 
+let NFTtokenIdCounter = ZeroBigInt
+
 export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
     const vault = new VaultEntity(event.params.vault);
     const strategyEntity = new StrategyEntity(event.params.strategy);
@@ -27,14 +29,17 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
     const vaultContract = VaultContract.bind(event.params.vault); 
     const factoryContract = FactoryContract.bind(event.address);
 
+    if(event.params.strategyId == "Ichi QuickSwap Merkl Farm"){
+      IchiQuickSwapMerklFarmData.create(strategyContract.underlying());
+    } 
     VaultData.create(event.params.vault);
     StrategyData.create(event.params.strategy);
     
-    vault.lastHardWork        = BigInt.fromI32(0)
-    vault.totalSupply         = BigInt.fromI32(0)
-    vault.apr                 = BigInt.fromI32(0)
-    vault.tvl                 = BigInt.fromI32(0)
-    vault.sharePrice          = BigInt.fromI32(0)
+    vault.lastHardWork        = ZeroBigInt
+    vault.totalSupply         = ZeroBigInt
+    vault.apr                 = ZeroBigInt
+    vault.tvl                 = ZeroBigInt
+    vault.sharePrice          = ZeroBigInt
     vault.strategy            = event.params.strategy 
     vault.vaultType           = event.params.vaultType
     vault.strategyId          = event.params.strategyId
@@ -54,8 +59,10 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
     vault.assetsWithApr       = changetype<Bytes[]>(_vaultInfo.value3)
     vault.assetsAprs          = _vaultInfo.value4
     vault.vaultStatus         = factoryContract.vaultStatus(event.params.vault)
+    vault.hardWorkOnDeposit   = true
+    vault.created             = event.block.timestamp
+    vault.NFTtokenID          = vaultManagerContract.totalSupply().minus(BigInt.fromI32(1))
     vault.save()
-
 
     //STRATEGY ENTITY
     let strategies = factoryContract.strategies()

@@ -1,20 +1,22 @@
 import { Address } from "@graphprotocol/graph-ts"
-import { VaultEntity, VaultHistoryEntity} from "../generated/schema"
+import { VaultEntity, VaultHistoryEntity, UserHistoryEntity} from "../generated/schema"
 import { addressZero, oneEther } from './constants'
 
 import { 
-    Transfer         as TransferEvent,
-    DepositAssets    as DepositAssetsEvent,
-    WithdrawAssets   as WithdrawAssetsEvent,
-    VaultName        as VaultNameEvent,
-    VaultSymbol      as VaultSymbolEvent,
-    VaultABI         as VaultContract        
+    Transfer                   as TransferEvent,
+    DepositAssets              as DepositAssetsEvent,
+    WithdrawAssets             as WithdrawAssetsEvent,
+    VaultName                  as VaultNameEvent,
+    VaultSymbol                as VaultSymbolEvent,
+    DoHardWorkOnDepositChanged as DoHardWorkOnDepositChangedEvent,
+    VaultABI                   as VaultContract        
 } from "../generated/templates/VaultData/VaultABI"
 
 import {WithdrawAssets as WithdrawAssetsEventOld} from "../generated/templates/deprecatedData/deprecatedABI"
 
 export function handleDepositAssets(event: DepositAssetsEvent): void {
     const vault = VaultEntity.load(event.address) as VaultEntity;
+    const user = UserHistoryEntity.load(event.params.account) as UserHistoryEntity;
     const vaultContract = VaultContract.bind(event.address); 
     const newTVL = vaultContract.tvl().value0
     vault.tvl = newTVL
@@ -29,6 +31,10 @@ export function handleDepositAssets(event: DepositAssetsEvent): void {
     vaultHistoryEntity.TVL = vault.tvl
     vaultHistoryEntity.timestamp = event.block.timestamp
     vaultHistoryEntity.save()
+    
+
+    //user.Deposited += event.params.
+
 }
 
 export function handleWithdrawAssetsOld(event: WithdrawAssetsEventOld): void {
@@ -90,5 +96,11 @@ export function handleVaultName(event: VaultNameEvent): void {
 export function handleVaultSymbol(event: VaultSymbolEvent): void {
     const vault = VaultEntity.load(event.address) as VaultEntity;
     vault.symbol = event.params.newSymbol
+    vault.save()
+}
+
+export function handleDoHardWorkOnDepositChanged(event: DoHardWorkOnDepositChangedEvent): void {
+    const vault = VaultEntity.load(event.address) as VaultEntity;
+    vault.hardWorkOnDeposit = event.params.newValue
     vault.save()
 }

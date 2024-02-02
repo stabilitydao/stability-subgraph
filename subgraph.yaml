@@ -16,6 +16,7 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - PlatformEntity
+        - ALMRebalanceEntity
       abis:
         - name: PlatformABI
           file: ./abis/PlatformABI.json
@@ -119,6 +120,8 @@ templates:
           handler: handleVaultName
         - event: VaultSymbol(string)
           handler: handleVaultSymbol
+        - event: DoHardWorkOnDepositChanged(bool,bool)
+          handler: handleDoHardWorkOnDepositChanged 
       file: ./src/Vault.ts
   - kind: ethereum
     name: deprecatedData
@@ -166,6 +169,7 @@ templates:
       entities:
         - StrategyEntity
         - StrategyConfigEntity
+        - VaultHistoryEntity
       abis:
         - name: StrategyBaseABI
           file: ./abis/StrategyBaseABI.json
@@ -177,3 +181,36 @@ templates:
         - event: HardWork(uint256,uint256,uint256,uint256,uint256,uint256,uint256[])
           handler: handleHardWork
       file: ./src/Strategy.ts
+  - kind: ethereum
+    name: IchiQuickSwapMerklFarmData
+    network: matic
+    source:
+      abi: IchiQuickSwapMerklFarmABI
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - ALMRebalanceEntity
+      abis:
+        - name: IchiQuickSwapMerklFarmABI
+          file: ./abis/IchiQuickSwapMerklFarmABI.json
+      eventHandlers:
+        - event: Rebalance(int24,uint256,uint256,uint256,uint256,uint256)
+          handler: handleRebalance
+      file: ./src/IchiQuickSwapMerklFarm.ts
+  - kind: ethereum
+    name: PriceReaderData
+    network: matic
+    source:
+      abi: PriceReaderABI
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - ALMRebalanceEntity
+      abis:
+        - name: PriceReaderABI
+          file: ./abis/PriceReaderABI.json
+      file: ./src/IchiQuickSwapMerklFarm.ts

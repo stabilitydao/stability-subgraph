@@ -1,9 +1,9 @@
 import { Address, Bytes } from "@graphprotocol/graph-ts"
-import { vaultManagerAddress } from './constants'
+import { vaultManagerAddress, ZeroBigInt } from './constants'
 import { VaultManagerABI  as VaultManagerContract } from "../generated/templates/VaultManagerData/VaultManagerABI"
-import { HardWork         as HardWorkEvent        } from "../generated/templates/StrategyData/StrategyBaseABI"
-import { StrategyBaseABI  as StrategyContract     } from "../generated/templates/StrategyData/StrategyBaseABI"
-import { VaultEntity, AssetHistoryEntity } from "../generated/schema"
+import { HardWork         as HardWorkEvent, 
+         StrategyBaseABI  as StrategyContract     } from "../generated/templates/StrategyData/StrategyBaseABI"
+import { VaultEntity, AssetHistoryEntity, VaultHistoryEntity } from "../generated/schema"
 
 
 export function handleHardWork(event: HardWorkEvent): void {
@@ -34,4 +34,15 @@ export function handleHardWork(event: HardWorkEvent): void {
       assetHistory.timestamp = event.block.timestamp
       assetHistory.save()
     } 
+    
+    let vaultHistoryEntity = new VaultHistoryEntity(
+      event.transaction.hash.concatI32(event.transaction.nonce.toI32())
+    )
+    vaultHistoryEntity.address = vaultAddress
+    vaultHistoryEntity.sharePrice = event.params.sharePrice
+    vaultHistoryEntity.TVL = event.params.tvl 
+    vaultHistoryEntity.timestamp = event.block.timestamp
+    vaultHistoryEntity.APR = event.params.apr
+    vaultHistoryEntity.APR_Compound = event.params.compoundApr
+    vaultHistoryEntity.save()
 }
