@@ -1,6 +1,6 @@
 import { Address, Bytes, BigInt } from "@graphprotocol/graph-ts"
-import { ZeroBigInt, platformAddress, vaultManagerAddress } from './constants'
-import { VaultTypeEntity, VaultEntity, StrategyEntity, StrategyConfigEntity, ALMRebalanceEntity } from "../generated/schema"
+import { ZeroBigInt, platformAddress, vaultManagerAddress, getBalanceAddress } from './constants'
+import { VaultTypeEntity, VaultEntity, StrategyEntity, StrategyConfigEntity, LastFeeAMLEntity, VaultAPR24HEntity} from "../generated/schema"
 import { VaultData, StrategyData, IchiQuickSwapMerklFarmData } from '../generated/templates'
 
 import { PlatformABI           as PlatformContract        } from "../generated/PlatformData/PlatformABI"
@@ -14,8 +14,7 @@ import { VaultConfigChanged    as VaultConfigChangedEvent,
 import { StrategyBaseABI       as StrategyContract        } from "../generated/templates/StrategyData/StrategyBaseABI"
 import { VaultManagerABI       as VaultManagerContract    } from "../generated/templates/VaultManagerData/VaultManagerABI"
 import { VaultAndStrategy      as VaultAndStrategyEvent   } from "../generated/templates/FactoryData/FactoryABI"
-
-let NFTtokenIdCounter = ZeroBigInt
+import { getBalanceABI as GetBalanceContract } from "../generated/templates/StrategyData/getBalanceABI"  
 
 export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
     const vault = new VaultEntity(event.params.vault);
@@ -29,11 +28,25 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
     const vaultContract = VaultContract.bind(event.params.vault); 
     const factoryContract = FactoryContract.bind(event.address);
 
+    const underlying = strategyContract.underlying()
     if(event.params.strategyId == "Ichi QuickSwap Merkl Farm"){
       IchiQuickSwapMerklFarmData.create(strategyContract.underlying());
-    } 
+      const lastFeeAMLEntity = new LastFeeAMLEntity(underlying);
+      lastFeeAMLEntity.lastFeeClaimTimestamp = event.block.timestamp
+      lastFeeAMLEntity.vault = event.params.vault
+      lastFeeAMLEntity.APRS24H = []
+      lastFeeAMLEntity.RebalanceTimestamps = []
+      lastFeeAMLEntity.save()
+    }
+
     VaultData.create(event.params.vault);
     StrategyData.create(event.params.strategy);
+    
+    const vaultAPR24HEntity = new VaultAPR24HEntity(event.params.vault)
+    vaultAPR24HEntity.APRS24H = []
+    vaultAPR24HEntity.timestamps = []
+    vaultAPR24HEntity.save()
+
     
     vault.lastHardWork        = ZeroBigInt
     vault.totalSupply         = ZeroBigInt
@@ -51,7 +64,7 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
     vault.upgradeAllowed      = vaultTypeEntity.upgradeAllowed
     vault.version             = vaultContract.VERSION()
     vault.vaultBuildingPrice  = vaultTypeEntity.vaultBuildingPrice
-    vault.underlying          = strategyContract.underlying()
+    vault.underlying          = underlying
     vault.strategySpecific    = strategyContract.getSpecificName().value0
     vault.assetsProportions   = strategyContract.getAssetsProportions()
     vault.strategyDescription = strategyContract.description()
@@ -62,6 +75,10 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
     vault.hardWorkOnDeposit   = true
     vault.created             = event.block.timestamp
     vault.NFTtokenID          = vaultManagerContract.totalSupply().minus(BigInt.fromI32(1))
+    if(event.block.number > BigInt.fromI32(53088320)){
+      const getBalanceContract    = GetBalanceContract.bind(Address.fromString(getBalanceAddress))
+      vault.gasReserve = getBalanceContract.getBalance(event.params.vault)
+    } 
     vault.save()
 
     //STRATEGY ENTITY
@@ -89,24 +106,6 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
     }
     stategyConfigEntity.version = strategyContract.VERSION()
     stategyConfigEntity.save()
-
-
-    //stategyEntity.tokenId = strategyContract.total
-
-   /*  
-    const platformContract = PlatformContract.bind(Address.fromString(platformAddress)); 
-    const platformData     = platformContract.getData();
-
-    const index = platformData.value6.indexOf(event.params.type_)
-    stategyEntity.strategyId = platformData
-
-
-    strategyId - VaultAndStrategy.stratgyId
-    tokenId - totalSupply - 1
-    shortName - getSpecificName()
-    color, bgColor (strategyExtra) - getData
-    version StrategyLogic.VERSION()
-    */
   }
 
 export function handleVaultConfigChanged(event: VaultConfigChangedEvent): void {

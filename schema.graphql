@@ -44,15 +44,9 @@ type VaultEntity @entity {
 
   hardWorkOnDeposit: Boolean!
   created: BigInt!
-  #Users
-  #gasReserve: BigInt!
+  VaultUsers: [VaultUserEntity!]
+  gasReserve: BigInt
   NFTtokenID: BigInt!
-}
-
-type UserHistoryEntity @entity {
-  id: Bytes! #address
-  Deposited: BigInt!
-  RewardsEarned: BigInt!
 }
 
 type VaultTypeEntity @entity {
@@ -94,7 +88,14 @@ type VaultHistoryEntity @entity(immutable: true) {
   TVL: BigInt
   APR: BigInt
   APR_Compound: BigInt
+  APR24H: BigDecimal
   timestamp: BigInt!
+}
+
+type VaultAPR24HEntity @entity {
+  id: Bytes! #address
+  APRS24H: [BigDecimal!]!
+  timestamps: [BigInt!]!
 }
 
 type ALMRebalanceEntity @entity(immutable: true) {
@@ -104,13 +105,31 @@ type ALMRebalanceEntity @entity(immutable: true) {
   timestamp: BigInt!
   totalAssets0: BigInt!
   totalAssets1: BigInt!
-  totalUSD: BigInt
+  totalUSD: BigInt!
   fee0: BigInt!
   fee1: BigInt!
-  feeUSD: BigInt
-  #test0: Bytes!
-  #test1: Bytes!
-  #price0: BigInt!
-  #price1: BigInt!
-  test666: String!
+  feeUSD: BigInt!
+  isRebalance: Boolean!
+  APRFromLastEvent: BigDecimal!
+  APR24H: BigDecimal
+}
+
+type LastFeeAMLEntity @entity {
+  id: Bytes! #address underlying
+  vault: Bytes! #address
+  lastFeeClaimTimestamp: BigInt!
+  APRS24H: [BigDecimal!]!
+  RebalanceTimestamps: [BigInt!]!
+}
+
+type UserHistoryEntity @entity(immutable: true) {
+  id: Bytes! #address
+  deposited: BigInt
+  rewardsEarned: BigInt
+}
+
+type VaultUserEntity @entity {
+  id: String! #Vault:User address
+  deposited: BigInt!
+  rewardsEarned: BigInt!
 }
