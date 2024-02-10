@@ -1,6 +1,6 @@
 import { Address, Bytes, BigInt } from "@graphprotocol/graph-ts"
 import { ZeroBigInt, platformAddress, vaultManagerAddress, getBalanceAddress } from './constants'
-import { VaultTypeEntity, VaultEntity, StrategyEntity, StrategyConfigEntity, LastFeeAMLEntity, VaultAPR24HEntity} from "../generated/schema"
+import { VaultTypeEntity, VaultEntity, StrategyEntity, StrategyConfigEntity, LastFeeAMLEntity, VaultAPRsEntity} from "../generated/schema"
 import { VaultData, StrategyData, IchiQuickSwapMerklFarmData } from '../generated/templates'
 
 import { PlatformABI           as PlatformContract        } from "../generated/PlatformData/PlatformABI"
@@ -32,27 +32,27 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
     if(event.params.strategyId == "Ichi QuickSwap Merkl Farm"){
       IchiQuickSwapMerklFarmData.create(strategyContract.underlying());
       const lastFeeAMLEntity = new LastFeeAMLEntity(underlying);
-      lastFeeAMLEntity.lastFeeClaimTimestamp = event.block.timestamp
       lastFeeAMLEntity.vault = event.params.vault
-      lastFeeAMLEntity.APRS24H = []
-      lastFeeAMLEntity.RebalanceTimestamps = []
+      //lastFeeAMLEntity.APRS = [ZeroBigInt]
+      lastFeeAMLEntity.APRS = []
+      lastFeeAMLEntity.timestamps = [event.block.timestamp]
       lastFeeAMLEntity.save()
     }
 
-    VaultData.create(event.params.vault);
-    StrategyData.create(event.params.strategy);
-    
-    const vaultAPR24HEntity = new VaultAPR24HEntity(event.params.vault)
-    vaultAPR24HEntity.APRS24H = []
+    const vaultAPR24HEntity = new VaultAPRsEntity(event.params.vault)
+    vaultAPR24HEntity.APRS = []
     vaultAPR24HEntity.timestamps = []
     vaultAPR24HEntity.save()
 
+    VaultData.create(event.params.vault);
+    StrategyData.create(event.params.strategy);
     
     vault.lastHardWork        = ZeroBigInt
     vault.totalSupply         = ZeroBigInt
     vault.apr                 = ZeroBigInt
     vault.tvl                 = ZeroBigInt
     vault.sharePrice          = ZeroBigInt
+    vault.vaultUsersList      = []
     vault.strategy            = event.params.strategy 
     vault.vaultType           = event.params.vaultType
     vault.strategyId          = event.params.strategyId

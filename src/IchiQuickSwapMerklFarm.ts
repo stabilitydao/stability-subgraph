@@ -29,42 +29,59 @@ export function handleRebalance(event: RebalanceEvent): void {
     const totalUSD = assetsPrices.value1[0].plus(assetsPrices.value1[1]) 
     const feeUSD = assetsPrices.value1[2].plus(assetsPrices.value1[3]) 
 
-    const lastEvent = LastFeeAMLEntity.load(event.address)
-    let APR = BigDecimal.fromString("0")
-    let averageAPR24H = BigIntToBigDecimal(ZeroBigInt)        
-    if(lastEvent){
-        const timeDiff = BigIntToBigDecimal((event.block.timestamp.minus(lastEvent.lastFeeClaimTimestamp)).div(BigInt.fromI32(60)))
-        const _feeUSD = BigIntToBigDecimal(feeUSD)
-        const _totalUSD = BigIntToBigDecimal(totalUSD)
-        const minutesInYear = BigIntToBigDecimal(BigInt.fromI32(525600))
-        const hundred = BigIntToBigDecimal(BigInt.fromI32(100))
-        APR = _feeUSD.div(_totalUSD).div(timeDiff).times(minutesInYear).times(hundred)
+    const lastEvent = LastFeeAMLEntity.load(event.address) as LastFeeAMLEntity
 
-        let APRS24HArray = lastEvent.APRS24H
-        let RebalanceTimestamps = lastEvent.RebalanceTimestamps
-        APRS24HArray.push(APR)
-        RebalanceTimestamps.push(event.block.timestamp)
+    let _APRArray = lastEvent.APRS
+    let _timestampsArray = lastEvent.timestamps
 
-        let allAPRsumm = BigIntToBigDecimal(ZeroBigInt)
+    const day = BigInt.fromI32(86400)
+    const year = BigInt.fromI64(525600)
+    const DENOMINATOR = BigInt.fromI64(100000)
+    const MinutesFromLastEvent = (event.block.timestamp.minus(_timestampsArray[_timestampsArray.length-1])).div(BigInt.fromI32(60))
+    let APR = feeUSD.times(DENOMINATOR).times(year).div(totalUSD).div(MinutesFromLastEvent)
 
-        const threshold = event.block.timestamp.minus(BigInt.fromI32(86400)) //1 day
-        
-        for (let i = 0; i < APRS24HArray.length; i++) {
-            if(threshold > RebalanceTimestamps[i]){
-                APRS24HArray.splice(i, 1);
-                RebalanceTimestamps.splice(i, 1);
-            } else {
-                allAPRsumm = allAPRsumm.plus(APRS24HArray[i])
-            }
-        }  
-        averageAPR24H = allAPRsumm.div(BigIntToBigDecimal(BigInt.fromI32(APRS24HArray.length)))
+    _timestampsArray.push(event.block.timestamp)
+    _APRArray.push(APR)
 
-        lastEvent.lastFeeClaimTimestamp = event.block.timestamp
-        lastEvent.APRS24H = APRS24HArray
-        lastEvent.RebalanceTimestamps = RebalanceTimestamps
-        lastEvent.save()
-    } 
+    _APRArray = _APRArray.reverse()
+    _timestampsArray= _timestampsArray.reverse()
+
+    let threshold = ZeroBigInt
+    let weights: Array<BigInt> = []
+    for (let i = 0; i < _APRArray.length; i++){
+        if(i+1 == _APRArray.length){break}
+        const diff = _timestampsArray[i].minus(_timestampsArray[i+1])
+        if(threshold.plus(diff) <= day){
+            threshold = threshold.plus(diff)
+            weights.push(diff.times(DENOMINATOR).div(day))
+        } else {
+            const result = (day.minus(threshold)).times(DENOMINATOR).div(day)
+            weights.push(result)
+            break
+        }
+    }
+
+    let APRS: Array<BigInt> = []
     
+    for (let i = 0; i < weights.length; i++){
+        APRS.push(_APRArray[i].times(weights[i]))
+    } 
+
+    let acc = APRS.reduce((accumulator:BigInt, currentValue:BigInt) => accumulator.plus(currentValue), ZeroBigInt);
+
+    let averageAPR24H = ZeroBigInt
+    if(APRS.length > 0){
+      averageAPR24H = acc.div(BigInt.fromI32(APRS.length))
+    }
+
+    
+    _APRArray = _APRArray.reverse()
+    _timestampsArray= _timestampsArray.reverse()
+
+    lastEvent.APRS = _APRArray
+    lastEvent.timestamps = _timestampsArray
+    lastEvent.save()
+        
     ichi.alm = event.address
     ichi.protocol = ichiName
     ichi.timestamp = event.block.timestamp
@@ -78,6 +95,8 @@ export function handleRebalance(event: RebalanceEvent): void {
     ichi.APRFromLastEvent = APR
     ichi.APR24H = averageAPR24H
     ichi.save()
+
+
 } 
 
 export function handleCollectFees(event: CollectFeesEvent): void {
@@ -99,43 +118,61 @@ export function handleCollectFees(event: CollectFeesEvent): void {
     const totalUSD = assetsPrices.value1[0].plus(assetsPrices.value1[1]) 
     const feeUSD = assetsPrices.value1[2].plus(assetsPrices.value1[3]) 
 
-    const lastEvent = LastFeeAMLEntity.load(event.address)
-    let APR = BigDecimal.fromString("0")
-    let averageAPR24H = BigIntToBigDecimal(ZeroBigInt) 
-    if(lastEvent){
-        const timeDiff = BigIntToBigDecimal((event.block.timestamp.minus(lastEvent.lastFeeClaimTimestamp)).div(BigInt.fromI32(60)))
-        const _feeUSD = BigIntToBigDecimal(feeUSD)
-        const _totalUSD = BigIntToBigDecimal(totalUSD)
-        const minutesInYear = BigIntToBigDecimal(BigInt.fromI32(525600))
-        const hundred = BigIntToBigDecimal(BigInt.fromI32(100))
-        APR = _feeUSD.div(_totalUSD).div(timeDiff).times(minutesInYear).times(hundred)
+    const lastEvent = LastFeeAMLEntity.load(event.address) as LastFeeAMLEntity
 
+    let _APRArray = lastEvent.APRS
+    let _timestampsArray = lastEvent.timestamps
 
-        let APRS24HArray = lastEvent.APRS24H
-        let RebalanceTimestamps = lastEvent.RebalanceTimestamps
-        APRS24HArray.push(APR)
-        RebalanceTimestamps.push(event.block.timestamp)
+    const day = BigInt.fromI32(86400)
+    const year = BigInt.fromI64(525600)
+    const DENOMINATOR = BigInt.fromI64(100000)
+    const MinutesFromLastEvent = (event.block.timestamp.minus(_timestampsArray[_timestampsArray.length-1])).div(BigInt.fromI32(60))
+    let APR = feeUSD.times(DENOMINATOR).times(year).div(totalUSD).div(MinutesFromLastEvent)
 
-        let allAPRsumm = BigIntToBigDecimal(ZeroBigInt)
+    _timestampsArray.push(event.block.timestamp)
+    _APRArray.push(APR)
 
-        const threshold = event.block.timestamp.minus(BigInt.fromI32(86400)) //1 day
-        
-        for (let i = 0; i < APRS24HArray.length; i++) {
-            if(threshold > RebalanceTimestamps[i]){
-                APRS24HArray.splice(i, 1);
-                RebalanceTimestamps.splice(i, 1);
-            } else {
-                allAPRsumm = allAPRsumm.plus(APRS24HArray[i])
-            }
-        }  
-        averageAPR24H = allAPRsumm.div(BigIntToBigDecimal(BigInt.fromI32(APRS24HArray.length)))
+    _APRArray = _APRArray.reverse()
+    _timestampsArray= _timestampsArray.reverse()
 
-        lastEvent.lastFeeClaimTimestamp = event.block.timestamp
-        lastEvent.APRS24H = APRS24HArray
-        lastEvent.RebalanceTimestamps = RebalanceTimestamps
-        lastEvent.save()
-    } 
+    let threshold = ZeroBigInt
+    let weights: Array<BigInt> = []
+    for (let i = 0; i < _APRArray.length; i++){
+        if(i+1 == _APRArray.length){break}
+        const diff = _timestampsArray[i].minus(_timestampsArray[i+1])
+        if(threshold.plus(diff) <= day){
+            threshold = threshold.plus(diff)
+            weights.push(diff.times(DENOMINATOR).div(day))
+        } else {
+            const result = (day.minus(threshold)).times(DENOMINATOR).div(day)
+            weights.push(result)
+            break
+        }
+    }
+
+    let APRS: Array<BigInt> = []
     
+    for (let i = 0; i < weights.length; i++){
+        APRS.push(_APRArray[i].times(weights[i]))
+    } 
+
+    let acc = APRS.reduce((accumulator:BigInt, currentValue:BigInt) => accumulator.plus(currentValue), ZeroBigInt);
+
+    let averageAPR24H = ZeroBigInt
+    if(APRS.length > 0){
+      averageAPR24H = acc.div(BigInt.fromI32(APRS.length))
+    }
+
+    
+    _APRArray = _APRArray.reverse()
+    _timestampsArray= _timestampsArray.reverse()
+
+    lastEvent.APRS = _APRArray
+    lastEvent.timestamps = _timestampsArray
+    lastEvent.save()
+    
+    ichi.alm = event.address
+    ichi.protocol = ichiName
     ichi.timestamp = event.block.timestamp
     ichi.totalAssets0 = tokensAmount.value0
     ichi.totalAssets1 = tokensAmount.value1
