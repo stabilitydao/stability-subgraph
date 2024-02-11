@@ -1,7 +1,7 @@
-import { Address, Bytes, BigInt, crypto, ByteArray } from "@graphprotocol/graph-ts"
-import { addressZero, platformAddress, vaultManagerAddress } from './constants'
-import { VaultTypeEntity, VaultEntity, StrategyEntity, StrategyConfigEntity } from "../generated/schema"
-import { VaultData, StrategyData } from '../generated/templates'
+import { Address, Bytes, BigInt } from "@graphprotocol/graph-ts"
+import { ZeroBigInt, platformAddress, vaultManagerAddress, getBalanceAddress, priceReaderAddress} from './constants'
+import { VaultTypeEntity, VaultEntity, StrategyEntity, StrategyConfigEntity, LastFeeAMLEntity, VaultAPRsEntity} from "../generated/schema"
+import { VaultData, StrategyData, IchiQuickSwapMerklFarmData } from '../generated/templates'
 
 import { PlatformABI           as PlatformContract        } from "../generated/PlatformData/PlatformABI"
 import { VaultABI              as VaultContract           } from "../generated/templates/VaultData/VaultABI"
@@ -14,6 +14,8 @@ import { VaultConfigChanged    as VaultConfigChangedEvent,
 import { StrategyBaseABI       as StrategyContract        } from "../generated/templates/StrategyData/StrategyBaseABI"
 import { VaultManagerABI       as VaultManagerContract    } from "../generated/templates/VaultManagerData/VaultManagerABI"
 import { VaultAndStrategy      as VaultAndStrategyEvent   } from "../generated/templates/FactoryData/FactoryABI"
+import { getBalanceABI as GetBalanceContract } from "../generated/templates/StrategyData/getBalanceABI" 
+import {PriceReaderABI as PriceReaderContract} from "../generated/templates/IchiQuickSwapMerklFarmData/PriceReaderABI" 
 
 export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
     const vault = new VaultEntity(event.params.vault);
@@ -26,15 +28,42 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
     const _vaultInfo = vaultManagerContract.vaultInfo(event.params.vault)
     const vaultContract = VaultContract.bind(event.params.vault); 
     const factoryContract = FactoryContract.bind(event.address);
+    const priceReader = PriceReaderContract.bind(Address.fromString(priceReaderAddress));
+
+    const underlying = strategyContract.underlying()
+    if(event.params.strategyId == "Ichi QuickSwap Merkl Farm"){
+      IchiQuickSwapMerklFarmData.create(strategyContract.underlying());
+      const lastFeeAMLEntity = new LastFeeAMLEntity(underlying);
+      lastFeeAMLEntity.vault = event.params.vault
+      //lastFeeAMLEntity.APRS = [ZeroBigInt]
+      lastFeeAMLEntity.APRS = []
+      lastFeeAMLEntity.timestamps = [event.block.timestamp]
+      lastFeeAMLEntity.save()
+    }
+
+    const vaultAPR24HEntity = new VaultAPRsEntity(event.params.vault)
+    vaultAPR24HEntity.APRS = []
+    vaultAPR24HEntity.timestamps = []
+    vaultAPR24HEntity.save()
 
     VaultData.create(event.params.vault);
     StrategyData.create(event.params.strategy);
+
+    //Calculate vault.AssetsPricesOnCreation//
+
+    const _amounts: Array<BigInt> = []
+    for(let i = 0; i < _vaultInfo.value1.length; i++){
+      _amounts.push(ZeroBigInt)
+    }
+
+    const assetsPrices = priceReader.getAssetsPrice(_vaultInfo.value1, _amounts)
     
-    vault.lastHardWork        = BigInt.fromI32(0)
-    vault.totalSupply         = BigInt.fromI32(0)
-    vault.apr                 = BigInt.fromI32(0)
-    vault.tvl                 = BigInt.fromI32(0)
-    vault.sharePrice          = BigInt.fromI32(0)
+    vault.lastHardWork        = ZeroBigInt
+    vault.totalSupply         = ZeroBigInt
+    vault.apr                 = ZeroBigInt
+    vault.tvl                 = ZeroBigInt
+    vault.sharePrice          = ZeroBigInt
+    vault.vaultUsersList      = []
     vault.strategy            = event.params.strategy 
     vault.vaultType           = event.params.vaultType
     vault.strategyId          = event.params.strategyId
@@ -46,7 +75,7 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
     vault.upgradeAllowed      = vaultTypeEntity.upgradeAllowed
     vault.version             = vaultContract.VERSION()
     vault.vaultBuildingPrice  = vaultTypeEntity.vaultBuildingPrice
-    vault.underlying          = strategyContract.underlying()
+    vault.underlying          = underlying
     vault.strategySpecific    = strategyContract.getSpecificName().value0
     vault.assetsProportions   = strategyContract.getAssetsProportions()
     vault.strategyDescription = strategyContract.description()
@@ -54,8 +83,15 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
     vault.assetsWithApr       = changetype<Bytes[]>(_vaultInfo.value3)
     vault.assetsAprs          = _vaultInfo.value4
     vault.vaultStatus         = factoryContract.vaultStatus(event.params.vault)
+    vault.hardWorkOnDeposit   = true
+    vault.created             = event.block.timestamp
+    vault.NFTtokenID          = vaultManagerContract.totalSupply().minus(BigInt.fromI32(1))
+    vault.AssetsPricesOnCreation = assetsPrices.value2
+    if(event.block.number > BigInt.fromI32(53088320)){
+      const getBalanceContract    = GetBalanceContract.bind(Address.fromString(getBalanceAddress))
+      vault.gasReserve = getBalanceContract.getBalance(event.params.vault)
+    } 
     vault.save()
-
 
     //STRATEGY ENTITY
     let strategies = factoryContract.strategies()
@@ -82,24 +118,6 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
     }
     stategyConfigEntity.version = strategyContract.VERSION()
     stategyConfigEntity.save()
-
-
-    //stategyEntity.tokenId = strategyContract.total
-
-   /*  
-    const platformContract = PlatformContract.bind(Address.fromString(platformAddress)); 
-    const platformData     = platformContract.getData();
-
-    const index = platformData.value6.indexOf(event.params.type_)
-    stategyEntity.strategyId = platformData
-
-
-    strategyId - VaultAndStrategy.stratgyId
-    tokenId - totalSupply - 1
-    shortName - getSpecificName()
-    color, bgColor (strategyExtra) - getData
-    version StrategyLogic.VERSION()
-    */
   }
 
 export function handleVaultConfigChanged(event: VaultConfigChangedEvent): void {
