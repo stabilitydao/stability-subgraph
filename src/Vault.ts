@@ -1,5 +1,5 @@
 import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts"
-import { VaultEntity, VaultHistoryEntity, UserHistoryEntity, UserVaultEntity, UserHistorySubEntity} from "../generated/schema"
+import { VaultEntity, VaultHistoryEntity, UserHistoryEntity, UserVaultEntity, UserAllDataEntity} from "../generated/schema"
 import { ZeroBigInt, addressZero, oneEther, priceReaderAddress } from './constants'
 
 import { 
@@ -17,7 +17,6 @@ import {WithdrawAssets as WithdrawAssetsEventOld} from "../generated/templates/d
 export function handleDepositAssets(event: DepositAssetsEvent): void {
     const vault = VaultEntity.load(event.address) as VaultEntity;
     const vaultContract = VaultContract.bind(event.address); 
-    const priceReader = PriceReaderContract.bind(Address.fromString(priceReaderAddress));
     const _VaultUserId = event.address.toHexString().concat(":").concat(event.params.account.toHexString()) 
 
     //===========Put new data to vaultEntity===========//
@@ -47,53 +46,47 @@ export function handleDepositAssets(event: DepositAssetsEvent): void {
     
     if (!userVault) {
         userVault = new UserVaultEntity(_VaultUserId)
-        userVault.deposited = ZeroBigInt
         userVault.rewardsEarned = ZeroBigInt
-        userVault.save()
     }
 
-    const assetsArray: Array<Address> = []
-    const amountsArray: Array<BigInt> = [] 
-
-    let depositedUSDT = ZeroBigInt;
-    if(event.params.assets.length == event.params.amounts.length){
-        for (let i = 0; i < event.params.assets.length; i++) {
-            assetsArray.push(event.params.assets[i])
-            amountsArray.push(event.params.amounts[i])
-        }
-    
-        const assetsPrices = priceReader.getAssetsPrice(
-            assetsArray, 
-            amountsArray
-        )
-        
-        depositedUSDT = assetsPrices.value0
-    } else {
-        depositedUSDT = vaultContract.balanceOf(event.params.account).times(vault.sharePrice)
-    }
-
-    userVault.deposited = userVault.deposited.plus(depositedUSDT)
+    userVault.deposited = vaultContract.balanceOf(event.params.account).times(vault.sharePrice)
     userVault.save()
 
-    //===========UserHistoryEntity && UserHistorySubEntity===========//
+    //===========UserHistoryEntity && userAllDataEntity===========//
 
     let userHistory = new UserHistoryEntity(
         event.transaction.hash.concatI32(event.logIndex.toI32())
       )
 
-    let userHistorySub = UserHistorySubEntity.load(event.params.account)
+    let userAllDataEntity = UserAllDataEntity.load(event.params.account)
 
-    if(!userHistorySub){
-        userHistorySub = new UserHistorySubEntity(event.params.account)
-        userHistorySub.deposited = ZeroBigInt
-        userHistorySub.rewardsEarned = ZeroBigInt
-        userHistorySub.save()
+    if(!userAllDataEntity){
+        userAllDataEntity = new UserAllDataEntity(event.params.account)
+        userAllDataEntity.deposited = ZeroBigInt
+        userAllDataEntity.rewardsEarned = ZeroBigInt
+        const userVaults = [changetype<Bytes>(event.address)]
+        userAllDataEntity.vaults = userVaults
+        userAllDataEntity.save()
     }
 
-    userHistorySub.deposited = userHistorySub.deposited.plus(depositedUSDT)
-    userHistorySub.save()
+    if(!userAllDataEntity.vaults.includes(event.address)){
+        const userVaults = userAllDataEntity.vaults
+        userVaults.push(changetype<Bytes>(event.address))
+        userAllDataEntity.vaults = userVaults
+    }
+
+    let summ: BigInt = ZeroBigInt; 
+    for (let i = 0; i < userAllDataEntity.vaults.length; i++){
+        const _VaultUserId = userAllDataEntity.vaults[i].toHexString().concat(":").concat(event.params.account.toHexString())
+        const userVault = UserVaultEntity.load(_VaultUserId) as UserVaultEntity
+        summ = summ.plus(userVault.deposited)
+    }
+
+    userAllDataEntity.deposited = summ
+    userAllDataEntity.save()
+
     userHistory.userAddress = event.params.account
-    userHistory.deposited = userHistorySub.deposited
+    userHistory.deposited = summ
     userHistory.timestamp = event.block.timestamp
     userHistory.save()
 }
@@ -101,7 +94,6 @@ export function handleDepositAssets(event: DepositAssetsEvent): void {
 export function handleWithdrawAssetsOld(event: WithdrawAssetsEventOld): void {
     const vault = VaultEntity.load(event.address) as VaultEntity;
     const vaultContract = VaultContract.bind(event.address); 
-    const priceReader = PriceReaderContract.bind(Address.fromString(priceReaderAddress));
 
     //===========Put new data to vaultEntity===========//
     const newTVL = vaultContract.tvl().value0
@@ -122,36 +114,29 @@ export function handleWithdrawAssetsOld(event: WithdrawAssetsEventOld): void {
     //===========UserVaultEntity===========//
     const _VaultUserId = event.address.toHexString().concat(":").concat(event.params.account.toHexString()) 
     let userVault = UserVaultEntity.load(_VaultUserId) as UserVaultEntity
-    let userHistorySub = UserHistorySubEntity.load(event.params.account) as UserHistorySubEntity
-
-    const _length = event.params.assets.length
-    const assetsArray: Array<Address> = []
-    const amountsArray: Array<BigInt> = [] 
-    for (let i = 0; i < _length; i++) {
-        assetsArray.push(event.params.assets[i])
-        amountsArray.push(event.params.amountsOut[i])
-    }
-
-    const assetsPrices = priceReader.getAssetsPrice(
-        assetsArray, 
-        amountsArray
-    )
-
-    let withdrawUSDT = assetsPrices.value0
-
-    userVault.deposited = userVault.deposited.minus(withdrawUSDT)
+    let userAllDataEntity = UserAllDataEntity.load(event.params.account) as UserAllDataEntity
+    
+    userVault.deposited = vaultContract.balanceOf(event.params.account).times(vault.sharePrice)
     userVault.save()
 
-    //===========UserHistoryEntity && UserHistorySubEntity===========//
+    //===========UserHistoryEntity && userAllDataEntity===========//
     let userHistory = new UserHistoryEntity(
         event.transaction.hash.concatI32(event.logIndex.toI32())
       )
 
 
-    userHistorySub.deposited = userHistorySub.deposited.minus(withdrawUSDT)
-    userHistorySub.save()
+    let summ: BigInt = ZeroBigInt; 
+    for (let i = 0; i < userAllDataEntity.vaults.length; i++){
+        const _VaultUserId = userAllDataEntity.vaults[i].toHexString().concat(":").concat(event.params.account.toHexString())
+        const userVault = UserVaultEntity.load(_VaultUserId) as UserVaultEntity
+        summ = summ.plus(userVault.deposited)
+    }
+
+    userAllDataEntity.deposited = summ
+    userAllDataEntity.save()
+
     userHistory.userAddress = event.params.account
-    userHistory.deposited = userHistorySub.deposited
+    userHistory.deposited = summ
     userHistory.timestamp = event.block.timestamp
     userHistory.save()
 }
@@ -159,7 +144,7 @@ export function handleWithdrawAssetsOld(event: WithdrawAssetsEventOld): void {
 export function handleWithdrawAssets(event: WithdrawAssetsEvent): void {
     const vault = VaultEntity.load(event.address) as VaultEntity;
     const vaultContract = VaultContract.bind(event.address); 
-    const priceReader = PriceReaderContract.bind(Address.fromString(priceReaderAddress));
+    let userAllDataEntity = UserAllDataEntity.load(event.params.owner) as UserAllDataEntity
 
     //===========Put new data to vaultEntity===========//
     const newTVL = vaultContract.tvl().value0
@@ -181,35 +166,27 @@ export function handleWithdrawAssets(event: WithdrawAssetsEvent): void {
     const _VaultUserId = event.address.toHexString().concat(":").concat(event.params.owner.toHexString()) 
     let userVault = UserVaultEntity.load(_VaultUserId) as UserVaultEntity
     
-    const _length = event.params.assets.length
-    const assetsArray: Array<Address> = []
-    const amountsArray: Array<BigInt> = [] 
-    for (let i = 0; i < _length; i++) {
-        assetsArray.push(event.params.assets[i])
-        amountsArray.push(event.params.amountsOut[i])
-    }
-
-    const assetsPrices = priceReader.getAssetsPrice(
-        assetsArray, 
-        amountsArray
-    )
-    
-    let withdrawUSDT = assetsPrices.value0
-
-    userVault.deposited = userVault.deposited.minus(withdrawUSDT)
+    userVault.deposited = vaultContract.balanceOf(event.params.owner).times(vault.sharePrice)
     userVault.save()
 
-    //===========UserHistoryEntity && UserHistorySubEntity===========//
+    //===========UserHistoryEntity && userAllDataEntity===========//
     let userHistory = new UserHistoryEntity(
         event.transaction.hash.concatI32(event.logIndex.toI32())
       )
       
-    let userHistorySub = UserHistorySubEntity.load(event.params.owner) as UserHistorySubEntity
-    userHistorySub.deposited = userHistorySub.deposited.minus(withdrawUSDT)
-    userHistorySub.save()
+    
+    let summ: BigInt = ZeroBigInt; 
+    for (let i = 0; i < userAllDataEntity.vaults.length; i++){
+        const _VaultUserId = userAllDataEntity.vaults[i].toHexString().concat(":").concat(event.params.owner.toHexString())
+        const userVault = UserVaultEntity.load(_VaultUserId) as UserVaultEntity
+        summ = summ.plus(userVault.deposited)
+    }
+
+    userAllDataEntity.deposited = summ
+    userAllDataEntity.save()
 
     userHistory.userAddress = event.params.owner
-    userHistory.deposited = userHistorySub.deposited
+    userHistory.deposited = summ
     userHistory.timestamp = event.block.timestamp
     userHistory.save()
 }

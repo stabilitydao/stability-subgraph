@@ -1,5 +1,5 @@
 import { Address, Bytes, BigInt } from "@graphprotocol/graph-ts"
-import { ZeroBigInt, platformAddress, vaultManagerAddress, getBalanceAddress } from './constants'
+import { ZeroBigInt, platformAddress, vaultManagerAddress, getBalanceAddress, priceReaderAddress} from './constants'
 import { VaultTypeEntity, VaultEntity, StrategyEntity, StrategyConfigEntity, LastFeeAMLEntity, VaultAPRsEntity} from "../generated/schema"
 import { VaultData, StrategyData, IchiQuickSwapMerklFarmData } from '../generated/templates'
 
@@ -14,7 +14,8 @@ import { VaultConfigChanged    as VaultConfigChangedEvent,
 import { StrategyBaseABI       as StrategyContract        } from "../generated/templates/StrategyData/StrategyBaseABI"
 import { VaultManagerABI       as VaultManagerContract    } from "../generated/templates/VaultManagerData/VaultManagerABI"
 import { VaultAndStrategy      as VaultAndStrategyEvent   } from "../generated/templates/FactoryData/FactoryABI"
-import { getBalanceABI as GetBalanceContract } from "../generated/templates/StrategyData/getBalanceABI"  
+import { getBalanceABI as GetBalanceContract } from "../generated/templates/StrategyData/getBalanceABI" 
+import {PriceReaderABI as PriceReaderContract} from "../generated/templates/IchiQuickSwapMerklFarmData/PriceReaderABI" 
 
 export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
     const vault = new VaultEntity(event.params.vault);
@@ -27,6 +28,7 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
     const _vaultInfo = vaultManagerContract.vaultInfo(event.params.vault)
     const vaultContract = VaultContract.bind(event.params.vault); 
     const factoryContract = FactoryContract.bind(event.address);
+    const priceReader = PriceReaderContract.bind(Address.fromString(priceReaderAddress));
 
     const underlying = strategyContract.underlying()
     if(event.params.strategyId == "Ichi QuickSwap Merkl Farm"){
@@ -46,6 +48,15 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
 
     VaultData.create(event.params.vault);
     StrategyData.create(event.params.strategy);
+
+    //Calculate vault.AssetsPricesOnCreation//
+
+    const _amounts: Array<BigInt> = []
+    for(let i = 0; i < _vaultInfo.value1.length; i++){
+      _amounts.push(ZeroBigInt)
+    }
+
+    const assetsPrices = priceReader.getAssetsPrice(_vaultInfo.value1, _amounts)
     
     vault.lastHardWork        = ZeroBigInt
     vault.totalSupply         = ZeroBigInt
@@ -75,6 +86,7 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
     vault.hardWorkOnDeposit   = true
     vault.created             = event.block.timestamp
     vault.NFTtokenID          = vaultManagerContract.totalSupply().minus(BigInt.fromI32(1))
+    vault.AssetsPricesOnCreation = assetsPrices.value2
     if(event.block.number > BigInt.fromI32(53088320)){
       const getBalanceContract    = GetBalanceContract.bind(Address.fromString(getBalanceAddress))
       vault.gasReserve = getBalanceContract.getBalance(event.params.vault)

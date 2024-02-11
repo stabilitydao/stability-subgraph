@@ -48,6 +48,7 @@ type VaultEntity @entity {
   vaultUsersList: [String!]!
   gasReserve: BigInt
   NFTtokenID: BigInt!
+  AssetsPricesOnCreation: [BigInt!]!
 }
 
 type VaultTypeEntity @entity {
@@ -127,11 +128,12 @@ type UserHistoryEntity @entity(immutable: true) {
   userAddress: Bytes! #address
   deposited: BigInt
   rewardsEarned: BigInt
-  timestamp: BigInt
+  timestamp: BigInt!
 }
 
-type UserHistorySubEntity @entity {
+type UserAllDataEntity @entity {
   id: Bytes! #address
+  vaults: [Bytes!]!
   deposited: BigInt!
   rewardsEarned: BigInt!
 }

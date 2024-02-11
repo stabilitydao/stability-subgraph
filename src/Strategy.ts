@@ -6,7 +6,7 @@ import { HardWork         as HardWorkEvent,
          StrategyBaseABI  as StrategyContract} from "../generated/templates/StrategyData/StrategyBaseABI"
 import { getBalanceABI as GetBalanceContract } from "../generated/templates/StrategyData/getBalanceABI"
 import { VaultABI as VaultContract} from "../generated/templates/VaultData/VaultABI"       
-import { VaultEntity, AssetHistoryEntity, VaultHistoryEntity, VaultAPRsEntity, UserVaultEntity, UserHistoryEntity, UserHistorySubEntity } from "../generated/schema"
+import { VaultEntity, AssetHistoryEntity, VaultHistoryEntity, VaultAPRsEntity, UserVaultEntity, UserHistoryEntity, UserAllDataEntity } from "../generated/schema"
 
 
 export function handleHardWork(event: HardWorkEvent): void {
@@ -117,7 +117,7 @@ export function handleHardWork(event: HardWorkEvent): void {
       } 
       const userAddress = Address.fromString(usersList[i].split(":")[1])
       const rewardByToken = EARNED.times(DENOMINATOR).div(totalSupply)
-      const reward = vaultContract.balanceOf(userAddress).times(rewardByToken)
+      const reward = vaultContract.balanceOf(userAddress).times(rewardByToken).div(DENOMINATOR)
       userVault.rewardsEarned = userVault.rewardsEarned.plus(reward)
       userVault.save()
 
@@ -125,13 +125,13 @@ export function handleHardWork(event: HardWorkEvent): void {
         event.transaction.hash.concatI32(event.logIndex.toI32())
       )
       
-      let userHistorySub = UserHistorySubEntity.load(userAddress) as UserHistorySubEntity
-      userHistorySub.rewardsEarned = userHistorySub.rewardsEarned.plus(reward)
-      userHistorySub.save()
+      let userAllDataEntity = UserAllDataEntity.load(userAddress) as UserAllDataEntity
+      userAllDataEntity.rewardsEarned = userAllDataEntity.rewardsEarned.plus(reward)
+      userAllDataEntity.save()
 
       userHistory.userAddress = userAddress
-      userHistory.rewardsEarned = userHistorySub.rewardsEarned
-      userHistory.deposited = userHistorySub.deposited
+      userHistory.rewardsEarned = userAllDataEntity.rewardsEarned
+      userHistory.deposited = userAllDataEntity.deposited
       userHistory.timestamp = event.block.timestamp
       userHistory.save()
       

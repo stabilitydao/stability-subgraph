@@ -64,6 +64,8 @@ templates:
           file: ./abis/IStrategyProxyABI.json 
         - name: getBalanceABI
           file: ./abis/getBalanceABI.json
+        - name: PriceReaderABI
+          file: ./abis/PriceReaderABI.json
       eventHandlers:
         - event: VaultAndStrategy(indexed address,string,string,address,address,string,string,address[],bytes32,uint256)
           handler: handleVaultAndStrategy
