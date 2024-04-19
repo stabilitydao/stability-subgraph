@@ -1,7 +1,7 @@
-import { Address, Bytes, BigInt } from "@graphprotocol/graph-ts"
-import { ZeroBigInt, platformAddress, vaultManagerAddress, getBalanceAddress, priceReaderAddress} from './constants'
-import { VaultTypeEntity, VaultEntity, StrategyEntity, StrategyConfigEntity, LastFeeAMLEntity, VaultAPRsEntity} from "../generated/schema"
-import { VaultData, StrategyData, IchiQuickSwapMerklFarmData } from '../generated/templates'
+import { Address, Bytes, BigInt, ethereum } from "@graphprotocol/graph-ts"
+import { ZeroBigInt, platformAddress, vaultManagerAddress, getBalanceAddress, priceReaderAddress, addressZero, defiedgeFactoryAddress} from './constants'
+import { VaultTypeEntity, VaultEntity, StrategyEntity, StrategyConfigEntity, LastFeeAMLEntity, VaultAPRsEntity, DefiEdgePoolsAndStrategiesEntity} from "../generated/schema"
+import { VaultData, StrategyData, IchiQuickSwapMerklFarmData, IchiRetroMerklFarmData, DefiEdgeQuickSwapMerklFarmData, DefiEdgeFactoryData } from '../generated/templates'
 
 import { PlatformABI           as PlatformContract        } from "../generated/PlatformData/PlatformABI"
 import { VaultABI              as VaultContract           } from "../generated/templates/VaultData/VaultABI"
@@ -11,7 +11,15 @@ import { VaultConfigChanged    as VaultConfigChangedEvent,
          StrategyProxyUpgraded as StrategyProxyUpgradedEvent,
          StrategyLogicConfigChanged as StrategyLogicConfigChangedEvent,
          FactoryABI            as FactoryContract         } from "../generated/templates/FactoryData/FactoryABI"
+import { ERC20UpgradeableABI} from "../generated/templates/FactoryData/ERC20UpgradeableABI"
+import { ERC20DQMFABI} from "../generated/templates/FactoryData/ERC20DQMFABI"
+import { HyperVisorABI} from "../generated/templates/FactoryData/HyperVisorABI"
+import { DefiEdgeManagerABI} from "../generated/templates/FactoryData/DefiEdgeManagerABI"
+import { DefiEdgeFactoryABI} from "../generated/templates/FactoryData/DefiEdgeFactoryABI"
+import { DefiEdgeStrategyABI} from "../generated/templates/FactoryData/DefiEdgeStrategyABI"
+import { DefiEdgeQuickSwapMerklFarmDataABI} from "../generated/templates/FactoryData/DefiEdgeQuickSwapMerklFarmDataABI"
 import { StrategyBaseABI       as StrategyContract        } from "../generated/templates/StrategyData/StrategyBaseABI"
+import { LPStrategyBaseABI     as _LPStrategyContract      } from "../generated/templates/StrategyData/LPStrategyBaseABI"
 import { VaultManagerABI       as VaultManagerContract    } from "../generated/templates/VaultManagerData/VaultManagerABI"
 import { VaultAndStrategy      as VaultAndStrategyEvent   } from "../generated/templates/FactoryData/FactoryABI"
 import { getBalanceABI as GetBalanceContract } from "../generated/templates/StrategyData/getBalanceABI" 
@@ -23,7 +31,7 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
 
     const vaultTypeEntity = VaultTypeEntity.load(event.params.vaultType) as VaultTypeEntity;
     const strategyContract = StrategyContract.bind(event.params.strategy); 
-
+    const LPStrategyContract = _LPStrategyContract.bind(event.params.strategy);
     const vaultManagerContract = VaultManagerContract.bind(Address.fromString(vaultManagerAddress)); 
     const _vaultInfo = vaultManagerContract.vaultInfo(event.params.vault)
     const vaultContract = VaultContract.bind(event.params.vault); 
@@ -35,8 +43,69 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
       IchiQuickSwapMerklFarmData.create(strategyContract.underlying());
       const lastFeeAMLEntity = new LastFeeAMLEntity(underlying);
       lastFeeAMLEntity.vault = event.params.vault
-      //lastFeeAMLEntity.APRS = [ZeroBigInt]
       lastFeeAMLEntity.APRS = []
+      lastFeeAMLEntity.timestamps = [event.block.timestamp]
+      lastFeeAMLEntity.save()
+    }
+
+    if(event.params.strategyId == "Ichi Retro Merkl Farm"){
+      IchiRetroMerklFarmData.create(strategyContract.underlying());
+      const lastFeeAMLEntity = new LastFeeAMLEntity(underlying);
+      lastFeeAMLEntity.vault = event.params.vault
+      lastFeeAMLEntity.APRS = []
+      lastFeeAMLEntity.timestamps = [event.block.timestamp]
+      lastFeeAMLEntity.save()
+    }
+
+
+    if(event.params.strategyId == "DefiEdge QuickSwap Merkl Farm"){
+
+      const strategyContract = DefiEdgeStrategyABI.bind(event.params.strategy);
+      DefiEdgeQuickSwapMerklFarmData.create(strategyContract.underlying());
+      DefiEdgeFactoryData.create(Address.fromString(defiedgeFactoryAddress));
+      const pool = strategyContract.pool()
+
+      let defiEdgePoolsAndStrategies = DefiEdgePoolsAndStrategiesEntity.load(Address.fromString(defiedgeFactoryAddress));
+      if(!defiEdgePoolsAndStrategies){
+        defiEdgePoolsAndStrategies = new DefiEdgePoolsAndStrategiesEntity(Address.fromString(defiedgeFactoryAddress))
+        defiEdgePoolsAndStrategies.pools = []
+        defiEdgePoolsAndStrategies.strategies = []
+      }
+
+      let _pools = defiEdgePoolsAndStrategies.pools
+      let _strategies = defiEdgePoolsAndStrategies.strategies
+
+      _pools.push(pool)
+      _strategies.push(event.params.strategy)
+
+      defiEdgePoolsAndStrategies.pools = _pools
+      defiEdgePoolsAndStrategies.strategies = _strategies
+
+      defiEdgePoolsAndStrategies.save()
+      
+
+      const lastFeeAMLEntity = new LastFeeAMLEntity(underlying);
+      const underlyingContract = DefiEdgeQuickSwapMerklFarmDataABI.bind(underlying)
+      const managerContract = DefiEdgeManagerABI.bind(underlyingContract.manager())
+      const factoryContract = DefiEdgeFactoryABI.bind(underlyingContract.factory())
+      const managerFee = managerContract.performanceFeeRate()
+      const factoryFee = factoryContract.getProtocolPerformanceFeeRate(pool, event.params.strategy)
+      lastFeeAMLEntity.fee = (managerFee.plus(factoryFee)).div(BigInt.fromI32(100 * 10 ** 4)) //fee/100e6*100
+      lastFeeAMLEntity.managerFee = managerFee
+      lastFeeAMLEntity.factoryFee = factoryFee
+      lastFeeAMLEntity.total_fee = managerFee.plus(factoryFee)
+      lastFeeAMLEntity.vault = event.params.vault
+      lastFeeAMLEntity.APRS = []
+      lastFeeAMLEntity.timestamps = [event.block.timestamp]
+      lastFeeAMLEntity.save()
+    } 
+
+    if((event.params.strategyId).includes("Gamma")){
+      const lastFeeAMLEntity = new LastFeeAMLEntity(underlying);
+      const underlyingContract = HyperVisorABI.bind(underlying);
+      lastFeeAMLEntity.vault = event.params.vault
+      lastFeeAMLEntity.APRS = []
+      lastFeeAMLEntity.fee = BigInt.fromI32(100).div(BigInt.fromI32(underlyingContract.fee()))
       lastFeeAMLEntity.timestamps = [event.block.timestamp]
       lastFeeAMLEntity.save()
     }
@@ -87,6 +156,7 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
     vault.created             = event.block.timestamp
     vault.NFTtokenID          = vaultManagerContract.totalSupply().minus(BigInt.fromI32(1))
     vault.AssetsPricesOnCreation = assetsPrices.value2
+    vault.lifeTimeAPR         = ZeroBigInt
     if(event.block.number > BigInt.fromI32(53088320)){
       const getBalanceContract    = GetBalanceContract.bind(Address.fromString(getBalanceAddress))
       vault.gasReserve = getBalanceContract.getBalance(event.params.vault)
@@ -107,6 +177,22 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
     //strategyEntity.shortName = 
     strategyEntity.color = color
     strategyEntity.colorBackground = colorBackground
+    if(strategyContract.supportsInterface(Bytes.fromHexString('0x07b0b3aa'))){
+      strategyEntity.pool = LPStrategyContract.pool()
+    }
+
+    //UnderlyingSymbol
+
+    if(underlying != Address.fromHexString(addressZero)){
+      if(event.params.strategyId == "DefiEdge QuickSwap Merkl Farm"){
+        const underlyingContract = ERC20DQMFABI.bind(underlying);
+        strategyEntity.underlyingSymbol = underlyingContract.symbol().toString()
+      } else {
+        const underlyingContract = ERC20UpgradeableABI.bind(underlying);
+        strategyEntity.underlyingSymbol =  underlyingContract.symbol()
+      }
+    }
+
     strategyEntity.save()
 
     //STRATEGY CONFIG ENTITY

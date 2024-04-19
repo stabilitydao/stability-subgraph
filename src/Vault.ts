@@ -32,14 +32,27 @@ export function handleDepositAssets(event: DepositAssetsEvent): void {
 
     //===========Create VaultHistoryEntity (immutable)===========//
     let vaultHistoryEntity = new VaultHistoryEntity(
-        event.transaction.hash.concatI32(event.logIndex.toI32())
-    )
+        event.transaction.hash.concatI32(event.transaction.nonce.toI32()).toHexString()
+        .concat(":")
+        .concat(event.address.toHexString()) 
+      )
     vaultHistoryEntity.address = event.address
     vaultHistoryEntity.sharePrice = vault.sharePrice
     vaultHistoryEntity.TVL = vault.tvl
     vaultHistoryEntity.timestamp = event.block.timestamp
     vaultHistoryEntity.save()
+
+    //===========vaultHistoryEntity(VaultEntity)===========//
+    let _vaultHistoryEntity = vault.vaultHistoryEntity
+    if(_vaultHistoryEntity){
+        _vaultHistoryEntity.push(vaultHistoryEntity.id)
+    } else {
+        _vaultHistoryEntity = []
+        _vaultHistoryEntity.push(vaultHistoryEntity.id)
+    }
     
+    vault.vaultHistoryEntity = _vaultHistoryEntity
+    vault.save()
     //===========UserVaultEntity===========//
     
     let userVault = UserVaultEntity.load(_VaultUserId)
@@ -103,14 +116,27 @@ export function handleWithdrawAssetsOld(event: WithdrawAssetsEventOld): void {
 
     //===========Create VaultHistoryEntity (immutable)===========//
     let vaultHistoryEntity = new VaultHistoryEntity(
-        event.transaction.hash.concatI32(event.logIndex.toI32())
-    )
+        event.transaction.hash.concatI32(event.transaction.nonce.toI32()).toHexString()
+        .concat(":")
+        .concat(event.address.toHexString()) 
+      )
     vaultHistoryEntity.address = event.address
     vaultHistoryEntity.sharePrice = vault.sharePrice
     vaultHistoryEntity.TVL = vault.tvl
     vaultHistoryEntity.timestamp = event.block.timestamp
     vaultHistoryEntity.save()
 
+    //===========vaultHistoryEntity(VaultEntity)===========//
+    let _vaultHistoryEntity = vault.vaultHistoryEntity
+    if(_vaultHistoryEntity){
+        _vaultHistoryEntity.push(vaultHistoryEntity.id)
+    } else {
+        _vaultHistoryEntity = []
+        _vaultHistoryEntity.push(vaultHistoryEntity.id)
+    }
+    
+    vault.vaultHistoryEntity = _vaultHistoryEntity
+    vault.save()
     //===========UserVaultEntity===========//
     const _VaultUserId = event.address.toHexString().concat(":").concat(event.params.account.toHexString()) 
     let userVault = UserVaultEntity.load(_VaultUserId) as UserVaultEntity
@@ -154,14 +180,28 @@ export function handleWithdrawAssets(event: WithdrawAssetsEvent): void {
 
     //===========Create VaultHistoryEntity (immutable)===========//
     let vaultHistoryEntity = new VaultHistoryEntity(
-        event.transaction.hash.concatI32(event.logIndex.toI32())
-    )
+        event.transaction.hash.concatI32(event.transaction.nonce.toI32()).toHexString()
+        .concat(":")
+        .concat(event.address.toHexString()) 
+      )
     vaultHistoryEntity.address = event.address
     vaultHistoryEntity.sharePrice = vault.sharePrice
     vaultHistoryEntity.TVL = vault.tvl
     vaultHistoryEntity.timestamp = event.block.timestamp
     vaultHistoryEntity.save()
 
+    //===========vaultHistoryEntity(VaultEntity)===========//
+    let _vaultHistoryEntity = vault.vaultHistoryEntity
+    if(_vaultHistoryEntity){
+        _vaultHistoryEntity.push(vaultHistoryEntity.id)
+    } else {
+        _vaultHistoryEntity = []
+        _vaultHistoryEntity.push(vaultHistoryEntity.id)
+    }
+    
+    vault.vaultHistoryEntity = _vaultHistoryEntity
+    vault.save()
+    
     //===========UserVaultEntity===========//
     const _VaultUserId = event.address.toHexString().concat(":").concat(event.params.owner.toHexString()) 
     let userVault = UserVaultEntity.load(_VaultUserId) as UserVaultEntity
