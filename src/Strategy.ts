@@ -6,7 +6,7 @@ import { HardWork         as HardWorkEvent,
          StrategyBaseABI  as StrategyContract} from "../generated/templates/StrategyData/StrategyBaseABI"
 import { getBalanceABI as GetBalanceContract } from "../generated/templates/StrategyData/getBalanceABI"
 import { VaultABI as VaultContract} from "../generated/templates/VaultData/VaultABI"       
-import { VaultEntity, AssetHistoryEntity, VaultHistoryEntity, VaultAPRsEntity, UserVaultEntity, UserHistoryEntity, UserAllDataEntity } from "../generated/schema"
+import { VaultEntity, AssetHistoryEntity, VaultHistoryEntity, VaultAPRsEntity, UserVaultEntity, UserHistoryEntity, UserAllDataEntity, LastFeeAMLEntity } from "../generated/schema"
 
 
 export function handleHardWork(event: HardWorkEvent): void {
@@ -44,8 +44,12 @@ export function handleHardWork(event: HardWorkEvent): void {
       assetHistory.save()
     } 
 
+    //const _VaultUserId = event.address.toHexString().concat(":").concat(event.params.account.toHexString()) 
+
     let vaultHistoryEntity = new VaultHistoryEntity(
-      event.transaction.hash.concatI32(event.transaction.nonce.toI32())
+      event.transaction.hash.concatI32(event.transaction.nonce.toI32()).toHexString()
+      .concat(":")
+      .concat(vaultAddress.toHexString()) 
     )
     vaultHistoryEntity.address = vaultAddress
     vaultHistoryEntity.sharePrice = event.params.sharePrice
@@ -53,7 +57,9 @@ export function handleHardWork(event: HardWorkEvent): void {
     vaultHistoryEntity.timestamp = event.block.timestamp
     vaultHistoryEntity.APR = event.params.apr
     vaultHistoryEntity.APR_Compound = event.params.compoundApr
-    
+
+    //===========24HAPR===========//
+
     const vaultHistoryAPRsEntity = VaultAPRsEntity.load(vaultAddress) as VaultAPRsEntity
     let _APRArray = vaultHistoryAPRsEntity.APRS
     let _timestampsArray = vaultHistoryAPRsEntity.timestamps
@@ -82,20 +88,64 @@ export function handleHardWork(event: HardWorkEvent): void {
     }
 
     let APRS: Array<BigInt> = []
-    let acc = ZeroBigInt
     
     for (let i = 0; i < weights.length; i++){
-      APRS.push(_APRArray[i].times(weights[i]))
+        APRS.push(_APRArray[i].times(weights[i]))
     } 
 
-    for(let i = 0; i < APRS.length; i++){
-      acc = acc.plus(APRS[i]) 
+    let averageAPR24H = APRS.reduce((accumulator:BigInt, currentValue:BigInt) => accumulator.plus(currentValue), ZeroBigInt);
+    averageAPR24H = averageAPR24H.div(DENOMINATOR)
+
+    //===========WeeklyAPR===========//
+
+    const week = BigInt.fromI32(604800)
+    threshold = ZeroBigInt
+    let weightsWeeklyAPR: Array<BigInt> = []
+    for (let i = 0; i < _APRArray.length; i++){
+      if(i+1 == _APRArray.length){break}
+      const diff = _timestampsArray[i].minus(_timestampsArray[i+1])
+      if(threshold.plus(diff) <= week){
+        threshold = threshold.plus(diff)
+        weightsWeeklyAPR.push(diff.times(DENOMINATOR).div(week))
+      } else {
+        const result = (week.minus(threshold)).times(DENOMINATOR).div(week)
+        weightsWeeklyAPR.push(result)
+        break
+      }
     }
 
-    let averageAPR24H = ZeroBigInt
-    if(APRS.length > 0){
-      averageAPR24H = acc.div(BigInt.fromI32(APRS.length))
+
+    let WeeklyAPRS: Array<BigInt> = []
+    
+    for (let i = 0; i < weightsWeeklyAPR.length; i++){
+      WeeklyAPRS.push(_APRArray[i].times(weightsWeeklyAPR[i]))
+    } 
+
+    let averageWeeklyAPR = WeeklyAPRS.reduce((accumulator:BigInt, currentValue:BigInt) => accumulator.plus(currentValue), ZeroBigInt);
+
+
+    vaultHistoryEntity.APRWeekly = averageWeeklyAPR.div(DENOMINATOR)
+
+    //===========LifeTimeAPR===========//
+
+    const lifeLength = _timestampsArray[0].minus(vault.created)
+
+    let weightsLifeTime: Array<BigInt> = []
+    for (let i = 0; i < _APRArray.length; i++){
+      if(i+1 == _APRArray.length){break}
+      const diff = _timestampsArray[i].minus(_timestampsArray[i+1])
+      weightsLifeTime.push(diff.times(DENOMINATOR).div(lifeLength))
     }
+
+    let LifeTimeAPRS: Array<BigInt> = []
+    
+    for (let i = 0; i < weightsLifeTime.length; i++){
+      LifeTimeAPRS.push(_APRArray[i].times(weightsLifeTime[i]))
+    } 
+
+    let LifeTimeAPR = LifeTimeAPRS.reduce((accumulator:BigInt, currentValue:BigInt) => accumulator.plus(currentValue), ZeroBigInt);
+
+    vault.lifeTimeAPR = LifeTimeAPR.div(DENOMINATOR)
     
     _APRArray = _APRArray.reverse()
     _timestampsArray= _timestampsArray.reverse()
@@ -105,6 +155,17 @@ export function handleHardWork(event: HardWorkEvent): void {
     vaultHistoryAPRsEntity.save()
     vaultHistoryEntity.APR24H = averageAPR24H
     vaultHistoryEntity.save()
+
+    //===========vaultHistoryEntity(VaultEntity)===========//
+    let _vaultHistoryEntity = vault.vaultHistoryEntity
+    if(_vaultHistoryEntity){
+      _vaultHistoryEntity.push(vaultHistoryEntity.id)
+    } else {
+      _vaultHistoryEntity = []
+      _vaultHistoryEntity.push(vaultHistoryEntity.id)
+    }
+    
+    vault.vaultHistoryEntity = _vaultHistoryEntity
 
     //===========Earn===========//
     const usersList = vault.vaultUsersList

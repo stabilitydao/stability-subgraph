@@ -41,7 +41,6 @@ type VaultEntity @entity {
   assetsAprs: [BigInt!]!
   lastHardWork: BigInt!
   vaultStatus: BigInt!
-
   hardWorkOnDeposit: Boolean!
   created: BigInt!
   userVault: [UserVaultEntity!]
@@ -49,6 +48,9 @@ type VaultEntity @entity {
   gasReserve: BigInt
   NFTtokenID: BigInt!
   AssetsPricesOnCreation: [BigInt!]!
+  lifeTimeAPR: BigInt!
+  vaultHistoryEntity: [VaultHistoryEntity!]
+  almRebalanceHistoryEntity: [ALMRebalanceHistoryEntity!]
 }
 
 type VaultTypeEntity @entity {
@@ -69,6 +71,8 @@ type StrategyEntity @entity {
   color: Bytes! 
   colorBackground: Bytes! 
   version: String! 
+  pool: Bytes #address
+  underlyingSymbol: String
 } 
 
 type StrategyConfigEntity @entity {
@@ -84,13 +88,14 @@ type AssetHistoryEntity @entity(immutable: true) {
 }
 
 type VaultHistoryEntity @entity(immutable: true) {
-  id: Bytes!
+  id: String!
   address: Bytes! #address
   sharePrice: BigInt!
   TVL: BigInt
   APR: BigInt
   APR_Compound: BigInt
   APR24H: BigInt
+  APRWeekly: BigInt
   timestamp: BigInt!
 }
 
@@ -100,6 +105,7 @@ type VaultAPRsEntity @entity {
   timestamps: [BigInt!]!
 }
 
+#change to ALMRebalanceHistoryEntity
 type ALMRebalanceEntity @entity(immutable: true) {
   id: Bytes! 
   alm: Bytes! #address
@@ -114,13 +120,42 @@ type ALMRebalanceEntity @entity(immutable: true) {
   isRebalance: Boolean!
   APRFromLastEvent: BigInt!
   APR24H: BigInt
+  APRWeekly: BigInt
+}
+
+type ALMRebalanceHistoryEntity @entity(immutable: true) {
+  id: Bytes! 
+  alm: Bytes! #address
+  protocol: String!
+  timestamp: BigInt!
+  totalAssets0: BigInt!
+  totalAssets1: BigInt!
+  totalUSD: BigInt!
+  fee0: BigInt!
+  fee1: BigInt!
+  feeUSD: BigInt!
+  isRebalance: Boolean!
+  APRFromLastEvent: BigInt!
+  APR24H: BigInt
+  APRWeekly: BigInt
 }
 
 type LastFeeAMLEntity @entity {
   id: Bytes! #address underlying
   vault: Bytes! #address
+  fee: BigInt
+  managerFee: BigInt
+  factoryFee: BigInt
+  total_fee: BigInt
   APRS: [BigInt!]!
   timestamps: [BigInt!]!
+}
+
+#Вспомогательная
+type DefiEdgePoolsAndStrategiesEntity @entity {
+  id: Bytes! #address factory
+  pools: [Bytes!]!
+  strategies: [Bytes!]!
 }
 
 type UserHistoryEntity @entity(immutable: true) {
@@ -140,6 +175,12 @@ type UserAllDataEntity @entity {
 
 type UserVaultEntity @entity {
   id: String! #Vault:User address
+  deposited: BigInt!
+  rewardsEarned: BigInt!
+}
+
+type DefiEdgeILEntity @entity(immutable: true) {
+  id: Bytes!
   deposited: BigInt!
   rewardsEarned: BigInt!
 }

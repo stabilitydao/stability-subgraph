@@ -56,6 +56,22 @@ templates:
           file: ./abis/VaultABI.json
         - name: StrategyBaseABI
           file: ./abis/StrategyBaseABI.json
+        - name: LPStrategyBaseABI
+          file: ./abis/LPStrategyBaseABI.json  
+        - name: ERC20UpgradeableABI
+          file: ./abis/ERC20UpgradeableABI.json
+        - name: ERC20DQMFABI
+          file: ./abis/ERC20DQMFABI.json
+        - name: HyperVisorABI
+          file: ./abis/HyperVisorABI.json
+        - name: DefiEdgeManagerABI
+          file: ./abis/DefiEdgeManagerABI.json
+        - name: DefiEdgeQuickSwapMerklFarmDataABI
+          file: ./abis/DefiEdgeQuickSwapMerklFarmDataABI.json
+        - name: DefiEdgeFactoryABI
+          file: ./abis/DefiEdgeFactoryABI.json
+        - name: DefiEdgeStrategyABI
+          file: ./abis/DefiEdgeStrategyABI.json
         - name: VaultManagerABI
           file: ./abis/VaultManagerABI.json
         - name: StrategyLogicABI
@@ -180,6 +196,8 @@ templates:
       abis:
         - name: StrategyBaseABI
           file: ./abis/StrategyBaseABI.json
+        - name: LPStrategyBaseABI
+          file: ./abis/LPStrategyBaseABI.json
         - name: StrategyLogicABI
           file: ./abis/StrategyLogicABI.json
         - name: VaultManagerABI
@@ -203,6 +221,8 @@ templates:
       language: wasm/assemblyscript
       entities:
         - ALMRebalanceEntity
+        - ALMRebalanceHistoryEntity
+        - VaultEntity
       abis:
         - name: IchiQuickSwapMerklFarmABI
           file: ./abis/IchiQuickSwapMerklFarmABI.json
@@ -214,3 +234,70 @@ templates:
         - event: CollectFees(indexed address,uint256,uint256)
           handler: handleCollectFees
       file: ./src/IchiQuickSwapMerklFarm.ts
+  - kind: ethereum
+    name: IchiRetroMerklFarmData
+    network: matic
+    source:
+      abi: IchiRetroMerklFarmDataABI
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - ALMRebalanceEntity
+        - ALMRebalanceHistoryEntity
+        - VaultEntity
+      abis:
+        - name: IchiRetroMerklFarmDataABI
+          file: ./abis/IchiRetroMerklFarmDataABI.json
+        - name: PriceReaderABI
+          file: ./abis/PriceReaderABI.json
+      eventHandlers:
+        - event: Rebalance(int24,uint256,uint256,uint256,uint256,uint256)
+          handler: handleRebalance
+      file: ./src/IchiRetroMerklFarm.ts
+  - kind: ethereum
+    name: DefiEdgeQuickSwapMerklFarmData
+    network: matic
+    source:
+      abi: DefiEdgeQuickSwapMerklFarmDataABI
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - LastFeeAMLEntity
+      abis:
+        - name: DefiEdgeQuickSwapMerklFarmDataABI
+          file: ./abis/DefiEdgeQuickSwapMerklFarmDataABI.json
+      eventHandlers:
+        - event: Rebalance((int24,int24,uint256,uint256)[])
+          handler: handleRebalance
+        #- event: PartialRebalance((uint256,bool,uint256,uint256)[])
+          #handler: handlePartialRebalance
+      file: ./src/DefiEdgeQuickSwapMerklFarm.ts
+  - kind: ethereum
+    name: DefiEdgeFactoryData
+    network: matic
+    source:
+      abi: DefiEdgeFactoryABI
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - LastFeeAMLEntity
+        - DefiEdgePoolsAndStrategies
+      abis:
+        - name: DefiEdgeFactoryABI
+          file: ./abis/DefiEdgeFactoryABI.json
+        - name: DefiEdgeStrategyABI
+          file: ./abis/DefiEdgeStrategyABI.json
+        - name: DefiEdgeQuickSwapMerklFarmDataABI
+          file: ./abis/DefiEdgeQuickSwapMerklFarmDataABI.json
+        - name: DefiEdgeManagerABI
+          file: ./abis/DefiEdgeManagerABI.json
+      eventHandlers:
+        - event: ChangeProtocolPerformanceFee(address,uint256)
+          handler: handleChangeProtocolPerformanceFee
+      file: ./src/DefiEdgeFactory.ts

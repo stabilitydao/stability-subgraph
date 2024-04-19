@@ -1,6 +1,5 @@
-import {ALMRebalanceEntity, LastFeeAMLEntity} from "../generated/schema"
+import {ALMRebalanceEntity, ALMRebalanceHistoryEntity, LastFeeAMLEntity, VaultEntity} from "../generated/schema"
 import {ichiName, priceReaderAddress, ZeroBigInt} from "./constants"
-import {BigIntToBigDecimal} from "./math"
 
 import {Rebalance                   as RebalanceEvent,
         CollectFees                 as CollectFeesEvent,
@@ -8,13 +7,14 @@ import {Rebalance                   as RebalanceEvent,
 } from "../generated/templates/IchiQuickSwapMerklFarmData/IchiQuickSwapMerklFarmABI"
 
 import {PriceReaderABI as PriceReaderContract} from "../generated/templates/IchiQuickSwapMerklFarmData/PriceReaderABI"
-import { Address, BigInt, BigDecimal } from "@graphprotocol/graph-ts"
+import { Address, BigInt } from "@graphprotocol/graph-ts"
 
 
 export function handleRebalance(event: RebalanceEvent): void {
-    let ichi = new ALMRebalanceEntity(
-        event.transaction.hash.concatI32(event.logIndex.toI32())
-    )
+    const _id = event.transaction.hash.concatI32(event.logIndex.toI32())
+    //DELETE NEXT STRING
+    let ichi = new ALMRebalanceEntity(_id)
+    let _ichi = new ALMRebalanceHistoryEntity(_id)
     const strategyIchi = IchiContract.bind(event.address);
     const priceReader = PriceReaderContract.bind(Address.fromString(priceReaderAddress));
     const token0 = strategyIchi.token0();
@@ -29,16 +29,17 @@ export function handleRebalance(event: RebalanceEvent): void {
     const totalUSD = assetsPrices.value1[0].plus(assetsPrices.value1[1]) 
     const feeUSD = assetsPrices.value1[2].plus(assetsPrices.value1[3]) 
 
+    //===========24HAPR===========//
+
     const lastEvent = LastFeeAMLEntity.load(event.address) as LastFeeAMLEntity
 
     let _APRArray = lastEvent.APRS
     let _timestampsArray = lastEvent.timestamps
 
     const day = BigInt.fromI32(86400)
-    const year = BigInt.fromI64(525600)
+    const year = BigInt.fromI64(31536000)
     const DENOMINATOR = BigInt.fromI64(100000)
-    const MinutesFromLastEvent = (event.block.timestamp.minus(_timestampsArray[_timestampsArray.length-1])).div(BigInt.fromI32(60))
-    let APR = feeUSD.times(DENOMINATOR).times(year).div(totalUSD).div(MinutesFromLastEvent)
+    let APR = feeUSD.times(DENOMINATOR).times(year).div(totalUSD)
 
     _timestampsArray.push(event.block.timestamp)
     _APRArray.push(APR)
@@ -67,21 +68,47 @@ export function handleRebalance(event: RebalanceEvent): void {
         APRS.push(_APRArray[i].times(weights[i]))
     } 
 
-    let acc = APRS.reduce((accumulator:BigInt, currentValue:BigInt) => accumulator.plus(currentValue), ZeroBigInt);
+    let averageAPR24H = APRS.reduce((accumulator:BigInt, currentValue:BigInt) => accumulator.plus(currentValue), ZeroBigInt);
+    averageAPR24H = averageAPR24H.div(DENOMINATOR)
 
-    let averageAPR24H = ZeroBigInt
-    if(APRS.length > 0){
-      averageAPR24H = acc.div(BigInt.fromI32(APRS.length))
+    //===========WeeklyAPR===========//
+
+    const week = BigInt.fromI32(604800)
+    threshold = ZeroBigInt
+    let weightsWeeklyAPR: Array<BigInt> = []
+    for (let i = 0; i < _APRArray.length; i++){
+      if(i+1 == _APRArray.length){break}
+      const diff = _timestampsArray[i].minus(_timestampsArray[i+1])
+      if(threshold.plus(diff) <= week){
+        threshold = threshold.plus(diff)
+        weightsWeeklyAPR.push(diff.times(DENOMINATOR).div(week))
+      } else {
+        const result = (week.minus(threshold)).times(DENOMINATOR).div(week)
+        weightsWeeklyAPR.push(result)
+        break
+      }
     }
 
+    let WeeklyAPRS: Array<BigInt> = []
     
+    for (let i = 0; i < weightsWeeklyAPR.length; i++){
+      WeeklyAPRS.push(_APRArray[i].times(weightsWeeklyAPR[i]))
+    } 
+
+    let averageWeeklyAPR = WeeklyAPRS.reduce((accumulator:BigInt, currentValue:BigInt) => accumulator.plus(currentValue), ZeroBigInt);
+
+    //DELETE NEXT STRING
+    ichi.APRWeekly = averageWeeklyAPR.div(DENOMINATOR)
+    _ichi.APRWeekly = averageWeeklyAPR.div(DENOMINATOR)
+
     _APRArray = _APRArray.reverse()
     _timestampsArray= _timestampsArray.reverse()
 
     lastEvent.APRS = _APRArray
     lastEvent.timestamps = _timestampsArray
     lastEvent.save()
-        
+
+    //DELETE NEXT BLOCK
     ichi.alm = event.address
     ichi.protocol = ichiName
     ichi.timestamp = event.block.timestamp
@@ -96,13 +123,41 @@ export function handleRebalance(event: RebalanceEvent): void {
     ichi.APR24H = averageAPR24H
     ichi.save()
 
+    _ichi.alm = event.address
+    _ichi.protocol = ichiName
+    _ichi.timestamp = event.block.timestamp
+    _ichi.totalAssets0 = event.params.totalAmount0
+    _ichi.totalAssets1 = event.params.totalAmount1
+    _ichi.fee0 = event.params.feeAmount0
+    _ichi.fee1 = event.params.feeAmount1 
+    _ichi.totalUSD = totalUSD
+    _ichi.feeUSD = feeUSD
+    _ichi.isRebalance = true
+    _ichi.APRFromLastEvent = APR
+    _ichi.APR24H = averageAPR24H
+    _ichi.save()
 
+    //===========almRebalanceEntity(VaultEntity)===========//
+    const vault = VaultEntity.load(lastEvent.vault) as VaultEntity; 
+    let _almRebalanceEntity = vault.almRebalanceHistoryEntity
+    
+    if(_almRebalanceEntity){
+      _almRebalanceEntity.push(_id)
+    } else {
+      _almRebalanceEntity = []
+      _almRebalanceEntity.push(_id)
+    }
+    
+    vault.almRebalanceHistoryEntity = _almRebalanceEntity
+    vault.save()
 } 
 
 export function handleCollectFees(event: CollectFeesEvent): void {
-    let ichi = new ALMRebalanceEntity(
-        event.transaction.hash.concatI32(event.logIndex.toI32())
-    )
+    const _id = event.transaction.hash.concatI32(event.logIndex.toI32())
+    //DELETE NEXT STRING
+    let ichi = new ALMRebalanceEntity(_id)
+    let _ichi = new ALMRebalanceHistoryEntity(_id)
+
     const strategyIchi = IchiContract.bind(event.address);
     const priceReader = PriceReaderContract.bind(Address.fromString(priceReaderAddress));
     const token0 = strategyIchi.token0();
@@ -118,16 +173,17 @@ export function handleCollectFees(event: CollectFeesEvent): void {
     const totalUSD = assetsPrices.value1[0].plus(assetsPrices.value1[1]) 
     const feeUSD = assetsPrices.value1[2].plus(assetsPrices.value1[3]) 
 
+    
+    //===========24HAPR===========//
     const lastEvent = LastFeeAMLEntity.load(event.address) as LastFeeAMLEntity
 
     let _APRArray = lastEvent.APRS
     let _timestampsArray = lastEvent.timestamps
 
     const day = BigInt.fromI32(86400)
-    const year = BigInt.fromI64(525600)
+    const year = BigInt.fromI64(31536000)
     const DENOMINATOR = BigInt.fromI64(100000)
-    const MinutesFromLastEvent = (event.block.timestamp.minus(_timestampsArray[_timestampsArray.length-1])).div(BigInt.fromI32(60))
-    let APR = feeUSD.times(DENOMINATOR).times(year).div(totalUSD).div(MinutesFromLastEvent)
+    let APR = feeUSD.times(DENOMINATOR).times(year).div(totalUSD)
 
     _timestampsArray.push(event.block.timestamp)
     _APRArray.push(APR)
@@ -156,13 +212,38 @@ export function handleCollectFees(event: CollectFeesEvent): void {
         APRS.push(_APRArray[i].times(weights[i]))
     } 
 
-    let acc = APRS.reduce((accumulator:BigInt, currentValue:BigInt) => accumulator.plus(currentValue), ZeroBigInt);
+    let averageAPR24H = APRS.reduce((accumulator:BigInt, currentValue:BigInt) => accumulator.plus(currentValue), ZeroBigInt);
+    averageAPR24H = averageAPR24H.div(DENOMINATOR)
 
-    let averageAPR24H = ZeroBigInt
-    if(APRS.length > 0){
-      averageAPR24H = acc.div(BigInt.fromI32(APRS.length))
+    //===========WeeklyAPR===========//
+
+    const week = BigInt.fromI32(604800)
+    threshold = ZeroBigInt
+    let weightsWeeklyAPR: Array<BigInt> = []
+    for (let i = 0; i < _APRArray.length; i++){
+      if(i+1 == _APRArray.length){break}
+      const diff = _timestampsArray[i].minus(_timestampsArray[i+1])
+      if(threshold.plus(diff) <= week){
+        threshold = threshold.plus(diff)
+        weightsWeeklyAPR.push(diff.times(DENOMINATOR).div(week))
+      } else {
+        const result = (week.minus(threshold)).times(DENOMINATOR).div(week)
+        weightsWeeklyAPR.push(result)
+        break
+      }
     }
 
+    let WeeklyAPRS: Array<BigInt> = []
+    
+    for (let i = 0; i < weightsWeeklyAPR.length; i++){
+      WeeklyAPRS.push(_APRArray[i].times(weightsWeeklyAPR[i]))
+    } 
+
+    let averageWeeklyAPR = WeeklyAPRS.reduce((accumulator:BigInt, currentValue:BigInt) => accumulator.plus(currentValue), ZeroBigInt);
+
+    //DELETE
+    ichi.APRWeekly = averageWeeklyAPR.div(DENOMINATOR)
+    _ichi.APRWeekly = averageWeeklyAPR.div(DENOMINATOR)
     
     _APRArray = _APRArray.reverse()
     _timestampsArray= _timestampsArray.reverse()
@@ -171,6 +252,7 @@ export function handleCollectFees(event: CollectFeesEvent): void {
     lastEvent.timestamps = _timestampsArray
     lastEvent.save()
     
+    //DELETE
     ichi.alm = event.address
     ichi.protocol = ichiName
     ichi.timestamp = event.block.timestamp
@@ -184,4 +266,32 @@ export function handleCollectFees(event: CollectFeesEvent): void {
     ichi.APRFromLastEvent = APR
     ichi.APR24H = averageAPR24H
     ichi.save()
+
+    _ichi.alm = event.address
+    _ichi.protocol = ichiName
+    _ichi.timestamp = event.block.timestamp
+    _ichi.totalAssets0 = tokensAmount.value0
+    _ichi.totalAssets1 = tokensAmount.value1
+    _ichi.fee0 = event.params.feeAmount0
+    _ichi.fee1 = event.params.feeAmount1
+    _ichi.totalUSD = totalUSD
+    _ichi.feeUSD = feeUSD
+    _ichi.isRebalance = false
+    _ichi.APRFromLastEvent = APR
+    _ichi.APR24H = averageAPR24H
+    _ichi.save()
+
+    //===========almRebalanceEntity(VaultEntity)===========//
+    const vault = VaultEntity.load(lastEvent.vault) as VaultEntity; 
+    let _almRebalanceEntity = vault.almRebalanceHistoryEntity
+    
+    if(_almRebalanceEntity){
+      _almRebalanceEntity.push(_id)
+    } else {
+      _almRebalanceEntity = []
+      _almRebalanceEntity.push(_id)
+    }
+    
+    vault.almRebalanceHistoryEntity = _almRebalanceEntity
+    vault.save()
 } 
