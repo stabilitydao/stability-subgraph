@@ -4,8 +4,8 @@ type PlatformEntity @entity {
   vaultManager: Bytes # address
   strategyLogic: Bytes # address
   buildingPermitToken: Bytes # address
-  buildingPayPerVaultToken: Bytes # address 
-  governance: Bytes # address 
+  buildingPayPerVaultToken: Bytes # address
+  governance: Bytes # address
   multisig: Bytes # address
   zap: Bytes # address
   bridge: Bytes # address
@@ -34,7 +34,7 @@ type VaultEntity @entity {
   version: String!
   name: String!
   symbol: String!
-  underlying: Bytes! 
+  underlying: Bytes!
   strategySpecific: String!
   strategyAssets: [Bytes!]! #addresses
   assetsWithApr: [Bytes!]! #addresses
@@ -60,25 +60,25 @@ type VaultTypeEntity @entity {
   color: Bytes!
   colorBackground: Bytes!
   vaultBuildingPrice: BigInt!
-  version: String! 
+  version: String!
 }
 
 type StrategyEntity @entity {
   id: Bytes! #address
   strategyId: String!
-  tokenId: BigInt! 
+  tokenId: BigInt!
   #shortName: String! #??
-  color: Bytes! 
-  colorBackground: Bytes! 
-  version: String! 
+  color: Bytes!
+  colorBackground: Bytes!
+  version: String!
   pool: Bytes #address
   underlyingSymbol: String
-} 
+}
 
 type StrategyConfigEntity @entity {
   id: String! #string ID
-  version: String! 
-} 
+  version: String!
+}
 
 type AssetHistoryEntity @entity(immutable: true) {
   id: Bytes!
@@ -97,6 +97,9 @@ type VaultHistoryEntity @entity(immutable: true) {
   APR24H: BigInt
   APRWeekly: BigInt
   timestamp: BigInt!
+  daysFromCreation: String
+  vsHoldAPR: String
+  tokensVsHoldAPR: [String!]
 }
 
 type VaultAPRsEntity @entity {
@@ -105,26 +108,8 @@ type VaultAPRsEntity @entity {
   timestamps: [BigInt!]!
 }
 
-#change to ALMRebalanceHistoryEntity
-type ALMRebalanceEntity @entity(immutable: true) {
-  id: Bytes! 
-  alm: Bytes! #address
-  protocol: String!
-  timestamp: BigInt!
-  totalAssets0: BigInt!
-  totalAssets1: BigInt!
-  totalUSD: BigInt!
-  fee0: BigInt!
-  fee1: BigInt!
-  feeUSD: BigInt!
-  isRebalance: Boolean!
-  APRFromLastEvent: BigInt!
-  APR24H: BigInt
-  APRWeekly: BigInt
-}
-
 type ALMRebalanceHistoryEntity @entity(immutable: true) {
-  id: Bytes! 
+  id: Bytes!
   alm: Bytes! #address
   protocol: String!
   timestamp: BigInt!
@@ -151,7 +136,7 @@ type LastFeeAMLEntity @entity {
   timestamps: [BigInt!]!
 }
 
-#Вспомогательная
+#Supporting
 type DefiEdgePoolsAndStrategiesEntity @entity {
   id: Bytes! #address factory
   pools: [Bytes!]!
