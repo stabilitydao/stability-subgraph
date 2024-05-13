@@ -1,7 +1,7 @@
 # stability-subgraph
 
 QUERIES (HTTP)
-https://api.thegraph.com/subgraphs/name/jodsmigel/stability
+https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/7WgM7jRzoW7yiJCE8DMEwCxtN3KLisYrVVShuAL2Kz4N
 
 WEB
-https://thegraph.com/hosted-service/subgraph/jodsmigel/stability
+https://thegraph.com/explorer/subgraphs/7WgM7jRzoW7yiJCE8DMEwCxtN3KLisYrVVShuAL2Kz4N?v=0&view=Playground&chain=arbitrum-one

@@ -2,7 +2,6 @@ specVersion: 0.0.5
 schema:
   file: ./schema.graphql
 dataSources:
-  
   - kind: ethereum
     name: PlatformData
     network: matic
@@ -30,7 +29,6 @@ dataSources:
           handler: handleAddDexAggregator
       file: ./src/Platform.ts
 
-
 templates:
   - kind: ethereum
     name: FactoryData
@@ -57,7 +55,7 @@ templates:
         - name: StrategyBaseABI
           file: ./abis/StrategyBaseABI.json
         - name: LPStrategyBaseABI
-          file: ./abis/LPStrategyBaseABI.json  
+          file: ./abis/LPStrategyBaseABI.json
         - name: ERC20UpgradeableABI
           file: ./abis/ERC20UpgradeableABI.json
         - name: ERC20DQMFABI
@@ -77,7 +75,7 @@ templates:
         - name: StrategyLogicABI
           file: ./abis/StrategyLogicABI.json
         - name: IStrategyProxyABI
-          file: ./abis/IStrategyProxyABI.json 
+          file: ./abis/IStrategyProxyABI.json
         - name: getBalanceABI
           file: ./abis/getBalanceABI.json
         - name: PriceReaderABI
@@ -131,6 +129,12 @@ templates:
           file: ./abis/VaultABI.json
         - name: PriceReaderABI
           file: ./abis/PriceReaderABI.json
+        - name: StrategyBaseABI
+          file: ./abis/StrategyBaseABI.json
+        - name: ERC20UpgradeableABI
+          file: ./abis/ERC20UpgradeableABI.json
+        - name: PlatformABI
+          file: ./abis/PlatformABI.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
@@ -143,7 +147,7 @@ templates:
         - event: VaultSymbol(string)
           handler: handleVaultSymbol
         - event: DoHardWorkOnDepositChanged(bool,bool)
-          handler: handleDoHardWorkOnDepositChanged 
+          handler: handleDoHardWorkOnDepositChanged
       file: ./src/Vault.ts
   - kind: ethereum
     name: deprecatedData
@@ -177,7 +181,7 @@ templates:
         - VaultEntity
       abis:
         - name: VaultManagerABI
-          file: ./abis/VaultManagerABI.json 
+          file: ./abis/VaultManagerABI.json
       file: ./src/VaultManager.ts
   - kind: ethereum
     name: StrategyData
@@ -203,7 +207,7 @@ templates:
         - name: VaultManagerABI
           file: ./abis/VaultManagerABI.json
         - name: getBalanceABI
-          file: ./abis/getBalanceABI.json 
+          file: ./abis/getBalanceABI.json
         - name: VaultABI
           file: ./abis/VaultABI.json
       eventHandlers:
@@ -220,7 +224,6 @@ templates:
       apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
-        - ALMRebalanceEntity
         - ALMRebalanceHistoryEntity
         - VaultEntity
       abis:
@@ -244,7 +247,6 @@ templates:
       apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
-        - ALMRebalanceEntity
         - ALMRebalanceHistoryEntity
         - VaultEntity
       abis:
@@ -274,7 +276,7 @@ templates:
         - event: Rebalance((int24,int24,uint256,uint256)[])
           handler: handleRebalance
         #- event: PartialRebalance((uint256,bool,uint256,uint256)[])
-          #handler: handlePartialRebalance
+        #handler: handlePartialRebalance
       file: ./src/DefiEdgeQuickSwapMerklFarm.ts
   - kind: ethereum
     name: DefiEdgeFactoryData
@@ -297,7 +299,10 @@ templates:
           file: ./abis/DefiEdgeQuickSwapMerklFarmDataABI.json
         - name: DefiEdgeManagerABI
           file: ./abis/DefiEdgeManagerABI.json
-      eventHandlers:
-        - event: ChangeProtocolPerformanceFee(address,uint256)
-          handler: handleChangeProtocolPerformanceFee
+      # eventHandlers:
+      # - event: ChangeProtocolPerformanceFee(address,uint256)
+      #   handler: handleChangeProtocolPerformanceFee
+      # eventHandlers:
+      # - event: ChangeProtocolPerformanceFee(address,uint256)
+      #   handler: handleChangeProtocolPerformanceFee
       file: ./src/DefiEdgeFactory.ts
