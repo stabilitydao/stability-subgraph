@@ -51,6 +51,7 @@ type VaultEntity @entity {
   lifeTimeAPR: BigInt!
   vaultHistoryEntity: [VaultHistoryEntity!]
   almRebalanceHistoryEntity: [ALMRebalanceHistoryEntity!]
+  initAssetsAmounts: [BigInt!]
 }
 
 type VaultTypeEntity @entity {

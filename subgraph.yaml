@@ -210,6 +210,10 @@ templates:
           file: ./abis/getBalanceABI.json
         - name: VaultABI
           file: ./abis/VaultABI.json
+        - name: PlatformABI
+          file: ./abis/PlatformABI.json
+        - name: ERC20UpgradeableABI
+          file: ./abis/ERC20UpgradeableABI.json
       eventHandlers:
         - event: HardWork(uint256,uint256,uint256,uint256,uint256,uint256,uint256[])
           handler: handleHardWork
