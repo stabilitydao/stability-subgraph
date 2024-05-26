@@ -52,6 +52,8 @@ type VaultEntity @entity {
   vaultHistoryEntity: [VaultHistoryEntity!]
   almRebalanceHistoryEntity: [ALMRebalanceHistoryEntity!]
   initAssetsAmounts: [BigInt!]
+  lastAssetsPrices: [String!]!
+  lastAssetsSum: String!
 }
 
 type VaultTypeEntity @entity {
@@ -102,7 +104,6 @@ type VaultHistoryEntity @entity(immutable: true) {
   vsHoldAPR: String
   tokensVsHoldAPR: [String!]
 }
-
 type VaultAPRsEntity @entity {
   id: Bytes! #address
   APRS: [BigInt!]!

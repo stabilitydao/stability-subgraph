@@ -117,8 +117,9 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
     defiEdgePoolsAndStrategies.save();
 
     const lastFeeAMLEntity = new LastFeeAMLEntity(underlying);
-    const underlyingContract =
-      DefiEdgeQuickSwapMerklFarmDataABI.bind(underlying);
+    const underlyingContract = DefiEdgeQuickSwapMerklFarmDataABI.bind(
+      underlying
+    );
     const managerContract = DefiEdgeManagerABI.bind(
       underlyingContract.manager()
     );
@@ -210,7 +211,8 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
     );
     vault.gasReserve = getBalanceContract.getBalance(event.params.vault);
   }
-
+  vault.lastAssetsSum = "0";
+  vault.lastAssetsPrices = [];
   vault.save();
 
   //STRATEGY ENTITY
