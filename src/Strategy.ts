@@ -221,15 +221,20 @@ export function handleHardWork(event: HardWorkEvent): void {
   const differenceInSeconds = currentTime.minus(lastTimestamp);
   const differenceInSecondsFromCreation = currentTime.minus(vault.created);
 
-  let daysFromLastHardWork: String = differenceInSeconds
-    .div(BigInt.fromI32(60 * 60 * 24))
-    .toString();
+  // let daysFromLastHardWork: String = differenceInSeconds
+  //   .div(BigInt.fromI32(60 * 60 * 24))
+  //   .toString();
+
+  let daysFromLastHardWork: BigDecimal = differenceInSeconds
+    .toBigDecimal()
+    .div(BigDecimal.fromString((60 * 60 * 24).toString()));
+
   let daysFromCreation: String = differenceInSecondsFromCreation
     .div(BigInt.fromI32(60 * 60 * 24))
     .toString();
 
-  if (daysFromLastHardWork == null || daysFromLastHardWork == "0") {
-    daysFromLastHardWork = "1";
+  if (daysFromLastHardWork.equals(ZeroBigDecimal)) {
+    daysFromLastHardWork = BigDecimal.fromString("1");
   }
 
   if (BigDecimal.fromString(daysFromCreation).lt(OneBigDecimal)) {
@@ -365,7 +370,7 @@ export function handleHardWork(event: HardWorkEvent): void {
       );
 
       let yearPercentDiff = percentDiff
-        .div(BigDecimal.fromString(daysFromLastHardWork))
+        .div(daysFromLastHardWork)
         .times(YearBigDecimal);
 
       if (yearPercentDiff.lt(BigDecimal.fromString("-100"))) {
@@ -388,7 +393,7 @@ export function handleHardWork(event: HardWorkEvent): void {
 
     vsHoldAPR = sharePricePercentDiff
       .minus(assetsSumPercentDiff)
-      .div(BigDecimal.fromString(daysFromLastHardWork))
+      .div(daysFromLastHardWork)
       .times(YearBigDecimal)
       .toString();
 
@@ -401,6 +406,8 @@ export function handleHardWork(event: HardWorkEvent): void {
   vaultHistoryEntity.daysFromCreation = daysFromCreation;
   vaultHistoryEntity.vsHoldAPR = vsHoldAPR;
   vaultHistoryEntity.tokensVsHoldAPR = tokensVsHoldAPR;
+  vaultHistoryEntity.daysFromLastHardWork = daysFromLastHardWork.toString();
+  vaultHistoryEntity.sharePricePercentDiff = sharePricePercentDiff.toString();
 
   //===========LifeTimeAPR===========//
 
