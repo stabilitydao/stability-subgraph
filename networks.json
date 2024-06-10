@@ -4,5 +4,11 @@
       "address": "0xb2a0737ef27b5Cc474D24c779af612159b1c3e60",
       "startBlock": 50613040
     }
+  },
+  "base": {
+    "Stability": {
+      "address": "0x7eAeE5CfF17F7765d89F4A46b484256929C62312",
+      "startBlock": 15495644
+    }
   }
 }

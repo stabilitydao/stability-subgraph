@@ -51,9 +51,9 @@ export function handleHardWork(event: HardWorkEvent): void {
   const vault = VaultEntity.load(vaultAddress) as VaultEntity;
   const vaultInfo = vaultManagerContract.vaultInfo(vaultAddress);
 
-  const lastSharePrice = BigDecimal.fromString(
-    vault.sharePrice.toString()
-  ).times(EtherBigDecimal);
+  const lastSharePrice = BigDecimal.fromString(vault.sharePrice.toString()).div(
+    EtherBigDecimal
+  );
 
   vault.apr = event.params.apr;
   vault.tvl = event.params.tvl;
@@ -221,10 +221,6 @@ export function handleHardWork(event: HardWorkEvent): void {
   const differenceInSeconds = currentTime.minus(lastTimestamp);
   const differenceInSecondsFromCreation = currentTime.minus(vault.created);
 
-  // let daysFromLastHardWork: String = differenceInSeconds
-  //   .div(BigInt.fromI32(60 * 60 * 24))
-  //   .toString();
-
   let daysFromLastHardWork: BigDecimal = differenceInSeconds
     .toBigDecimal()
     .div(BigDecimal.fromString((60 * 60 * 24).toString()));
@@ -243,7 +239,6 @@ export function handleHardWork(event: HardWorkEvent): void {
   //***** Initialize all other variables ******//
 
   const strategyAssets = assetsAmounts.value0;
-  // const strategyAssetsAmounts: BigInt[] = assetsAmounts.value1;
 
   let strategyAssetsAmounts: BigInt[] = [];
 
@@ -260,18 +255,30 @@ export function handleHardWork(event: HardWorkEvent): void {
   const holdTokenPresentProportion: String[] = [];
 
   const lastAssetsPrices: String[] = [];
+  const assetsPrices: String[] = [];
   let assetsSumPercentDiff: BigDecimal = ZeroBigDecimal;
 
-  const tokensVsHoldAPR: String[] = [];
-  let vsHoldAPR: String = "";
+  const periodTokensVsHoldAPR: String[] = [];
+  const lifetimeTokensVsHoldAPR: String[] = [];
+  let periodVsHoldAPR: String = "";
+
+  let priceDifference: BigDecimal = ZeroBigDecimal;
+
+  const sharePriceOnCreation: BigDecimal = OneBigDecimal;
+  let holdPercentDiff: BigDecimal = OneBigDecimal;
+  let lifetimeVsHoldAPR: BigDecimal = OneBigDecimal;
 
   const sharePrice = BigDecimal.fromString(
     event.params.sharePrice.toString()
-  ).times(EtherBigDecimal);
+  ).div(EtherBigDecimal);
 
   let sharePricePercentDiff = sharePrice
     .minus(lastSharePrice)
     .div(lastSharePrice)
+    .times(OneHundredBigDecimal);
+
+  let lifetimeSharePricePercentDiff = sharePrice
+    .minus(sharePriceOnCreation)
     .times(OneHundredBigDecimal);
 
   //***** Calculate vsHoldAPRs ******//
@@ -314,6 +321,7 @@ export function handleHardWork(event: HardWorkEvent): void {
 
       amountsInUSD.push(amountInUSD.toString());
     }
+
     // Amounts sum
     for (let i = 0; i < amountsInUSD.length; i++) {
       amountsSum = amountsSum.plus(BigDecimal.fromString(amountsInUSD[i]));
@@ -338,7 +346,12 @@ export function handleHardWork(event: HardWorkEvent): void {
         assetsPrice[strategyAssets[i].toString()].toString()
       ).div(EtherBigDecimal);
 
+      let assetPriceOnCreation: BigDecimal = BigDecimal.fromString(
+        vault.AssetsPricesOnCreation[i].toString()
+      ).div(EtherBigDecimal);
+
       lastAssetsPrices.push(assetPrice.toString());
+      assetsPrices.push(assetPrice.toString());
 
       let lastAssetPrice: BigDecimal = BigDecimal.fromString(
         vault.AssetsPricesOnCreation[i].toString()
@@ -356,32 +369,50 @@ export function handleHardWork(event: HardWorkEvent): void {
         OneHundredBigDecimal
       ).times(BigDecimal.fromString(proportions[i]));
 
-      const proportionPrice: BigDecimal = startProportion.div(lastAssetPrice);
+      const lifetimeProportionPrice: BigDecimal = startProportion.div(
+        assetPriceOnCreation
+      );
 
-      const presentAmount: BigDecimal = proportionPrice.times(assetPrice);
+      const lifetimePresentAmount: BigDecimal = lifetimeProportionPrice.times(
+        assetPrice
+      );
 
-      const priceDifference: BigDecimal = assetPrice
+      priceDifference = assetPrice
         .minus(lastAssetPrice)
         .div(lastAssetPrice)
+        .times(OneHundredBigDecimal);
+
+      const lifetimePriceDifference: BigDecimal = assetPrice
+        .minus(assetPriceOnCreation)
+        .div(assetPriceOnCreation)
         .times(OneHundredBigDecimal);
 
       const percentDiff: BigDecimal = sharePricePercentDiff.minus(
         priceDifference
       );
 
+      const lifetimePercentDiff: BigDecimal = lifetimeSharePricePercentDiff.minus(
+        lifetimePriceDifference
+      );
+
       let yearPercentDiff = percentDiff
         .div(daysFromLastHardWork)
         .times(YearBigDecimal);
 
-      if (yearPercentDiff.lt(BigDecimal.fromString("-100"))) {
-        yearPercentDiff = BigDecimal.fromString("-99.99");
+      let lifetimeYearPercentDiff = lifetimePercentDiff
+        .div(BigDecimal.fromString(daysFromCreation))
+        .times(YearBigDecimal);
+
+      if (lifetimeYearPercentDiff.lt(BigDecimal.fromString("-100"))) {
+        lifetimeYearPercentDiff = BigDecimal.fromString("-99.99");
       }
 
-      holdTokenPresentProportion.push(presentAmount.toString());
-      tokensVsHoldAPR.push(yearPercentDiff.toString());
+      holdTokenPresentProportion.push(lifetimePresentAmount.toString());
+      periodTokensVsHoldAPR.push(yearPercentDiff.toString());
+      lifetimeTokensVsHoldAPR.push(lifetimeYearPercentDiff.toString());
     }
 
-    // Get VS HOLD APR
+    // Get period VS HOLD APR
     if (vault.lastAssetsSum == "0" || vault.lastAssetsSum == null) {
       assetsSumPercentDiff = ZeroBigDecimal;
     } else {
@@ -391,24 +422,39 @@ export function handleHardWork(event: HardWorkEvent): void {
         .times(OneHundredBigDecimal);
     }
 
-    vsHoldAPR = sharePricePercentDiff
+    periodVsHoldAPR = sharePricePercentDiff
       .minus(assetsSumPercentDiff)
       .div(daysFromLastHardWork)
       .times(YearBigDecimal)
       .toString();
 
-    if (BigDecimal.fromString(vsHoldAPR).lt(BigDecimal.fromString("-100"))) {
-      vsHoldAPR = "-99.99";
+    // Get lifetime VS HOLD APR
+    const holdPrice = holdTokenPresentProportion.reduce(
+      (acc: BigDecimal, cur: String) => acc.plus(BigDecimal.fromString(cur)),
+      ZeroBigDecimal
+    );
+
+    const priceDifference: BigDecimal = holdPrice
+      .minus(sharePriceOnCreation)
+      .times(OneHundredBigDecimal);
+
+    holdPercentDiff = lifetimeSharePricePercentDiff.minus(priceDifference);
+
+    lifetimeVsHoldAPR = holdPercentDiff
+      .div(BigDecimal.fromString(daysFromCreation))
+      .times(YearBigDecimal);
+
+    if (lifetimeVsHoldAPR.lt(BigDecimal.fromString("-100"))) {
+      lifetimeVsHoldAPR = BigDecimal.fromString("-99.99");
     }
   }
 
   // ============================================ //
   vaultHistoryEntity.daysFromCreation = daysFromCreation;
-  vaultHistoryEntity.vsHoldAPR = vsHoldAPR;
-  vaultHistoryEntity.tokensVsHoldAPR = tokensVsHoldAPR;
-  vaultHistoryEntity.daysFromLastHardWork = daysFromLastHardWork.toString();
-  vaultHistoryEntity.sharePricePercentDiff = sharePricePercentDiff.toString();
-
+  vaultHistoryEntity.periodVsHoldAPR = periodVsHoldAPR;
+  vaultHistoryEntity.lifetimeVsHoldAPR = lifetimeVsHoldAPR.toString();
+  vaultHistoryEntity.periodTokensVsHoldAPR = periodTokensVsHoldAPR;
+  vaultHistoryEntity.lifetimeTokensVsHoldAPR = lifetimeTokensVsHoldAPR;
   //===========LifeTimeAPR===========//
 
   const lifeLength = _timestampsArray[0].minus(vault.created);
