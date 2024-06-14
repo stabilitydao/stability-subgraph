@@ -52,6 +52,8 @@ type VaultEntity @entity {
   vaultHistoryEntity: [VaultHistoryEntity!]
   almRebalanceHistoryEntity: [ALMRebalanceHistoryEntity!]
   initAssetsAmounts: [BigInt!]
+  lastAssetsPrices: [String!]!
+  lastAssetsSum: String!
 }
 
 type VaultTypeEntity @entity {
@@ -99,8 +101,10 @@ type VaultHistoryEntity @entity(immutable: true) {
   APRWeekly: BigInt
   timestamp: BigInt!
   daysFromCreation: String
-  vsHoldAPR: String
-  tokensVsHoldAPR: [String!]
+  periodVsHoldAPR: String
+  periodTokensVsHoldAPR: [String!]
+  lifetimeVsHoldAPR: String
+  lifetimeTokensVsHoldAPR: [String!]
 }
 
 type VaultAPRsEntity @entity {
