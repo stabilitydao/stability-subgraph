@@ -216,11 +216,16 @@ export function handleWithdrawAssetsOld(event: WithdrawAssetsEventOld): void {
 }
 
 export function handleWithdrawAssets(event: WithdrawAssetsEvent): void {
-  const vault = VaultEntity.load(event.address) as VaultEntity;
+  const vault = VaultEntity.load(event.address);
+  if (!vault) {
+    return;
+  }
+
   const vaultContract = VaultContract.bind(event.address);
-  let userAllDataEntity = UserAllDataEntity.load(
-    event.params.owner
-  ) as UserAllDataEntity;
+  const userAllDataEntity = UserAllDataEntity.load(event.params.owner);
+  if (!userAllDataEntity) {
+    return;
+  }
 
   //===========Put new data to vaultEntity===========//
   const newTVL = vaultContract.tvl().value0;
@@ -259,7 +264,10 @@ export function handleWithdrawAssets(event: WithdrawAssetsEvent): void {
     .toHexString()
     .concat(":")
     .concat(event.params.owner.toHexString());
-  let userVault = UserVaultEntity.load(_VaultUserId) as UserVaultEntity;
+  let userVault = UserVaultEntity.load(_VaultUserId);
+  if (!userVault) {
+    return;
+  }
 
   userVault.deposited = vaultContract
     .balanceOf(event.params.owner)
@@ -277,8 +285,10 @@ export function handleWithdrawAssets(event: WithdrawAssetsEvent): void {
       .toHexString()
       .concat(":")
       .concat(event.params.owner.toHexString());
-    const userVault = UserVaultEntity.load(_VaultUserId) as UserVaultEntity;
-    summ = summ.plus(userVault.deposited);
+    const userVault = UserVaultEntity.load(_VaultUserId);
+    if (userVault) {
+      summ = summ.plus(userVault.deposited);
+    }
   }
 
   userAllDataEntity.deposited = summ;
