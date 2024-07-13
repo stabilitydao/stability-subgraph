@@ -266,26 +266,45 @@ export function handleVaultConfigChanged(event: VaultConfigChangedEvent): void {
   const platformContract = PlatformContract.bind(
     Address.fromString(platformAddress)
   );
-  const platformData = platformContract.getData();
+  const tryPlatformData = platformContract.try_getData();
 
-  const colorBytes = platformData.value4;
-  const vaultTypes = platformData.value3;
+  if (!tryPlatformData.reverted) {
+    const platformData = tryPlatformData.value;
 
-  const index = vaultTypes.indexOf(event.params.type_);
-  const _colorBytes = colorBytes[index];
-  const color = changetype<Bytes>(_colorBytes.slice(0, 3));
-  const colorBackground = changetype<Bytes>(_colorBytes.slice(3, 6));
+    const colorBytes = platformData.value4;
+    const vaultTypes = platformData.value3;
 
-  const vaultContract = VaultContract.bind(event.params.implementation);
+    const index = vaultTypes.indexOf(event.params.type_);
+    const _colorBytes = colorBytes[index];
+    const color = changetype<Bytes>(_colorBytes.slice(0, 3));
+    const colorBackground = changetype<Bytes>(_colorBytes.slice(3, 6));
 
-  vaultTypeEntity.version = vaultContract.VERSION();
-  vaultTypeEntity.color = color;
-  vaultTypeEntity.colorBackground = colorBackground;
-  vaultTypeEntity.deployAllowed = event.params.deployAllowed;
-  vaultTypeEntity.upgradeAllowed = event.params.upgradeAllowed;
-  vaultTypeEntity.vaultBuildingPrice = platformData.value5[index];
+    const vaultContract = VaultContract.bind(event.params.implementation);
+    const tryVersion = vaultContract.try_VERSION();
 
-  vaultTypeEntity.save();
+    if (!tryVersion.reverted) {
+      vaultTypeEntity.version = tryVersion.value;
+    } else {
+      vaultTypeEntity.version = "unknown";
+    }
+
+    vaultTypeEntity.color = color;
+    vaultTypeEntity.colorBackground = colorBackground;
+    vaultTypeEntity.deployAllowed = event.params.deployAllowed;
+    vaultTypeEntity.upgradeAllowed = event.params.upgradeAllowed;
+    vaultTypeEntity.vaultBuildingPrice = platformData.value5[index];
+
+    vaultTypeEntity.save();
+  } else {
+    vaultTypeEntity.version = "unknown";
+    vaultTypeEntity.color = Bytes.fromHexString("0x000000");
+    vaultTypeEntity.colorBackground = Bytes.fromHexString("0xFFFFFF");
+    vaultTypeEntity.deployAllowed = false;
+    vaultTypeEntity.upgradeAllowed = false;
+    vaultTypeEntity.vaultBuildingPrice = BigInt.fromI32(0);
+
+    vaultTypeEntity.save();
+  }
 }
 
 export function handleVaultStatus(event: VaultStatusEvent): void {

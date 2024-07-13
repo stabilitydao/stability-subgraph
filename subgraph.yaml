@@ -10,11 +10,11 @@ schema:
 dataSources:
   - kind: ethereum
     name: PlatformData
-    network: base
+    network: matic
     source:
-      address: "0x7eAeE5CfF17F7765d89F4A46b484256929C62312"
+      address: "0xb2a0737ef27b5Cc474D24c779af612159b1c3e60"
       abi: PlatformABI
-      startBlock: 15495644
+      startBlock: 50613040
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -38,7 +38,7 @@ dataSources:
 templates:
   - kind: ethereum
     name: FactoryData
-    network: base
+    network: matic
     source:
       abi: FactoryABI
     mapping:
@@ -102,7 +102,7 @@ templates:
       file: ./src/Factory.ts
   - kind: ethereum
     name: SwapperData
-    network: base
+    network: matic
     source:
       abi: SwapperABI
     mapping:
@@ -120,7 +120,7 @@ templates:
       file: ./src/Swapper.ts
   - kind: ethereum
     name: VaultData
-    network: base
+    network: matic
     source:
       abi: VaultABI
     mapping:
@@ -157,7 +157,7 @@ templates:
       file: ./src/Vault.ts
   - kind: ethereum
     name: deprecatedData
-    network: base
+    network: matic
     source:
       abi: deprecatedABI
     mapping:
@@ -176,7 +176,7 @@ templates:
       file: ./src/Vault.ts
   - kind: ethereum
     name: VaultManagerData
-    network: base
+    network: matic
     source:
       abi: VaultManagerABI
     mapping:
@@ -191,7 +191,7 @@ templates:
       file: ./src/VaultManager.ts
   - kind: ethereum
     name: StrategyData
-    network: base
+    network: matic
     source:
       abi: StrategyBaseABI
     mapping:
@@ -226,7 +226,7 @@ templates:
       file: ./src/Strategy.ts
   - kind: ethereum
     name: IchiQuickSwapMerklFarmData
-    network: base
+    network: matic
     source:
       abi: IchiQuickSwapMerklFarmABI
     mapping:
@@ -249,7 +249,7 @@ templates:
       file: ./src/IchiQuickSwapMerklFarm.ts
   - kind: ethereum
     name: IchiRetroMerklFarmData
-    network: base
+    network: matic
     source:
       abi: IchiRetroMerklFarmDataABI
     mapping:
@@ -270,7 +270,7 @@ templates:
       file: ./src/IchiRetroMerklFarm.ts
   - kind: ethereum
     name: DefiEdgeQuickSwapMerklFarmData
-    network: base
+    network: matic
     source:
       abi: DefiEdgeQuickSwapMerklFarmDataABI
     mapping:
@@ -290,7 +290,7 @@ templates:
       file: ./src/DefiEdgeQuickSwapMerklFarm.ts
   - kind: ethereum
     name: DefiEdgeFactoryData
-    network: base
+    network: matic
     source:
       abi: DefiEdgeFactoryABI
     mapping:

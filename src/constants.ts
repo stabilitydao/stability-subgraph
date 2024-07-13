@@ -8,7 +8,7 @@ import {
   getPriceReaderAddress,
 } from "./functions";
 
-const networkToDeploy = "base"; // matic || base
+const networkToDeploy = "matic"; // matic || base
 
 const addressZero = "0x0000000000000000000000000000000000000000";
 const platformAddress = getPlatformAddress(networkToDeploy);
