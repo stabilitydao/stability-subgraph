@@ -319,10 +319,11 @@ export function handleTransfer(event: TransferEvent): void {
 
   const totalSupply = vault.totalSupply;
 
-  if (
-    event.params.from != Address.fromString(addressZero) &&
-    event.params.to != Address.fromString(addressZero)
-  ) {
+  if (event.params.from == Address.fromString(addressZero)) {
+    vault.totalSupply = totalSupply.plus(event.params.value);
+  } else if (event.params.to == Address.fromString(addressZero)) {
+    vault.totalSupply = totalSupply.minus(event.params.value);
+  } else {
     const fromUserVault = UserVaultEntity.load(_VaultFromUserId);
     const toUserVault = UserVaultEntity.load(_VaultToUserId);
 
@@ -341,14 +342,6 @@ export function handleTransfer(event: TransferEvent): void {
   if (!usersList.includes(_VaultToUserId)) {
     usersList.push(_VaultToUserId);
     vault.vaultUsersList = usersList;
-  }
-
-  if (event.params.from == Address.fromString(addressZero)) {
-    vault.totalSupply = totalSupply.plus(event.params.value);
-  }
-
-  if (event.params.to == Address.fromString(addressZero)) {
-    vault.totalSupply = totalSupply.minus(event.params.value);
   }
 
   vault.save();
