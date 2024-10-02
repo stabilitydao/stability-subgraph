@@ -302,7 +302,46 @@ export function handleWithdrawAssets(event: WithdrawAssetsEvent): void {
 
 export function handleTransfer(event: TransferEvent): void {
   const vault = VaultEntity.load(event.address) as VaultEntity;
+
+  const usersList = vault.vaultUsersList;
+
+  const vaultContract = VaultContract.bind(event.address);
+
+  const _VaultToUserId = event.address
+    .toHexString()
+    .concat(":")
+    .concat(event.params.to.toHexString());
+
+  const _VaultFromUserId = event.address
+    .toHexString()
+    .concat(":")
+    .concat(event.params.from.toHexString());
+
   const totalSupply = vault.totalSupply;
+
+  if (
+    event.params.from != Address.fromString(addressZero) &&
+    event.params.to != Address.fromString(addressZero)
+  ) {
+    const fromUserVault = UserVaultEntity.load(_VaultFromUserId);
+    const toUserVault = UserVaultEntity.load(_VaultToUserId);
+
+    toUserVault.deposited = vaultContract
+      .balanceOf(event.params.to)
+      .times(vault.sharePrice);
+
+    fromUserVault.deposited = vaultContract
+      .balanceOf(event.params.from)
+      .times(vault.sharePrice);
+
+    toUserVault?.save();
+    fromUserVault?.save();
+  }
+
+  if (!usersList.includes(_VaultToUserId)) {
+    usersList.push(_VaultToUserId);
+    vault.vaultUsersList = usersList;
+  }
 
   if (event.params.from == Address.fromString(addressZero)) {
     vault.totalSupply = totalSupply.plus(event.params.value);
@@ -311,6 +350,7 @@ export function handleTransfer(event: TransferEvent): void {
   if (event.params.to == Address.fromString(addressZero)) {
     vault.totalSupply = totalSupply.minus(event.params.value);
   }
+
   vault.save();
 }
 
