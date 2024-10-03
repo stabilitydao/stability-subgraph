@@ -89,6 +89,7 @@ export function handleDepositAssets(event: DepositAssetsEvent): void {
 
   if (!userVault) {
     userVault = new UserVaultEntity(_VaultUserId);
+    userVault.deposited = ZeroBigInt;
     userVault.rewardsEarned = ZeroBigInt;
   }
 
@@ -106,12 +107,12 @@ export function handleDepositAssets(event: DepositAssetsEvent): void {
   let userAllDataEntity = UserAllDataEntity.load(event.params.account);
 
   if (!userAllDataEntity) {
-    userAllDataEntity = new UserAllDataEntity(event.params.account);
-    userAllDataEntity.deposited = ZeroBigInt;
-    userAllDataEntity.rewardsEarned = ZeroBigInt;
     const userVaults = [changetype<Bytes>(event.address)];
+
+    userAllDataEntity = new UserAllDataEntity(event.params.account);
+    userAllDataEntity.rewardsEarned = ZeroBigInt;
     userAllDataEntity.vaults = userVaults;
-    userAllDataEntity.save();
+    userAllDataEntity.deposited = ZeroBigInt;
   }
 
   if (!userAllDataEntity.vaults.includes(event.address)) {
@@ -126,8 +127,15 @@ export function handleDepositAssets(event: DepositAssetsEvent): void {
       .toHexString()
       .concat(":")
       .concat(event.params.account.toHexString());
-    const userVault = UserVaultEntity.load(_VaultUserId) as UserVaultEntity;
-    summ = summ.plus(userVault.deposited);
+    let userVault = UserVaultEntity.load(_VaultUserId);
+
+    if (!userVault) {
+      userVault = new UserVaultEntity(_VaultUserId);
+      userVault.deposited = ZeroBigInt;
+      userVault.rewardsEarned = ZeroBigInt;
+    } else {
+      summ = summ.plus(userVault.deposited);
+    }
   }
 
   userAllDataEntity.deposited = summ;
@@ -301,21 +309,11 @@ export function handleWithdrawAssets(event: WithdrawAssetsEvent): void {
 }
 
 export function handleTransfer(event: TransferEvent): void {
-  const vault = VaultEntity.load(event.address) as VaultEntity;
+  let vault = VaultEntity.load(event.address);
 
-  const usersList = vault.vaultUsersList;
-
-  const vaultContract = VaultContract.bind(event.address);
-
-  const _VaultToUserId = event.address
-    .toHexString()
-    .concat(":")
-    .concat(event.params.to.toHexString());
-
-  const _VaultFromUserId = event.address
-    .toHexString()
-    .concat(":")
-    .concat(event.params.from.toHexString());
+  if (!vault) {
+    return;
+  }
 
   const totalSupply = vault.totalSupply;
 
@@ -324,24 +322,53 @@ export function handleTransfer(event: TransferEvent): void {
   } else if (event.params.to == Address.fromString(addressZero)) {
     vault.totalSupply = totalSupply.minus(event.params.value);
   } else {
-    const fromUserVault = UserVaultEntity.load(_VaultFromUserId);
-    const toUserVault = UserVaultEntity.load(_VaultToUserId);
+    const vaultContract = VaultContract.bind(event.address);
 
-    toUserVault.deposited = vaultContract
-      .balanceOf(event.params.to)
-      .times(vault.sharePrice);
+    if (!vaultContract) {
+      return;
+    }
 
-    fromUserVault.deposited = vaultContract
-      .balanceOf(event.params.from)
-      .times(vault.sharePrice);
+    const _VaultToUserId = event.address
+      .toHexString()
+      .concat(":")
+      .concat(event.params.to.toHexString());
 
-    toUserVault?.save();
-    fromUserVault?.save();
-  }
+    const _VaultFromUserId = event.address
+      .toHexString()
+      .concat(":")
+      .concat(event.params.from.toHexString());
 
-  if (!usersList.includes(_VaultToUserId)) {
-    usersList.push(_VaultToUserId);
-    vault.vaultUsersList = usersList;
+    if (!vault.vaultUsersList.includes(_VaultToUserId)) {
+      const usersList = vault.vaultUsersList;
+      usersList.push(_VaultToUserId);
+      vault.vaultUsersList = usersList;
+    }
+
+    let fromUserVault = UserVaultEntity.load(_VaultFromUserId);
+    let toUserVault = UserVaultEntity.load(_VaultToUserId);
+
+    if (!fromUserVault) {
+      fromUserVault = new UserVaultEntity(_VaultFromUserId);
+      fromUserVault.rewardsEarned = ZeroBigInt;
+      fromUserVault.deposited = ZeroBigInt;
+    } else {
+      fromUserVault.deposited = vaultContract
+        .balanceOf(event.params.from)
+        .times(vault.sharePrice);
+    }
+
+    if (!toUserVault) {
+      toUserVault = new UserVaultEntity(_VaultToUserId);
+      toUserVault.rewardsEarned = ZeroBigInt;
+      toUserVault.deposited = event.params.value.times(vault.sharePrice);
+    } else {
+      toUserVault.deposited = vaultContract
+        .balanceOf(event.params.to)
+        .times(vault.sharePrice);
+    }
+
+    toUserVault.save();
+    fromUserVault.save();
   }
 
   vault.save();

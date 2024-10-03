@@ -50,6 +50,7 @@ export function handleHardWork(event: HardWorkEvent): void {
   const assetsAmounts = strategyContract.assetsAmounts();
 
   const vault = VaultEntity.load(vaultAddress) as VaultEntity;
+
   const vaultInfo = vaultManagerContract.vaultInfo(vaultAddress);
 
   const lastSharePrice = BigDecimal.fromString(vault.sharePrice.toString()).div(
@@ -127,10 +128,7 @@ export function handleHardWork(event: HardWorkEvent): void {
       threshold = threshold.plus(diff);
       weights.push(diff.times(DENOMINATOR).div(day));
     } else {
-      const result = day
-        .minus(threshold)
-        .times(DENOMINATOR)
-        .div(day);
+      const result = day.minus(threshold).times(DENOMINATOR).div(day);
       weights.push(result);
       break;
     }
@@ -163,10 +161,7 @@ export function handleHardWork(event: HardWorkEvent): void {
       threshold = threshold.plus(diff);
       weightsWeeklyAPR.push(diff.times(DENOMINATOR).div(week));
     } else {
-      const result = week
-        .minus(threshold)
-        .times(DENOMINATOR)
-        .div(week);
+      const result = week.minus(threshold).times(DENOMINATOR).div(week);
       weightsWeeklyAPR.push(result);
       break;
     }
@@ -374,13 +369,11 @@ export function handleHardWork(event: HardWorkEvent): void {
           OneHundredBigDecimal
         ).times(BigDecimal.fromString(proportions[i]));
 
-        const lifetimeProportionPrice: BigDecimal = startProportion.div(
-          assetPriceOnCreation
-        );
+        const lifetimeProportionPrice: BigDecimal =
+          startProportion.div(assetPriceOnCreation);
 
-        const lifetimePresentAmount: BigDecimal = lifetimeProportionPrice.times(
-          assetPrice
-        );
+        const lifetimePresentAmount: BigDecimal =
+          lifetimeProportionPrice.times(assetPrice);
 
         priceDifference = assetPrice
           .minus(lastAssetPrice)
@@ -392,13 +385,11 @@ export function handleHardWork(event: HardWorkEvent): void {
           .div(assetPriceOnCreation)
           .times(OneHundredBigDecimal);
 
-        const percentDiff: BigDecimal = sharePricePercentDiff.minus(
-          priceDifference
-        );
+        const percentDiff: BigDecimal =
+          sharePricePercentDiff.minus(priceDifference);
 
-        const lifetimePercentDiff: BigDecimal = lifetimeSharePricePercentDiff.minus(
-          lifetimePriceDifference
-        );
+        const lifetimePercentDiff: BigDecimal =
+          lifetimeSharePricePercentDiff.minus(lifetimePriceDifference);
 
         let yearPercentDiff = percentDiff
           .div(daysFromLastHardWork)
@@ -529,12 +520,19 @@ export function handleHardWork(event: HardWorkEvent): void {
         event.transaction.hash.concatI32(event.logIndex.toI32())
       );
 
-      let userAllDataEntity = UserAllDataEntity.load(
-        userAddress
-      ) as UserAllDataEntity;
-      userAllDataEntity.rewardsEarned = userAllDataEntity.rewardsEarned.plus(
-        reward
-      );
+      let userAllDataEntity = UserAllDataEntity.load(userAddress);
+
+      if (!userAllDataEntity) {
+        const userVaults = [changetype<Bytes>(event.address)];
+
+        userAllDataEntity = new UserAllDataEntity(userAddress);
+        userAllDataEntity.rewardsEarned = ZeroBigInt;
+        userAllDataEntity.vaults = userVaults;
+        userAllDataEntity.deposited = ZeroBigInt;
+      }
+
+      userAllDataEntity.rewardsEarned =
+        userAllDataEntity.rewardsEarned.plus(reward);
       userAllDataEntity.save();
 
       userHistory.userAddress = userAddress;
