@@ -3,17 +3,15 @@ import { BigDecimal, BigInt } from "@graphprotocol/graph-ts";
 import {
   getPlatformAddress,
   getFactoryAddress,
-  getDefiedgeFactoryAddress,
   getVaultManagerAddress,
   getPriceReaderAddress,
 } from "./functions";
 
-const networkToDeploy = "matic"; // matic || base
+const networkToDeploy = "re.al"; // matic || base || re.al
 
 const addressZero = "0x0000000000000000000000000000000000000000";
 const platformAddress = getPlatformAddress(networkToDeploy);
 const factoryAddress = getFactoryAddress(networkToDeploy);
-const defiedgeFactoryAddress = getDefiedgeFactoryAddress(networkToDeploy);
 const vaultManagerAddress = getVaultManagerAddress(networkToDeploy);
 const priceReaderAddress = getPriceReaderAddress(networkToDeploy);
 const getBalanceAddress = "0x1Ebd614F038a6cED8faBf0Be075995dd1BB549cE";
@@ -31,7 +29,6 @@ export {
   addressZero,
   platformAddress,
   factoryAddress,
-  defiedgeFactoryAddress,
   vaultManagerAddress,
   priceReaderAddress,
   getBalanceAddress,
