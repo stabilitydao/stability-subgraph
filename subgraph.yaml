@@ -1,5 +1,5 @@
 # To deploy to a different network, change 'network' and update 'startBlock'
-# netork: m.atic || b.ase || re..al
+# netork: m.atic || b.ase || re.al
 # startBlock: 5.0613040 || 1.5495644 || 9.46802
 # address: 0xb2a0737ef27b5Cc474D24c779af612159b1c3e60 || 0x7eAeE5CfF17F7765d89F4A46b484256929C62312 || 0xB7838d447deece2a9A5794De0f342B47d0c1B9DC
 #! Delete "." if an update is needed
@@ -9,7 +9,7 @@ schema:
 dataSources:
   - kind: ethereum
     name: PlatformData
-    network: re.al
+    network: real
     source:
       address: "0xB7838d447deece2a9A5794De0f342B47d0c1B9DC"
       abi: PlatformABI
@@ -37,7 +37,7 @@ dataSources:
 templates:
   - kind: ethereum
     name: FactoryData
-    network: re.al
+    network: real
     source:
       abi: FactoryABI
     mapping:
@@ -91,7 +91,7 @@ templates:
       file: ./src/Factory.ts
   - kind: ethereum
     name: SwapperData
-    network: re.al
+    network: real
     source:
       abi: SwapperABI
     mapping:
@@ -109,7 +109,7 @@ templates:
       file: ./src/Swapper.ts
   - kind: ethereum
     name: VaultData
-    network: re.al
+    network: real
     source:
       abi: VaultABI
     mapping:
@@ -146,7 +146,7 @@ templates:
       file: ./src/Vault.ts
   - kind: ethereum
     name: deprecatedData
-    network: re.al
+    network: real
     source:
       abi: deprecatedABI
     mapping:
@@ -165,7 +165,7 @@ templates:
       file: ./src/Vault.ts
   - kind: ethereum
     name: VaultManagerData
-    network: re.al
+    network: real
     source:
       abi: VaultManagerABI
     mapping:
@@ -180,7 +180,7 @@ templates:
       file: ./src/VaultManager.ts
   - kind: ethereum
     name: StrategyData
-    network: re.al
+    network: real
     source:
       abi: StrategyBaseABI
     mapping:
@@ -215,7 +215,7 @@ templates:
       file: ./src/Strategy.ts
   - kind: ethereum
     name: IchiQuickSwapMerklFarmData
-    network: re.al
+    network: real
     source:
       abi: IchiQuickSwapMerklFarmABI
     mapping:
@@ -238,7 +238,7 @@ templates:
       file: ./src/IchiQuickSwapMerklFarm.ts
   - kind: ethereum
     name: IchiRetroMerklFarmData
-    network: re.al
+    network: real
     source:
       abi: IchiRetroMerklFarmDataABI
     mapping:
