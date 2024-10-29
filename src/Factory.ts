@@ -33,7 +33,6 @@ import {
   FactoryABI as FactoryContract,
 } from "../generated/templates/FactoryData/FactoryABI";
 import { ERC20UpgradeableABI } from "../generated/templates/FactoryData/ERC20UpgradeableABI";
-import { ERC20DQMFABI } from "../generated/templates/FactoryData/ERC20DQMFABI";
 import { HyperVisorABI } from "../generated/templates/FactoryData/HyperVisorABI";
 import { StrategyBaseABI as StrategyContract } from "../generated/templates/StrategyData/StrategyBaseABI";
 import { LPStrategyBaseABI as _LPStrategyContract } from "../generated/templates/StrategyData/LPStrategyBaseABI";
