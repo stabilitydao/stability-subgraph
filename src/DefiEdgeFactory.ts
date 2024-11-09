@@ -56,8 +56,9 @@ export function handleChangeProtocolPerformanceFee(
     const lastFeeAMLEntity = LastFeeAMLEntity.load(
       underlying
     ) as LastFeeAMLEntity;
-    const underlyingContract =
-      DefiEdgeQuickSwapMerklFarmDataABI.bind(underlying);
+    const underlyingContract = DefiEdgeQuickSwapMerklFarmDataABI.bind(
+      underlying
+    );
     const managerContract = DefiEdgeManagerABI.bind(
       underlyingContract.manager()
     );
@@ -91,8 +92,9 @@ export function handleChangeProtocolPerformanceFee(
     const lastFeeAMLEntity = LastFeeAMLEntity.load(
       underlying
     ) as LastFeeAMLEntity;
-    const underlyingContract =
-      DefiEdgeQuickSwapMerklFarmDataABI.bind(underlying);
+    const underlyingContract = DefiEdgeQuickSwapMerklFarmDataABI.bind(
+      underlying
+    );
     const managerContract = DefiEdgeManagerABI.bind(
       underlyingContract.manager()
     );

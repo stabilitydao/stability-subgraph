@@ -8,7 +8,7 @@ type PlatformEntity @entity {
   governance: Bytes # address
   multisig: Bytes # address
   zap: Bytes # address
-  bridge: Bytes # address
+  bridge: Bytes # fe
   swapper: Bytes # address
   dexAggreagators: [Bytes!] # address[]
   bcAssets: [Bytes!] # address[]
@@ -105,6 +105,9 @@ type VaultHistoryEntity @entity(immutable: true) {
   periodTokensVsHoldAPR: [String!]
   lifetimeVsHoldAPR: String
   lifetimeTokensVsHoldAPR: [String!]
+  overallVsHoldAPR: String
+  tokensOverallVsHoldAPR: [String!]
+  lastAssetsPrices: [String!]
 }
 
 type VaultAPRsEntity @entity {
@@ -141,7 +144,6 @@ type LastFeeAMLEntity @entity {
   timestamps: [BigInt!]!
 }
 
-#Supporting
 type DefiEdgePoolsAndStrategiesEntity @entity {
   id: Bytes! #address factory
   pools: [Bytes!]!
@@ -165,12 +167,6 @@ type UserAllDataEntity @entity {
 
 type UserVaultEntity @entity {
   id: String! #Vault:User address
-  deposited: BigInt!
-  rewardsEarned: BigInt!
-}
-
-type DefiEdgeILEntity @entity(immutable: true) {
-  id: Bytes!
   deposited: BigInt!
   rewardsEarned: BigInt!
 }

@@ -6,7 +6,6 @@ import {
   getBalanceAddress,
   priceReaderAddress,
   addressZero,
-  defiedgeFactoryAddress,
 } from "./constants";
 import {
   VaultTypeEntity,
@@ -15,15 +14,12 @@ import {
   StrategyConfigEntity,
   LastFeeAMLEntity,
   VaultAPRsEntity,
-  DefiEdgePoolsAndStrategiesEntity,
 } from "../generated/schema";
 import {
   VaultData,
   StrategyData,
   IchiQuickSwapMerklFarmData,
   IchiRetroMerklFarmData,
-  DefiEdgeQuickSwapMerklFarmData,
-  DefiEdgeFactoryData,
 } from "../generated/templates";
 
 import { PlatformABI as PlatformContract } from "../generated/PlatformData/PlatformABI";
@@ -37,12 +33,7 @@ import {
   FactoryABI as FactoryContract,
 } from "../generated/templates/FactoryData/FactoryABI";
 import { ERC20UpgradeableABI } from "../generated/templates/FactoryData/ERC20UpgradeableABI";
-import { ERC20DQMFABI } from "../generated/templates/FactoryData/ERC20DQMFABI";
 import { HyperVisorABI } from "../generated/templates/FactoryData/HyperVisorABI";
-import { DefiEdgeManagerABI } from "../generated/templates/FactoryData/DefiEdgeManagerABI";
-import { DefiEdgeFactoryABI } from "../generated/templates/FactoryData/DefiEdgeFactoryABI";
-import { DefiEdgeStrategyABI } from "../generated/templates/FactoryData/DefiEdgeStrategyABI";
-import { DefiEdgeQuickSwapMerklFarmDataABI } from "../generated/templates/FactoryData/DefiEdgeQuickSwapMerklFarmDataABI";
 import { StrategyBaseABI as StrategyContract } from "../generated/templates/StrategyData/StrategyBaseABI";
 import { LPStrategyBaseABI as _LPStrategyContract } from "../generated/templates/StrategyData/LPStrategyBaseABI";
 import { VaultManagerABI as VaultManagerContract } from "../generated/templates/VaultManagerData/VaultManagerABI";
@@ -82,61 +73,6 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
   if (event.params.strategyId == "Ichi Retro Merkl Farm") {
     IchiRetroMerklFarmData.create(strategyContract.underlying());
     const lastFeeAMLEntity = new LastFeeAMLEntity(underlying);
-    lastFeeAMLEntity.vault = event.params.vault;
-    lastFeeAMLEntity.APRS = [];
-    lastFeeAMLEntity.timestamps = [event.block.timestamp];
-    lastFeeAMLEntity.save();
-  }
-
-  if (event.params.strategyId == "DefiEdge QuickSwap Merkl Farm") {
-    const strategyContract = DefiEdgeStrategyABI.bind(event.params.strategy);
-    DefiEdgeQuickSwapMerklFarmData.create(strategyContract.underlying());
-    DefiEdgeFactoryData.create(Address.fromString(defiedgeFactoryAddress));
-    const pool = strategyContract.pool();
-
-    let defiEdgePoolsAndStrategies = DefiEdgePoolsAndStrategiesEntity.load(
-      Address.fromString(defiedgeFactoryAddress)
-    );
-    if (!defiEdgePoolsAndStrategies) {
-      defiEdgePoolsAndStrategies = new DefiEdgePoolsAndStrategiesEntity(
-        Address.fromString(defiedgeFactoryAddress)
-      );
-      defiEdgePoolsAndStrategies.pools = [];
-      defiEdgePoolsAndStrategies.strategies = [];
-    }
-
-    let _pools = defiEdgePoolsAndStrategies.pools;
-    let _strategies = defiEdgePoolsAndStrategies.strategies;
-
-    _pools.push(pool);
-    _strategies.push(event.params.strategy);
-
-    defiEdgePoolsAndStrategies.pools = _pools;
-    defiEdgePoolsAndStrategies.strategies = _strategies;
-
-    defiEdgePoolsAndStrategies.save();
-
-    const lastFeeAMLEntity = new LastFeeAMLEntity(underlying);
-    const underlyingContract = DefiEdgeQuickSwapMerklFarmDataABI.bind(
-      underlying
-    );
-    const managerContract = DefiEdgeManagerABI.bind(
-      underlyingContract.manager()
-    );
-    const factoryContract = DefiEdgeFactoryABI.bind(
-      underlyingContract.factory()
-    );
-    const managerFee = managerContract.performanceFeeRate();
-    const factoryFee = factoryContract.getProtocolPerformanceFeeRate(
-      pool,
-      event.params.strategy
-    );
-    lastFeeAMLEntity.fee = managerFee
-      .plus(factoryFee)
-      .div(BigInt.fromI32(100 * 10 ** 4)); //fee/100e6*100
-    lastFeeAMLEntity.managerFee = managerFee;
-    lastFeeAMLEntity.factoryFee = factoryFee;
-    lastFeeAMLEntity.total_fee = managerFee.plus(factoryFee);
     lastFeeAMLEntity.vault = event.params.vault;
     lastFeeAMLEntity.APRS = [];
     lastFeeAMLEntity.timestamps = [event.block.timestamp];
@@ -234,14 +170,12 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
   }
 
   //UnderlyingSymbol
-
   if (underlying != Address.fromHexString(addressZero)) {
-    if (event.params.strategyId == "DefiEdge QuickSwap Merkl Farm") {
-      const underlyingContract = ERC20DQMFABI.bind(underlying);
-      strategyEntity.underlyingSymbol = underlyingContract.symbol().toString();
-    } else {
-      const underlyingContract = ERC20UpgradeableABI.bind(underlying);
-      strategyEntity.underlyingSymbol = underlyingContract.symbol();
+    const underlyingContract = ERC20UpgradeableABI.bind(underlying);
+    const symbolResult = underlyingContract.try_symbol();
+
+    if (!symbolResult.reverted) {
+      strategyEntity.underlyingSymbol = symbolResult.value;
     }
   }
 

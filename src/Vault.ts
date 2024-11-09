@@ -22,7 +22,6 @@ import {
   DoHardWorkOnDepositChanged as DoHardWorkOnDepositChangedEvent,
   VaultABI as VaultContract,
 } from "../generated/templates/VaultData/VaultABI";
-import { DefiEdgeStrategyABI } from "../generated/templates/FactoryData/DefiEdgeStrategyABI";
 import { PriceReaderABI as PriceReaderContract } from "../generated/templates/IchiQuickSwapMerklFarmData/PriceReaderABI";
 import { WithdrawAssets as WithdrawAssetsEventOld } from "../generated/templates/deprecatedData/deprecatedABI";
 import { StrategyBaseABI as StrategyContract } from "../generated/templates/StrategyData/StrategyBaseABI";

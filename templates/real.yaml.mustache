@@ -4,11 +4,11 @@ schema:
 dataSources:
   - kind: ethereum
     name: PlatformData
-    network: real
+    network: {{network}}
     source:
-      address: "0xB7838d447deece2a9A5794De0f342B47d0c1B9DC"
+      address: "{{address}}"
       abi: PlatformABI
-      startBlock: 946802
+      startBlock: {{startBlock}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -32,7 +32,7 @@ dataSources:
 templates:
   - kind: ethereum
     name: FactoryData
-    network: real
+    network: {{network}}
     source:
       abi: FactoryABI
     mapping:
@@ -86,7 +86,7 @@ templates:
       file: ./src/Factory.ts
   - kind: ethereum
     name: SwapperData
-    network: real
+    network: {{network}}
     source:
       abi: SwapperABI
     mapping:
@@ -104,7 +104,7 @@ templates:
       file: ./src/Swapper.ts
   - kind: ethereum
     name: VaultData
-    network: real
+    network: {{network}}
     source:
       abi: VaultABI
     mapping:
@@ -141,7 +141,7 @@ templates:
       file: ./src/Vault.ts
   - kind: ethereum
     name: deprecatedData
-    network: real
+    network: {{network}}
     source:
       abi: deprecatedABI
     mapping:
@@ -160,7 +160,7 @@ templates:
       file: ./src/Vault.ts
   - kind: ethereum
     name: VaultManagerData
-    network: real
+    network: {{network}}
     source:
       abi: VaultManagerABI
     mapping:
@@ -175,7 +175,7 @@ templates:
       file: ./src/VaultManager.ts
   - kind: ethereum
     name: StrategyData
-    network: real
+    network: {{network}}
     source:
       abi: StrategyBaseABI
     mapping:
@@ -210,7 +210,7 @@ templates:
       file: ./src/Strategy.ts
   - kind: ethereum
     name: IchiQuickSwapMerklFarmData
-    network: real
+    network: {{network}}
     source:
       abi: IchiQuickSwapMerklFarmABI
     mapping:
@@ -233,7 +233,7 @@ templates:
       file: ./src/IchiQuickSwapMerklFarm.ts
   - kind: ethereum
     name: IchiRetroMerklFarmData
-    network: real
+    network: {{network}}
     source:
       abi: IchiRetroMerklFarmDataABI
     mapping:
