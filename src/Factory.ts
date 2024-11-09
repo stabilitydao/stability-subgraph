@@ -170,10 +170,13 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
   }
 
   //UnderlyingSymbol
-
   if (underlying != Address.fromHexString(addressZero)) {
     const underlyingContract = ERC20UpgradeableABI.bind(underlying);
-    strategyEntity.underlyingSymbol = underlyingContract.symbol();
+    const symbolResult = underlyingContract.try_symbol();
+
+    if (!symbolResult.reverted) {
+      strategyEntity.underlyingSymbol = symbolResult.value;
+    }
   }
 
   strategyEntity.save();

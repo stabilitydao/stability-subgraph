@@ -21,4 +21,4 @@ view=Query&chain=arbitrum-one
 ## Multichain update
 
 1. Update networkToDeploy in constants
-2. Update subgraph.yaml
+2. Run the "prepare" command with the desired network, e.g., yarn prepare matic

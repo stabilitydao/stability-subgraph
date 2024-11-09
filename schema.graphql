@@ -105,6 +105,9 @@ type VaultHistoryEntity @entity(immutable: true) {
   periodTokensVsHoldAPR: [String!]
   lifetimeVsHoldAPR: String
   lifetimeTokensVsHoldAPR: [String!]
+  overallVsHoldAPR: String
+  tokensOverallVsHoldAPR: [String!]
+  lastAssetsPrices: [String!]
 }
 
 type VaultAPRsEntity @entity {
@@ -139,6 +142,12 @@ type LastFeeAMLEntity @entity {
   total_fee: BigInt
   APRS: [BigInt!]!
   timestamps: [BigInt!]!
+}
+
+type DefiEdgePoolsAndStrategiesEntity @entity {
+  id: Bytes! #address factory
+  pools: [Bytes!]!
+  strategies: [Bytes!]!
 }
 
 type UserHistoryEntity @entity(immutable: true) {
