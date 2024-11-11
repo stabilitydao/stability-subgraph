@@ -1,4 +1,5 @@
 import { Address, BigInt, Bytes, BigDecimal } from "@graphprotocol/graph-ts";
+
 import {
   VaultEntity,
   VaultHistoryEntity,
@@ -6,12 +7,6 @@ import {
   UserVaultEntity,
   UserAllDataEntity,
 } from "../generated/schema";
-import {
-  ZeroBigInt,
-  addressZero,
-  oneEther,
-  platformAddress,
-} from "./constants";
 
 import {
   Transfer as TransferEvent,
@@ -25,6 +20,13 @@ import {
 import { PriceReaderABI as PriceReaderContract } from "../generated/templates/IchiQuickSwapMerklFarmData/PriceReaderABI";
 import { WithdrawAssets as WithdrawAssetsEventOld } from "../generated/templates/deprecatedData/deprecatedABI";
 import { StrategyBaseABI as StrategyContract } from "../generated/templates/StrategyData/StrategyBaseABI";
+
+import {
+  ZeroBigInt,
+  addressZero,
+  oneEther,
+  platformAddress,
+} from "./utils/constants";
 
 export function handleDepositAssets(event: DepositAssetsEvent): void {
   const vault = VaultEntity.load(event.address) as VaultEntity;

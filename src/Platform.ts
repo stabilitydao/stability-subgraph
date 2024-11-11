@@ -1,6 +1,5 @@
 import { Address } from "@graphprotocol/graph-ts";
 import { PlatformEntity } from "../generated/schema";
-import { platformAddress } from "./constants";
 import { SwapperData, FactoryData } from "../generated/templates";
 import {
   Addresses as AddressesEvent,
@@ -9,6 +8,8 @@ import {
   AddDexAggregator as AddDexAggregatorEvent,
   PlatformABI as PlatformContract,
 } from "../generated/PlatformData/PlatformABI";
+
+import { platformAddress } from "./utils/constants";
 
 export function handleAddresses(event: AddressesEvent): void {
   const platform = PlatformEntity.load(event.address) as PlatformEntity;

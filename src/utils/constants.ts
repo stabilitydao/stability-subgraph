@@ -1,5 +1,7 @@
 import { BigDecimal, BigInt } from "@graphprotocol/graph-ts";
 
+import { NETWORK } from "./network";
+
 import {
   getPlatformAddress,
   getFactoryAddress,
@@ -8,18 +10,16 @@ import {
   getDefiedgeFactoryAddress,
 } from "./functions";
 
-const networkToDeploy = "real"; // matic || base || real
-
 const addressZero = "0x0000000000000000000000000000000000000000";
-const platformAddress = getPlatformAddress(networkToDeploy);
-const factoryAddress = getFactoryAddress(networkToDeploy);
-const vaultManagerAddress = getVaultManagerAddress(networkToDeploy);
-const priceReaderAddress = getPriceReaderAddress(networkToDeploy);
+const platformAddress = getPlatformAddress(NETWORK);
+const factoryAddress = getFactoryAddress(NETWORK);
+const vaultManagerAddress = getVaultManagerAddress(NETWORK);
+const priceReaderAddress = getPriceReaderAddress(NETWORK);
 
 let defiedgeFactoryAddress = addressZero;
 
-if (networkToDeploy != "real") {
-  defiedgeFactoryAddress = getDefiedgeFactoryAddress(networkToDeploy);
+if (NETWORK != "real") {
+  defiedgeFactoryAddress = getDefiedgeFactoryAddress(NETWORK);
 }
 
 const getBalanceAddress = "0x1Ebd614F038a6cED8faBf0Be075995dd1BB549cE";
@@ -49,5 +49,4 @@ export {
   EtherBigDecimal,
   ichiName,
   defiedgeFactoryAddress,
-  networkToDeploy,
 };

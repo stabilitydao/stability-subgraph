@@ -2,9 +2,7 @@ const mustache = require("mustache");
 const fs = require("fs");
 
 const networks = JSON.parse(fs.readFileSync("networks.json", "utf8"));
-
 const selectedNetworkKey = process.argv[2] || "matic"; // matic || base || real
-
 const selectedNetworkConfig = networks[selectedNetworkKey];
 
 if (!selectedNetworkConfig) {
@@ -14,16 +12,20 @@ if (!selectedNetworkConfig) {
   process.exit(1);
 }
 
-let template;
+const templates = {
+  basic: "templates/basic.yaml.mustache",
+  real: "templates/real.yaml.mustache",
+  network: "templates/network.mustache",
+};
 
-switch (selectedNetworkKey) {
-  case "real":
-    template = fs.readFileSync("templates/real.yaml.mustache", "utf8");
-    break;
-  default:
-    template = fs.readFileSync("templates/basic.yaml.mustache", "utf8");
-    break;
-}
+const getTemplateContent = (templatePath) =>
+  fs.readFileSync(templatePath, "utf8");
+
+const template = getTemplateContent(
+  selectedNetworkKey === "real" ? templates.real : templates.basic
+);
+
+const networkToDeployTemplate = getTemplateContent(templates.network);
 
 const templateData = {
   network: selectedNetworkKey,
@@ -31,9 +33,17 @@ const templateData = {
   startBlock: selectedNetworkConfig.startBlock,
 };
 
-const output = mustache.render(template, templateData);
+fs.writeFileSync(
+  "subgraph.yaml",
+  mustache.render(template, templateData),
+  "utf8"
+);
 
-fs.writeFileSync("subgraph.yaml", output, "utf8");
+fs.writeFileSync(
+  "src/utils/network.ts",
+  mustache.render(networkToDeployTemplate, { network: selectedNetworkKey }),
+  "utf8"
+);
 
 console.log(
   `subgraph.yaml for network ${selectedNetworkKey} created successfully!`
