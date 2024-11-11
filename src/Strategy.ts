@@ -266,7 +266,7 @@ export function handleHardWork(event: HardWorkEvent): void {
 
     const periodTokensVsHoldAPR: string[] = [];
     const lifetimeTokensVsHoldAPR: string[] = [];
-    const tokensOverallVsHoldAPR: string[] = [];
+    const lifetimeAssetsVsHold: string[] = [];
     let periodVsHoldAPR: string = "";
 
     let priceDifference: BigDecimal = ZeroBigDecimal;
@@ -416,7 +416,7 @@ export function handleHardWork(event: HardWorkEvent): void {
 
         holdTokenPresentProportion.push(lifetimePresentAmount.toString());
         periodTokensVsHoldAPR.push(yearPercentDiff.toString());
-        tokensOverallVsHoldAPR.push(lifetimePercentDiff.toString());
+        lifetimeAssetsVsHold.push(lifetimePercentDiff.toString());
         lifetimeTokensVsHoldAPR.push(lifetimeYearPercentDiff.toString());
       }
 
@@ -465,8 +465,8 @@ export function handleHardWork(event: HardWorkEvent): void {
     vaultHistoryEntity.lifetimeVsHoldAPR = lifetimeVsHoldAPR.toString();
     vaultHistoryEntity.periodTokensVsHoldAPR = periodTokensVsHoldAPR;
     vaultHistoryEntity.lifetimeTokensVsHoldAPR = lifetimeTokensVsHoldAPR;
-    vaultHistoryEntity.overallVsHoldAPR = holdPercentDiff.toString();
-    vaultHistoryEntity.tokensOverallVsHoldAPR = tokensOverallVsHoldAPR;
+    vaultHistoryEntity.lifetimeVsHold = holdPercentDiff.toString();
+    vaultHistoryEntity.lifetimeAssetsVsHold = lifetimeAssetsVsHold;
     //===========LifeTimeAPR===========//
 
     const lifeLength = _timestampsArray[0].minus(vault.created);

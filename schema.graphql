@@ -105,8 +105,8 @@ type VaultHistoryEntity @entity(immutable: true) {
   periodTokensVsHoldAPR: [String!]
   lifetimeVsHoldAPR: String
   lifetimeTokensVsHoldAPR: [String!]
-  overallVsHoldAPR: String
-  tokensOverallVsHoldAPR: [String!]
+  lifetimeVsHold: String
+  lifetimeAssetsVsHold: [String!]
   lastAssetsPrices: [String!]
 }
 
