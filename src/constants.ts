@@ -15,7 +15,13 @@ const platformAddress = getPlatformAddress(networkToDeploy);
 const factoryAddress = getFactoryAddress(networkToDeploy);
 const vaultManagerAddress = getVaultManagerAddress(networkToDeploy);
 const priceReaderAddress = getPriceReaderAddress(networkToDeploy);
-const defiedgeFactoryAddress = getDefiedgeFactoryAddress(networkToDeploy);
+
+let defiedgeFactoryAddress = addressZero;
+
+if (networkToDeploy != "real") {
+  defiedgeFactoryAddress = getDefiedgeFactoryAddress(networkToDeploy);
+}
+
 const getBalanceAddress = "0x1Ebd614F038a6cED8faBf0Be075995dd1BB549cE";
 
 const oneEther = BigInt.fromI32(10).pow(18);
