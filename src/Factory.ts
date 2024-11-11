@@ -1,12 +1,5 @@
 import { Address, Bytes, BigInt, ethereum } from "@graphprotocol/graph-ts";
-import {
-  ZeroBigInt,
-  platformAddress,
-  vaultManagerAddress,
-  getBalanceAddress,
-  priceReaderAddress,
-  addressZero,
-} from "./constants";
+
 import {
   VaultTypeEntity,
   VaultEntity,
@@ -41,6 +34,14 @@ import { VaultAndStrategy as VaultAndStrategyEvent } from "../generated/template
 import { getBalanceABI as GetBalanceContract } from "../generated/templates/StrategyData/getBalanceABI";
 import { PriceReaderABI as PriceReaderContract } from "../generated/templates/IchiQuickSwapMerklFarmData/PriceReaderABI";
 
+import {
+  ZeroBigInt,
+  platformAddress,
+  vaultManagerAddress,
+  getBalanceAddress,
+  priceReaderAddress,
+  addressZero,
+} from "./utils/constants";
 export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
   const vault = new VaultEntity(event.params.vault);
   const strategyEntity = new StrategyEntity(event.params.strategy);

@@ -1,9 +1,10 @@
+import { Address, BigInt } from "@graphprotocol/graph-ts";
+
 import {
   ALMRebalanceHistoryEntity,
   LastFeeAMLEntity,
   VaultEntity,
 } from "../generated/schema";
-import { ichiName, priceReaderAddress, ZeroBigInt } from "./constants";
 
 import {
   Rebalance as RebalanceEvent,
@@ -11,7 +12,8 @@ import {
 } from "../generated/templates/IchiRetroMerklFarmData/IchiRetroMerklFarmDataABI";
 
 import { PriceReaderABI as PriceReaderContract } from "../generated/templates/IchiQuickSwapMerklFarmData/PriceReaderABI";
-import { Address, BigInt } from "@graphprotocol/graph-ts";
+
+import { ichiName, priceReaderAddress, ZeroBigInt } from "./utils/constants";
 
 export function handleRebalance(event: RebalanceEvent): void {
   const _id = event.transaction.hash.concatI32(event.logIndex.toI32());
@@ -47,7 +49,10 @@ export function handleRebalance(event: RebalanceEvent): void {
   const day = BigInt.fromI32(86400);
   const year = BigInt.fromI64(31536000);
   const DENOMINATOR = BigInt.fromI64(100000);
-  let APR = feeUSD.times(DENOMINATOR).times(year).div(totalUSD);
+  let APR = feeUSD
+    .times(DENOMINATOR)
+    .times(year)
+    .div(totalUSD);
 
   _timestampsArray.push(event.block.timestamp);
   _APRArray.push(APR);
@@ -66,7 +71,10 @@ export function handleRebalance(event: RebalanceEvent): void {
       threshold = threshold.plus(diff);
       weights.push(diff.times(DENOMINATOR).div(day));
     } else {
-      const result = day.minus(threshold).times(DENOMINATOR).div(day);
+      const result = day
+        .minus(threshold)
+        .times(DENOMINATOR)
+        .div(day);
       weights.push(result);
       break;
     }
@@ -99,7 +107,10 @@ export function handleRebalance(event: RebalanceEvent): void {
       threshold = threshold.plus(diff);
       weightsWeeklyAPR.push(diff.times(DENOMINATOR).div(week));
     } else {
-      const result = week.minus(threshold).times(DENOMINATOR).div(week);
+      const result = week
+        .minus(threshold)
+        .times(DENOMINATOR)
+        .div(week);
       weightsWeeklyAPR.push(result);
       break;
     }

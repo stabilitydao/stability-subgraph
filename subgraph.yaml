@@ -4,11 +4,11 @@ schema:
 dataSources:
   - kind: ethereum
     name: PlatformData
-    network: real
+    network: base
     source:
-      address: "0xB7838d447deece2a9A5794De0f342B47d0c1B9DC"
+      address: "0x7eAeE5CfF17F7765d89F4A46b484256929C62312"
       abi: PlatformABI
-      startBlock: 946802
+      startBlock: 15495644
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -32,7 +32,7 @@ dataSources:
 templates:
   - kind: ethereum
     name: FactoryData
-    network: real
+    network: base
     source:
       abi: FactoryABI
     mapping:
@@ -58,8 +58,18 @@ templates:
           file: ./abis/LPStrategyBaseABI.json
         - name: ERC20UpgradeableABI
           file: ./abis/ERC20UpgradeableABI.json
+        - name: ERC20DQMFABI
+          file: ./abis/ERC20DQMFABI.json
         - name: HyperVisorABI
           file: ./abis/HyperVisorABI.json
+        - name: DefiEdgeManagerABI
+          file: ./abis/DefiEdgeManagerABI.json
+        - name: DefiEdgeQuickSwapMerklFarmDataABI
+          file: ./abis/DefiEdgeQuickSwapMerklFarmDataABI.json
+        - name: DefiEdgeFactoryABI
+          file: ./abis/DefiEdgeFactoryABI.json
+        - name: DefiEdgeStrategyABI
+          file: ./abis/DefiEdgeStrategyABI.json
         - name: VaultManagerABI
           file: ./abis/VaultManagerABI.json
         - name: StrategyLogicABI
@@ -86,7 +96,7 @@ templates:
       file: ./src/Factory.ts
   - kind: ethereum
     name: SwapperData
-    network: real
+    network: base
     source:
       abi: SwapperABI
     mapping:
@@ -104,7 +114,7 @@ templates:
       file: ./src/Swapper.ts
   - kind: ethereum
     name: VaultData
-    network: real
+    network: base
     source:
       abi: VaultABI
     mapping:
@@ -141,7 +151,7 @@ templates:
       file: ./src/Vault.ts
   - kind: ethereum
     name: deprecatedData
-    network: real
+    network: base
     source:
       abi: deprecatedABI
     mapping:
@@ -160,7 +170,7 @@ templates:
       file: ./src/Vault.ts
   - kind: ethereum
     name: VaultManagerData
-    network: real
+    network: base
     source:
       abi: VaultManagerABI
     mapping:
@@ -175,7 +185,7 @@ templates:
       file: ./src/VaultManager.ts
   - kind: ethereum
     name: StrategyData
-    network: real
+    network: base
     source:
       abi: StrategyBaseABI
     mapping:
@@ -210,7 +220,7 @@ templates:
       file: ./src/Strategy.ts
   - kind: ethereum
     name: IchiQuickSwapMerklFarmData
-    network: real
+    network: base
     source:
       abi: IchiQuickSwapMerklFarmABI
     mapping:
@@ -233,7 +243,7 @@ templates:
       file: ./src/IchiQuickSwapMerklFarm.ts
   - kind: ethereum
     name: IchiRetroMerklFarmData
-    network: real
+    network: base
     source:
       abi: IchiRetroMerklFarmDataABI
     mapping:
@@ -252,3 +262,51 @@ templates:
         - event: Rebalance(int24,uint256,uint256,uint256,uint256,uint256)
           handler: handleRebalance
       file: ./src/IchiRetroMerklFarm.ts
+  - kind: ethereum
+    name: DefiEdgeQuickSwapMerklFarmData
+    network: base
+    source:
+      abi: DefiEdgeQuickSwapMerklFarmDataABI
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - LastFeeAMLEntity
+      abis:
+        - name: DefiEdgeQuickSwapMerklFarmDataABI
+          file: ./abis/DefiEdgeQuickSwapMerklFarmDataABI.json
+      eventHandlers:
+        - event: Rebalance((int24,int24,uint256,uint256)[])
+          handler: handleRebalance
+        #- event: PartialRebalance((uint256,bool,uint256,uint256)[])
+        #handler: handlePartialRebalance
+      file: ./src/DefiEdgeQuickSwapMerklFarm.ts
+  - kind: ethereum
+    name: DefiEdgeFactoryData
+    network: base
+    source:
+      abi: DefiEdgeFactoryABI
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - LastFeeAMLEntity
+        - DefiEdgePoolsAndStrategies
+      abis:
+        - name: DefiEdgeFactoryABI
+          file: ./abis/DefiEdgeFactoryABI.json
+        - name: DefiEdgeStrategyABI
+          file: ./abis/DefiEdgeStrategyABI.json
+        - name: DefiEdgeQuickSwapMerklFarmDataABI
+          file: ./abis/DefiEdgeQuickSwapMerklFarmDataABI.json
+        - name: DefiEdgeManagerABI
+          file: ./abis/DefiEdgeManagerABI.json
+      # eventHandlers:
+      # - event: ChangeProtocolPerformanceFee(address,uint256)
+      #   handler: handleChangeProtocolPerformanceFee
+      # eventHandlers:
+      # - event: ChangeProtocolPerformanceFee(address,uint256)
+      #   handler: handleChangeProtocolPerformanceFee
+      file: ./src/DefiEdgeFactory.ts

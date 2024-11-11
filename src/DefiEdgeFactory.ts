@@ -1,19 +1,22 @@
+import { Address, Bytes, BigInt, ethereum } from "@graphprotocol/graph-ts";
+
 import {
   LastFeeAMLEntity,
   DefiEdgePoolsAndStrategiesEntity,
 } from "../generated/schema";
-import { Address, Bytes, BigInt, ethereum } from "@graphprotocol/graph-ts";
+
 import { ChangeProtocolPerformanceFee as ChangeProtocolPerformanceFeeEvent } from "../generated/templates/DefiEdgeFactoryData/DefiEdgeFactoryABI";
 import { DefiEdgeStrategyABI } from "../generated/templates/FactoryData/DefiEdgeStrategyABI";
 import { DefiEdgeQuickSwapMerklFarmDataABI } from "../generated/templates/FactoryData/DefiEdgeQuickSwapMerklFarmDataABI";
 import { DefiEdgeQuickSwapMerklFarmData } from "../generated/templates";
 import { DefiEdgeManagerABI } from "../generated/templates/FactoryData/DefiEdgeManagerABI";
 import { DefiEdgeFactoryABI } from "../generated/templates/FactoryData/DefiEdgeFactoryABI";
+
 import {
   addressZero,
   defiedgeFactoryAddress,
   factoryAddress,
-} from "../src/constants";
+} from "../src/utils/constants";
 
 export function handleChangeProtocolPerformanceFee(
   event: ChangeProtocolPerformanceFeeEvent

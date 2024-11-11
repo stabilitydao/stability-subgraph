@@ -5,19 +5,7 @@ import {
   ethereum,
   BigDecimal,
 } from "@graphprotocol/graph-ts";
-import {
-  vaultManagerAddress,
-  getBalanceAddress,
-  ZeroBigInt,
-  ZeroBigDecimal,
-  OneHundredBigDecimal,
-  YearBigDecimal,
-  EtherBigDecimal,
-  OneBigDecimal,
-  platformAddress,
-  networkToDeploy,
-} from "./constants";
-import { BigIntToBigDecimal, pow } from "./math";
+
 import { VaultManagerABI as VaultManagerContract } from "../generated/templates/VaultManagerData/VaultManagerABI";
 import {
   HardWork as HardWorkEvent,
@@ -37,6 +25,22 @@ import {
 } from "../generated/schema";
 import { PlatformABI as PlatformContract } from "../generated/PlatformData/PlatformABI";
 import { ERC20UpgradeableABI } from "../generated/templates/FactoryData/ERC20UpgradeableABI";
+
+import {
+  vaultManagerAddress,
+  getBalanceAddress,
+  ZeroBigInt,
+  ZeroBigDecimal,
+  OneHundredBigDecimal,
+  YearBigDecimal,
+  EtherBigDecimal,
+  OneBigDecimal,
+  platformAddress,
+} from "./utils/constants";
+
+import { BigIntToBigDecimal, pow } from "./utils/math";
+
+import { NETWORK } from "./utils/network";
 
 export function handleHardWork(event: HardWorkEvent): void {
   const strategyContract = StrategyContract.bind(event.address);
@@ -64,10 +68,7 @@ export function handleHardWork(event: HardWorkEvent): void {
   vault.lastHardWork = event.block.timestamp;
   vault.assetsWithApr = changetype<Bytes[]>(vaultInfo.value3);
   vault.assetsAprs = vaultInfo.value4;
-  if (
-    event.block.number > BigInt.fromI32(53088320) &&
-    networkToDeploy === "matic"
-  ) {
+  if (event.block.number > BigInt.fromI32(53088320) && NETWORK === "matic") {
     const getBalanceContract = GetBalanceContract.bind(
       Address.fromString(getBalanceAddress)
     );
