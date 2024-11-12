@@ -6,3 +6,7 @@ build/
 # Dotenv file
 .env
 
+
+# Generated templates files
+src/utils/network.ts
+subgraph.yaml
