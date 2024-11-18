@@ -35,8 +35,11 @@ import {
   YearBigDecimal,
   EtherBigDecimal,
   OneBigDecimal,
+  WeeksBigDecimal,
   platformAddress,
 } from "./utils/constants";
+
+import { calculateCompoundedAPR } from "./utils/functions";
 
 import { BigIntToBigDecimal, pow } from "./utils/math";
 
@@ -232,16 +235,16 @@ export function handleHardWork(event: HardWorkEvent): void {
       .toBigDecimal()
       .div(BigDecimal.fromString((60 * 60 * 24).toString()));
 
-    let daysFromCreation: string = differenceInSecondsFromCreation
-      .div(BigInt.fromI32(60 * 60 * 24))
-      .toString();
+    let daysFromCreation: BigDecimal = differenceInSecondsFromCreation
+      .toBigDecimal()
+      .div(BigDecimal.fromString((60 * 60 * 24).toString()));
 
     if (daysFromLastHardWork.equals(ZeroBigDecimal)) {
       daysFromLastHardWork = BigDecimal.fromString("1");
     }
 
-    if (BigDecimal.fromString(daysFromCreation).lt(OneBigDecimal)) {
-      daysFromCreation = "1";
+    if (daysFromCreation.equals(ZeroBigDecimal)) {
+      daysFromCreation = BigDecimal.fromString("1");
     }
     //***** Initialize all other variables ******//
 
@@ -265,16 +268,20 @@ export function handleHardWork(event: HardWorkEvent): void {
     const assetsPrices: string[] = [];
     let assetsSumPercentDiff: BigDecimal = ZeroBigDecimal;
 
-    const periodTokensVsHoldAPR: string[] = [];
-    const lifetimeTokensVsHoldAPR: string[] = [];
+    const periodAssetsVsHold: string[] = [];
+    const assetsVsHoldAPR: string[] = [];
     const lifetimeAssetsVsHold: string[] = [];
-    let periodVsHoldAPR: string = "";
+    const weekAssetsVsHoldAPR: string[] = [];
+    const dailyAssetsVsHoldAPR: string[] = [];
+    let periodVsHold: string = "";
 
     let priceDifference: BigDecimal = ZeroBigDecimal;
 
     const sharePriceOnCreation: BigDecimal = OneBigDecimal;
     let holdPercentDiff: BigDecimal = OneBigDecimal;
-    let lifetimeVsHoldAPR: BigDecimal = OneBigDecimal;
+    let dailyVsHoldAPR: BigDecimal = OneBigDecimal;
+    let vsHoldAPR: BigDecimal = OneBigDecimal;
+    let weekVsHoldAPR: BigDecimal = OneBigDecimal;
 
     const sharePrice = BigDecimal.fromString(
       event.params.sharePrice.toString()
@@ -403,22 +410,36 @@ export function handleHardWork(event: HardWorkEvent): void {
           lifetimePriceDifference
         );
 
-        let yearPercentDiff = percentDiff
-          .div(daysFromLastHardWork)
-          .times(YearBigDecimal);
+        let yearPercentDiff = calculateCompoundedAPR(
+          percentDiff,
+          YearBigDecimal,
+          daysFromLastHardWork
+        );
 
-        let lifetimeYearPercentDiff = lifetimePercentDiff
-          .div(BigDecimal.fromString(daysFromCreation))
-          .times(YearBigDecimal);
+        let lifetimeYearPercentDiff = calculateCompoundedAPR(
+          lifetimePercentDiff,
+          YearBigDecimal,
+          daysFromCreation
+        );
 
-        if (lifetimeYearPercentDiff.lt(BigDecimal.fromString("-100"))) {
-          lifetimeYearPercentDiff = BigDecimal.fromString("-99.99");
-        }
+        let assetWeekVsHoldAPR = calculateCompoundedAPR(
+          lifetimeYearPercentDiff,
+          OneBigDecimal,
+          WeeksBigDecimal
+        );
+
+        let assetDailyVsHoldAPR = calculateCompoundedAPR(
+          lifetimeYearPercentDiff,
+          OneBigDecimal,
+          YearBigDecimal
+        );
 
         holdTokenPresentProportion.push(lifetimePresentAmount.toString());
-        periodTokensVsHoldAPR.push(yearPercentDiff.toString());
+        periodAssetsVsHold.push(yearPercentDiff.toString());
         lifetimeAssetsVsHold.push(lifetimePercentDiff.toString());
-        lifetimeTokensVsHoldAPR.push(lifetimeYearPercentDiff.toString());
+        weekAssetsVsHoldAPR.push(assetWeekVsHoldAPR.toString());
+        dailyAssetsVsHoldAPR.push(assetDailyVsHoldAPR.toString());
+        assetsVsHoldAPR.push(lifetimeYearPercentDiff.toString());
       }
 
       // Get period VS HOLD APR
@@ -431,7 +452,7 @@ export function handleHardWork(event: HardWorkEvent): void {
           .times(OneHundredBigDecimal);
       }
 
-      periodVsHoldAPR = periodSharePricePercentDiff
+      periodVsHold = periodSharePricePercentDiff
         .minus(assetsSumPercentDiff)
         .div(daysFromLastHardWork)
         .times(YearBigDecimal)
@@ -449,25 +470,44 @@ export function handleHardWork(event: HardWorkEvent): void {
 
       holdPercentDiff = lifetimeSharePricePercentDiff.minus(priceDifference);
 
-      lifetimeVsHoldAPR = holdPercentDiff
-        .div(BigDecimal.fromString(daysFromCreation))
-        .times(YearBigDecimal);
+      vsHoldAPR = calculateCompoundedAPR(
+        holdPercentDiff,
+        YearBigDecimal,
+        daysFromCreation
+      );
 
-      if (lifetimeVsHoldAPR.lt(BigDecimal.fromString("-100"))) {
-        lifetimeVsHoldAPR = BigDecimal.fromString("-99.99");
-      }
+      weekVsHoldAPR = calculateCompoundedAPR(
+        vsHoldAPR,
+        OneBigDecimal,
+        WeeksBigDecimal
+      );
+
+      dailyVsHoldAPR = calculateCompoundedAPR(
+        vsHoldAPR,
+        OneBigDecimal,
+        YearBigDecimal
+      );
     }
 
     // ============================================ //
-    vaultHistoryEntity.daysFromCreation = daysFromCreation;
+    vaultHistoryEntity.daysFromCreation = daysFromCreation.toString();
     vaultHistoryEntity.lastAssetsPrices = lastAssetsPrices;
 
-    vaultHistoryEntity.periodVsHoldAPR = periodVsHoldAPR;
-    vaultHistoryEntity.lifetimeVsHoldAPR = lifetimeVsHoldAPR.toString();
-    vaultHistoryEntity.periodTokensVsHoldAPR = periodTokensVsHoldAPR;
-    vaultHistoryEntity.lifetimeTokensVsHoldAPR = lifetimeTokensVsHoldAPR;
+    vaultHistoryEntity.periodVsHoldAPR = periodVsHold;
+    vaultHistoryEntity.periodTokensVsHoldAPR = periodAssetsVsHold; //todo: periodTokensVsHoldAPR -> periodAssetsVsHoldAPR
+
     vaultHistoryEntity.lifetimeVsHold = holdPercentDiff.toString();
     vaultHistoryEntity.lifetimeAssetsVsHold = lifetimeAssetsVsHold;
+
+    vaultHistoryEntity.weekVsHoldAPR = weekVsHoldAPR.toString();
+    vaultHistoryEntity.weekAssetsVsHoldAPR = weekAssetsVsHoldAPR;
+
+    vaultHistoryEntity.dailyVsHoldAPR = dailyVsHoldAPR.toString();
+    vaultHistoryEntity.dailyAssetsVsHoldAPR = dailyAssetsVsHoldAPR;
+
+    vaultHistoryEntity.vsHoldAPR = vsHoldAPR.toString(); // lifetimeVsHoldAPR -> vsHoldAPR
+    vaultHistoryEntity.assetsVsHoldAPR = assetsVsHoldAPR; // lifetimeTokensVsHoldAPR -> assetsVsHoldAPR
+
     //===========LifeTimeAPR===========//
 
     const lifeLength = _timestampsArray[0].minus(vault.created);

@@ -1,3 +1,9 @@
+import { BigDecimal, BigInt } from "@graphprotocol/graph-ts";
+
+import { decimalPow } from "./math";
+
+import { OneBigDecimal, OneHundredBigDecimal } from "./constants";
+
 export function getPlatformAddress(network: string): string {
   if (network == "matic") {
     return "0xb2a0737ef27b5Cc474D24c779af612159b1c3e60";
@@ -49,4 +55,26 @@ export function getDefiedgeFactoryAddress(network: string): string {
     return "0xa631c80f5F4739565d8793cAB6fD08812cE3337D";
   }
   throw new Error("Unsupported network");
+}
+
+export function calculateCompoundedAPR(
+  baseAPR: BigDecimal,
+  periodDuration: BigDecimal,
+  compoundingFrequency: BigDecimal
+): BigDecimal {
+  if (compoundingFrequency.lt(BigDecimal.fromString("1"))) {
+    compoundingFrequency = BigDecimal.fromString("1");
+  }
+
+  const decimalAPR = baseAPR.div(OneHundredBigDecimal);
+
+  const exponent = periodDuration.div(compoundingFrequency);
+
+  const compoundedRate = decimalPow(OneBigDecimal.plus(decimalAPR), exponent);
+
+  const compoundedAPR = compoundedRate
+    .minus(OneBigDecimal)
+    .times(OneHundredBigDecimal);
+
+  return compoundedAPR;
 }

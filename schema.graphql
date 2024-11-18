@@ -101,13 +101,22 @@ type VaultHistoryEntity @entity(immutable: true) {
   APRWeekly: BigInt
   timestamp: BigInt!
   daysFromCreation: String
-  periodVsHoldAPR: String
-  periodTokensVsHoldAPR: [String!]
-  lifetimeVsHoldAPR: String
-  lifetimeTokensVsHoldAPR: [String!]
+  lastAssetsPrices: [String!]
+
   lifetimeVsHold: String
   lifetimeAssetsVsHold: [String!]
-  lastAssetsPrices: [String!]
+
+  dailyVsHoldAPR: String
+  dailyAssetsVsHoldAPR: [String!]
+
+  weekVsHoldAPR: String
+  weekAssetsVsHoldAPR: [String!]
+
+  vsHoldAPR: String
+  assetsVsHoldAPR: [String!]
+
+  periodVsHoldAPR: String
+  periodTokensVsHoldAPR: [String!]
 }
 
 type VaultAPRsEntity @entity {
