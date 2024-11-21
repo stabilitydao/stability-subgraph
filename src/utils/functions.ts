@@ -1,8 +1,10 @@
 import { BigDecimal, BigInt } from "@graphprotocol/graph-ts";
 
-import { decimalPow } from "./math";
-
-import { OneBigDecimal, OneHundredBigDecimal } from "./constants";
+import {
+  OneBigDecimal,
+  OneHundredBigDecimal,
+  ZeroBigDecimal,
+} from "./constants";
 
 export function getPlatformAddress(network: string): string {
   if (network == "matic") {
@@ -56,25 +58,42 @@ export function getDefiedgeFactoryAddress(network: string): string {
   }
   throw new Error("Unsupported network");
 }
+export function calculateVsHoldByPeriod(
+  periodAPRs: string[],
+  timestamps: BigInt[],
+  period: BigDecimal
+): string {
+  const weights: Array<BigDecimal> = [];
+  const APRs: Array<BigDecimal> = [];
 
-export function calculateCompoundedAPR(
-  baseAPR: BigDecimal,
-  periodDuration: BigDecimal,
-  compoundingFrequency: BigDecimal
-): BigDecimal {
-  if (compoundingFrequency.lt(BigDecimal.fromString("1"))) {
-    compoundingFrequency = BigDecimal.fromString("1");
+  let threshold = ZeroBigDecimal;
+
+  for (let i = 0; i < periodAPRs.length; i++) {
+    if (i + 1 == periodAPRs.length) {
+      break;
+    }
+    const diff = BigDecimal.fromString(
+      timestamps[i].minus(timestamps[i + 1]).toString()
+    );
+    if (threshold.plus(diff) <= period) {
+      threshold = threshold.plus(diff);
+      weights.push(diff.div(period));
+    } else {
+      const remainingTime = period.minus(threshold);
+      weights.push(remainingTime.div(period));
+      break;
+    }
   }
 
-  const decimalAPR = baseAPR.div(OneHundredBigDecimal);
+  for (let i = 0; i < weights.length; i++) {
+    APRs.push(BigDecimal.fromString(periodAPRs[i]).times(weights[i]));
+  }
 
-  const exponent = periodDuration.div(compoundingFrequency);
+  const cumulativeAPR: BigDecimal = APRs.reduce(
+    (accumulator: BigDecimal, currentValue: BigDecimal) =>
+      accumulator.plus(currentValue),
+    ZeroBigDecimal
+  );
 
-  const compoundedRate = decimalPow(OneBigDecimal.plus(decimalAPR), exponent);
-
-  const compoundedAPR = compoundedRate
-    .minus(OneBigDecimal)
-    .times(OneHundredBigDecimal);
-
-  return compoundedAPR;
+  return cumulativeAPR.toString();
 }

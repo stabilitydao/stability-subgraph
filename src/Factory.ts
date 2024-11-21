@@ -6,7 +6,7 @@ import {
   StrategyEntity,
   StrategyConfigEntity,
   LastFeeAMLEntity,
-  VaultAPRsEntity,
+  VaultMetricsEntity,
 } from "../generated/schema";
 import {
   VaultData,
@@ -92,10 +92,13 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
     lastFeeAMLEntity.save();
   }
 
-  const vaultAPR24HEntity = new VaultAPRsEntity(event.params.vault);
-  vaultAPR24HEntity.APRS = [];
-  vaultAPR24HEntity.timestamps = [];
-  vaultAPR24HEntity.save();
+  const vaultMetricsEntity = new VaultMetricsEntity(event.params.vault);
+  vaultMetricsEntity.APRS = [];
+  vaultMetricsEntity.timestamps = [];
+  vaultMetricsEntity.periodVsHoldAPRs = [];
+  vaultMetricsEntity.periodAsset1VsHoldAPRs = [];
+  vaultMetricsEntity.periodAsset2VsHoldAPRs = [];
+  vaultMetricsEntity.save();
 
   VaultData.create(event.params.vault);
   StrategyData.create(event.params.strategy);
