@@ -76,6 +76,7 @@ type StrategyEntity @entity {
   version: String!
   pool: Bytes #address
   underlyingSymbol: String
+  underlyingDecimals: String
 }
 
 type StrategyConfigEntity @entity {

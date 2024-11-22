@@ -173,13 +173,18 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
     strategyEntity.pool = LPStrategyContract.pool();
   }
 
-  //UnderlyingSymbol
+  //Underlying symbol && decimals
   if (underlying != Address.fromHexString(addressZero)) {
     const underlyingContract = ERC20UpgradeableABI.bind(underlying);
     const symbolResult = underlyingContract.try_symbol();
 
+    const decimalsResult = underlyingContract.try_decimals();
+
     if (!symbolResult.reverted) {
       strategyEntity.underlyingSymbol = symbolResult.value;
+    }
+    if (!decimalsResult.reverted) {
+      strategyEntity.underlyingDecimals = decimalsResult.value.toString();
     }
   }
 
