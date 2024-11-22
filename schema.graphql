@@ -76,6 +76,7 @@ type StrategyEntity @entity {
   version: String!
   pool: Bytes #address
   underlyingSymbol: String
+  underlyingDecimals: String
 }
 
 type StrategyConfigEntity @entity {
@@ -95,25 +96,41 @@ type VaultHistoryEntity @entity(immutable: true) {
   address: Bytes! #address
   sharePrice: BigInt!
   TVL: BigInt
+
   APR: BigInt
   APR_Compound: BigInt
   APR24H: BigInt
   APRWeekly: BigInt
+
+  lastAssetsPrices: [String!]
+
   timestamp: BigInt!
   daysFromCreation: String
+
   periodVsHoldAPR: String
-  periodTokensVsHoldAPR: [String!]
-  lifetimeVsHoldAPR: String
-  lifetimeTokensVsHoldAPR: [String!]
+  periodAssetsVsHoldAPR: [String!] # periodTokensVsHoldAPR ->  periodAssetsVsHoldAPR
+  #
   lifetimeVsHold: String
   lifetimeAssetsVsHold: [String!]
-  lastAssetsPrices: [String!]
+
+  vsHold24H: String
+  vsHoldWeekly: String
+
+  assetsVsHold24H: [String!]
+  assetsVsHoldWeekly: [String!]
+
+  vsHoldAPR: String # lifetimeVsHoldAPR -> vsHoldAPR
+  assetsVsHoldAPR: [String!] # lifetimeTokensVsHoldAPR ->  assetsVsHoldAPR
 }
 
-type VaultAPRsEntity @entity {
+# VaultAPRsEntity -> VaultMetricsEntity
+type VaultMetricsEntity @entity {
   id: Bytes! #address
   APRS: [BigInt!]!
   timestamps: [BigInt!]!
+  periodVsHoldAPRs: [String!]!
+  periodAsset1VsHoldAPRs: [String!]!
+  periodAsset2VsHoldAPRs: [String!]!
 }
 
 type ALMRebalanceHistoryEntity @entity(immutable: true) {

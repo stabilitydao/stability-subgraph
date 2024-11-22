@@ -1,3 +1,11 @@
+import { BigDecimal, BigInt } from "@graphprotocol/graph-ts";
+
+import {
+  OneBigDecimal,
+  OneHundredBigDecimal,
+  ZeroBigDecimal,
+} from "./constants";
+
 export function getPlatformAddress(network: string): string {
   if (network == "matic") {
     return "0xb2a0737ef27b5Cc474D24c779af612159b1c3e60";
@@ -49,4 +57,43 @@ export function getDefiedgeFactoryAddress(network: string): string {
     return "0xa631c80f5F4739565d8793cAB6fD08812cE3337D";
   }
   throw new Error("Unsupported network");
+}
+export function calculateVsHoldByPeriod(
+  periodAPRs: string[],
+  timestamps: BigInt[],
+  period: BigDecimal
+): string {
+  const weights: Array<BigDecimal> = [];
+  const APRs: Array<BigDecimal> = [];
+
+  let threshold = ZeroBigDecimal;
+
+  for (let i = 0; i < periodAPRs.length; i++) {
+    if (i + 1 == periodAPRs.length) {
+      break;
+    }
+    const diff = BigDecimal.fromString(
+      timestamps[i].minus(timestamps[i + 1]).toString()
+    );
+    if (threshold.plus(diff) <= period) {
+      threshold = threshold.plus(diff);
+      weights.push(diff.div(period));
+    } else {
+      const remainingTime = period.minus(threshold);
+      weights.push(remainingTime.div(period));
+      break;
+    }
+  }
+
+  for (let i = 0; i < weights.length; i++) {
+    APRs.push(BigDecimal.fromString(periodAPRs[i]).times(weights[i]));
+  }
+
+  const cumulativeAPR: BigDecimal = APRs.reduce(
+    (accumulator: BigDecimal, currentValue: BigDecimal) =>
+      accumulator.plus(currentValue),
+    ZeroBigDecimal
+  );
+
+  return cumulativeAPR.toString();
 }

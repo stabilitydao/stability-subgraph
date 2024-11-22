@@ -28,6 +28,9 @@ const oneEther = BigInt.fromI32(10).pow(18);
 const ZeroBigInt = BigInt.fromI32(0);
 const ZeroBigDecimal = BigDecimal.fromString("0");
 const OneBigDecimal = BigDecimal.fromString("1");
+const WeeksBigDecimal = BigDecimal.fromString("52");
+const DayInSecondsBigDecimal = BigDecimal.fromString("86400");
+const WeekInSecondsBigDecimal = BigDecimal.fromString("604800");
 const OneHundredBigDecimal = BigDecimal.fromString("100");
 const YearBigDecimal = BigDecimal.fromString("365");
 const EtherBigDecimal = BigDecimal.fromString("1000000000000000000");
@@ -44,9 +47,12 @@ export {
   ZeroBigInt,
   ZeroBigDecimal,
   OneBigDecimal,
+  WeeksBigDecimal,
   OneHundredBigDecimal,
   YearBigDecimal,
   EtherBigDecimal,
   ichiName,
   defiedgeFactoryAddress,
+  DayInSecondsBigDecimal,
+  WeekInSecondsBigDecimal,
 };
