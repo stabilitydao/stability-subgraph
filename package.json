@@ -3,6 +3,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "prepare": "node template-generator.ts",
+    "clean": "graph clean",
     "codegen": "graph codegen",
     "build": "graph build",
     "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ stability-dao",

@@ -520,7 +520,7 @@ export function handleHardWork(event: HardWorkEvent): void {
     vaultHistoryEntity.lastAssetsPrices = lastAssetsPrices;
 
     vaultHistoryEntity.periodVsHoldAPR = periodVsHoldAPR;
-    vaultHistoryEntity.periodAssetsVsHoldAPR = periodAssetsVsHoldAPR; // periodTokensVsHoldAPR -> periodAssetsVsHoldAPR
+    vaultHistoryEntity.periodAssetsVsHoldAPR = periodAssetsVsHoldAPR;
 
     vaultHistoryEntity.lifetimeVsHold = lifetimeVsHold.toString();
     vaultHistoryEntity.lifetimeAssetsVsHold = lifetimeAssetsVsHold;
@@ -531,8 +531,8 @@ export function handleHardWork(event: HardWorkEvent): void {
     vaultHistoryEntity.assetsVsHold24H = assetsVsHold24H;
     vaultHistoryEntity.assetsVsHoldWeekly = assetsVsHoldWeekly;
 
-    vaultHistoryEntity.vsHoldAPR = vsHoldAPR.toString(); // lifetimeVsHoldAPR -> vsHoldAPR
-    vaultHistoryEntity.assetsVsHoldAPR = assetsVsHoldAPR; //  lifetimeTokensVsHoldAPR ->  assetsVsHoldAPR
+    vaultHistoryEntity.vsHoldAPR = vsHoldAPR.toString();
+    vaultHistoryEntity.assetsVsHoldAPR = assetsVsHoldAPR;
     //===========LifeTimeAPR===========//
 
     const lifeLength = _timestampsArray[0].minus(vault.created);
