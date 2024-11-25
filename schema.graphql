@@ -109,6 +109,7 @@ type VaultHistoryEntity @entity(immutable: true) {
 
   periodVsHoldAPR: String
   periodAssetsVsHoldAPR: [String!] # periodTokensVsHoldAPR ->  periodAssetsVsHoldAPR
+  periodTokensVsHoldAPR: [String!] # todo: delete
   #
   lifetimeVsHold: String
   lifetimeAssetsVsHold: [String!]
@@ -119,6 +120,9 @@ type VaultHistoryEntity @entity(immutable: true) {
   assetsVsHold24H: [String!]
   assetsVsHoldWeekly: [String!]
 
+  lifetimeVsHoldAPR: String # todo: delete
+  lifetimeTokensVsHoldAPR: [String!] # todo: delete
+  #
   vsHoldAPR: String # lifetimeVsHoldAPR -> vsHoldAPR
   assetsVsHoldAPR: [String!] # lifetimeTokensVsHoldAPR ->  assetsVsHoldAPR
 }

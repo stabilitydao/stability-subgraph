@@ -521,6 +521,7 @@ export function handleHardWork(event: HardWorkEvent): void {
 
     vaultHistoryEntity.periodVsHoldAPR = periodVsHoldAPR;
     vaultHistoryEntity.periodAssetsVsHoldAPR = periodAssetsVsHoldAPR; // periodTokensVsHoldAPR -> periodAssetsVsHoldAPR
+    vaultHistoryEntity.periodTokensVsHoldAPR = periodAssetsVsHoldAPR; // todo: delete
 
     vaultHistoryEntity.lifetimeVsHold = lifetimeVsHold.toString();
     vaultHistoryEntity.lifetimeAssetsVsHold = lifetimeAssetsVsHold;
@@ -530,6 +531,9 @@ export function handleHardWork(event: HardWorkEvent): void {
 
     vaultHistoryEntity.assetsVsHold24H = assetsVsHold24H;
     vaultHistoryEntity.assetsVsHoldWeekly = assetsVsHoldWeekly;
+
+    vaultHistoryEntity.lifetimeVsHoldAPR = vsHoldAPR.toString(); // todo: delete
+    vaultHistoryEntity.lifetimeTokensVsHoldAPR = assetsVsHoldAPR; // todo: delete
 
     vaultHistoryEntity.vsHoldAPR = vsHoldAPR.toString(); // lifetimeVsHoldAPR -> vsHoldAPR
     vaultHistoryEntity.assetsVsHoldAPR = assetsVsHoldAPR; //  lifetimeTokensVsHoldAPR ->  assetsVsHoldAPR
