@@ -10,3 +10,5 @@ build/
 # Generated templates files
 src/utils/network.ts
 subgraph.yaml
+
+.idea

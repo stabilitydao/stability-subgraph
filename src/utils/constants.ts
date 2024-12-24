@@ -18,7 +18,7 @@ const priceReaderAddress = getPriceReaderAddress(NETWORK);
 
 let defiedgeFactoryAddress = addressZero;
 
-if (NETWORK != "real") {
+if (NETWORK != "real" && NETWORK != "sonic") {
   defiedgeFactoryAddress = getDefiedgeFactoryAddress(NETWORK);
 }
 
