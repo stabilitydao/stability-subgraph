@@ -13,6 +13,8 @@ export function getPlatformAddress(network: string): string {
     return "0x7eAeE5CfF17F7765d89F4A46b484256929C62312";
   } else if (network === "real") {
     return "0xB7838d447deece2a9A5794De0f342B47d0c1B9DC";
+  } else if (network === "sonic") {
+    return "0x4Aca671A420eEB58ecafE83700686a2AD06b20D8";
   }
 
   throw new Error("Unsupported network");
@@ -25,6 +27,8 @@ export function getFactoryAddress(network: string): string {
     return "0xe01E62dAe952501e884624423132e50E7B77Ba3c";
   } else if (network === "real") {
     return "0x47331996c42DEF8BD9808888bEeeC945b3424D25";
+  } else if (network === "sonic") {
+    return "0xc184a3ecca684f2621c903a7943d85fa42f56671";
   }
   throw new Error("Unsupported network");
 }
@@ -36,6 +40,8 @@ export function getVaultManagerAddress(network: string): string {
     return "0x2ba8C6A519CEDB6d1C35cEb14E8642625E91F77C";
   } else if (network === "real") {
     return "0x7146efaab12A083b9826c66162062c21eC70fe3c";
+  } else if (network === "sonic") {
+    return "0x589a504f2ee9d054b483c700fa814863d639381e";
   }
   throw new Error("Unsupported network");
 }
@@ -47,6 +53,8 @@ export function getPriceReaderAddress(network: string): string {
     return "0x41408b3e0f279634E3cd59E2D76EF6b149d6D418";
   } else if (network === "real") {
     return "0x6C07D2f01F7640Cb24048a54A85aDeCae12c2408";
+  } else if (network === "sonic") {
+    return "0x422025182dd83a610bfa8b20550dcccdf94dc549";
   }
   throw new Error("Unsupported network");
 }
