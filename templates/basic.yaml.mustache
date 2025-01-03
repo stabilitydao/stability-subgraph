@@ -135,6 +135,8 @@ templates:
           file: ./abis/ERC20UpgradeableABI.json
         - name: PlatformABI
           file: ./abis/PlatformABI.json
+        - name: VaultManagerABI
+          file: ./abis/VaultManagerABI.json  
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer

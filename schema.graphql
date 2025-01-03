@@ -54,6 +54,7 @@ type VaultEntity @entity {
   initAssetsAmounts: [BigInt!]
   lastAssetsPrices: [String!]!
   lastAssetsSum: String!
+  isInitialized: Boolean!
 }
 
 type VaultTypeEntity @entity {

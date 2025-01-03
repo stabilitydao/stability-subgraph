@@ -38,6 +38,8 @@ import {
   platformAddress,
   WeekInSecondsBigDecimal,
   DayInSecondsBigDecimal,
+  DayInSecondsBigInt,
+  OneBigInt,
 } from "./utils/constants";
 
 import { BigIntToBigDecimal, pow } from "./utils/math";
@@ -58,6 +60,10 @@ export function handleHardWork(event: HardWorkEvent): void {
   const assetsAmounts = strategyContract.assetsAmounts();
 
   const vault = VaultEntity.load(vaultAddress) as VaultEntity;
+
+  const vaultMetricsEntity = VaultMetricsEntity.load(
+    vaultAddress
+  ) as VaultMetricsEntity;
 
   const vaultInfo = vaultManagerContract.vaultInfo(vaultAddress);
 
@@ -106,12 +112,36 @@ export function handleHardWork(event: HardWorkEvent): void {
   vaultHistoryEntity.APR = event.params.apr;
   vaultHistoryEntity.APR_Compound = event.params.compoundApr;
 
-  //===========APR24H===========//
+  //***** Get timestamp from last HardWork to calculate days from event ******//
 
-  const vaultMetricsEntity = VaultMetricsEntity.load(
-    vaultAddress
-  ) as VaultMetricsEntity;
+  let lastTimestamp = vault.created;
 
+  if (vaultMetricsEntity.timestamps.length) {
+    lastTimestamp =
+      vaultMetricsEntity.timestamps[vaultMetricsEntity.timestamps.length - 1];
+  }
+
+  const currentTime = event.block.timestamp;
+  const differenceInSeconds = currentTime.minus(lastTimestamp);
+  const differenceInSecondsFromCreation = currentTime.minus(vault.created);
+
+  let daysFromLastHardWork: BigDecimal = differenceInSeconds
+    .toBigDecimal()
+    .div(BigDecimal.fromString((60 * 60 * 24).toString()));
+
+  let daysFromCreation: string = differenceInSecondsFromCreation
+    .div(BigInt.fromI32(60 * 60 * 24))
+    .toString();
+
+  if (daysFromLastHardWork.equals(ZeroBigDecimal)) {
+    daysFromLastHardWork = BigDecimal.fromString("1");
+  }
+
+  if (BigDecimal.fromString(daysFromCreation).lt(OneBigDecimal)) {
+    daysFromCreation = "1";
+  }
+
+  //===========dailyAPR===========//
   let _APRArray = vaultMetricsEntity.APRS;
   let _timestampsArray = vaultMetricsEntity.timestamps;
   let _periodVsHoldAPRs = vaultMetricsEntity.periodVsHoldAPRs;
@@ -124,13 +154,24 @@ export function handleHardWork(event: HardWorkEvent): void {
   _APRArray.reverse();
   _timestampsArray.reverse();
 
-  const day = BigInt.fromI32(86400);
+  const day = DayInSecondsBigInt;
+  let relativeWeek = BigInt.fromI32(604800);
+
+  if (BigInt.fromString(daysFromCreation).lt(BigInt.fromI32(7))) {
+    relativeWeek = DayInSecondsBigInt.times(
+      BigInt.fromString(daysFromCreation)
+    );
+  }
 
   const DENOMINATOR = BigInt.fromI32(100000);
-  const APRs: Array<BigInt> = [];
+
+  const dailyAPRs: Array<BigInt> = [];
+  const weeklyAPRs: Array<BigInt> = [];
+
+  const dailyWeights: Array<BigInt> = [];
+  const weeklyWeights: Array<BigInt> = [];
 
   let threshold = ZeroBigInt;
-  const weights: Array<BigInt> = [];
 
   for (let i = 0; i < _APRArray.length; i++) {
     if (i + 1 == _APRArray.length) {
@@ -139,65 +180,60 @@ export function handleHardWork(event: HardWorkEvent): void {
     const diff = _timestampsArray[i].minus(_timestampsArray[i + 1]);
     if (threshold.plus(diff) <= day) {
       threshold = threshold.plus(diff);
-      weights.push(diff.times(DENOMINATOR).div(day));
+      dailyWeights.push(diff.times(DENOMINATOR).div(day));
     } else {
       const result = day
         .minus(threshold)
         .times(DENOMINATOR)
         .div(day);
-      weights.push(result);
+      dailyWeights.push(result);
       break;
     }
   }
 
-  for (let i = 0; i < weights.length; i++) {
-    APRs.push(_APRArray[i].times(weights[i]));
+  for (let i = 0; i < dailyWeights.length; i++) {
+    dailyAPRs.push(_APRArray[i].times(dailyWeights[i]));
   }
 
-  let averageAPR24H = APRs.reduce(
+  const averageDailyAPR = dailyAPRs.reduce(
     (accumulator: BigInt, currentValue: BigInt) =>
       accumulator.plus(currentValue),
     ZeroBigInt
   );
-  averageAPR24H = averageAPR24H.div(DENOMINATOR);
 
-  //===========WeeklyAPR===========//
-
-  const week = BigInt.fromI32(604800);
+  //===========weeklyAPR===========//
   threshold = ZeroBigInt;
-  let weightsWeeklyAPR: Array<BigInt> = [];
+
   for (let i = 0; i < _APRArray.length; i++) {
     if (i + 1 == _APRArray.length) {
       break;
     }
     const diff = _timestampsArray[i].minus(_timestampsArray[i + 1]);
-    if (threshold.plus(diff) <= week) {
+    if (threshold.plus(diff) <= relativeWeek) {
       threshold = threshold.plus(diff);
-      weightsWeeklyAPR.push(diff.times(DENOMINATOR).div(week));
+      weeklyWeights.push(diff.times(DENOMINATOR).div(relativeWeek));
     } else {
-      const result = week
+      const result = relativeWeek
         .minus(threshold)
         .times(DENOMINATOR)
-        .div(week);
-      weightsWeeklyAPR.push(result);
+        .div(relativeWeek);
+      weeklyWeights.push(result);
       break;
     }
   }
 
-  let WeeklyAPRS: Array<BigInt> = [];
-
-  for (let i = 0; i < weightsWeeklyAPR.length; i++) {
-    WeeklyAPRS.push(_APRArray[i].times(weightsWeeklyAPR[i]));
+  for (let i = 0; i < weeklyWeights.length; i++) {
+    weeklyAPRs.push(_APRArray[i].times(weeklyWeights[i]));
   }
 
-  let averageWeeklyAPR = WeeklyAPRS.reduce(
+  const averageWeeklyAPR = weeklyAPRs.reduce(
     (accumulator: BigInt, currentValue: BigInt) =>
       accumulator.plus(currentValue),
     ZeroBigInt
   );
 
+  vaultHistoryEntity.APR24H = averageDailyAPR.div(DENOMINATOR);
   vaultHistoryEntity.APRWeekly = averageWeeklyAPR.div(DENOMINATOR);
-
   //===========Get platform data===========//
   const platformContract = PlatformContract.bind(
     Address.fromString(platformAddress)
@@ -223,36 +259,6 @@ export function handleHardWork(event: HardWorkEvent): void {
     }
 
     //======================VS HOLD======================//
-    //***** Get timestamp from last HardWork to calculate days from event ******//
-
-    let lastTimestamp = vault.created;
-
-    if (vaultMetricsEntity.timestamps.length) {
-      lastTimestamp =
-        vaultMetricsEntity.timestamps[vaultMetricsEntity.timestamps.length - 1];
-    }
-
-    const currentTime = event.block.timestamp;
-    const differenceInSeconds = currentTime.minus(lastTimestamp);
-    const differenceInSecondsFromCreation = currentTime.minus(vault.created);
-
-    let daysFromLastHardWork: BigDecimal = differenceInSeconds
-      .toBigDecimal()
-      .div(BigDecimal.fromString((60 * 60 * 24).toString()));
-
-    let daysFromCreation: string = differenceInSecondsFromCreation
-      .div(BigInt.fromI32(60 * 60 * 24))
-      .toString();
-
-    if (daysFromLastHardWork.equals(ZeroBigDecimal)) {
-      daysFromLastHardWork = BigDecimal.fromString("1");
-    }
-
-    if (BigDecimal.fromString(daysFromCreation).lt(OneBigDecimal)) {
-      daysFromCreation = "1";
-    }
-    //***** Initialize all other variables ******//
-
     const strategyAssets = assetsAmounts.value0;
 
     let strategyAssetsAmounts: BigInt[] = [];
@@ -533,6 +539,8 @@ export function handleHardWork(event: HardWorkEvent): void {
 
     vaultHistoryEntity.vsHoldAPR = vsHoldAPR.toString();
     vaultHistoryEntity.assetsVsHoldAPR = assetsVsHoldAPR;
+
+    vaultHistoryEntity.save();
     //===========LifeTimeAPR===========//
 
     const lifeLength = _timestampsArray[0].minus(vault.created);
@@ -572,8 +580,6 @@ export function handleHardWork(event: HardWorkEvent): void {
     vaultMetricsEntity.periodAsset1VsHoldAPRs = _periodAsset1VsHoldAPRs;
     vaultMetricsEntity.periodAsset2VsHoldAPRs = _periodAsset2VsHoldAPRs;
     vaultMetricsEntity.save();
-    vaultHistoryEntity.APR24H = averageAPR24H;
-    vaultHistoryEntity.save();
 
     //===========vaultHistoryEntity(VaultEntity)===========//
     let _vaultHistoryEntity = vault.vaultHistoryEntity;

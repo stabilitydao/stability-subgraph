@@ -103,14 +103,6 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
   VaultData.create(event.params.vault);
   StrategyData.create(event.params.strategy);
 
-  //Calculate vault.AssetsPricesOnCreation//
-
-  const _amounts: Array<BigInt> = [];
-  for (let i = 0; i < _vaultInfo.value1.length; i++) {
-    _amounts.push(ZeroBigInt);
-  }
-
-  const assetsPrices = priceReader.getAssetsPrice(_vaultInfo.value1, _amounts);
   /////
 
   vault.lastHardWork = ZeroBigInt;
@@ -143,7 +135,13 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
   vault.NFTtokenID = vaultManagerContract
     .totalSupply()
     .minus(BigInt.fromI32(1));
-  vault.AssetsPricesOnCreation = assetsPrices.value2;
+  vault.AssetsPricesOnCreation = [
+    ZeroBigInt,
+    ZeroBigInt,
+    ZeroBigInt,
+    ZeroBigInt,
+  ];
+  vault.isInitialized = false;
   vault.lifeTimeAPR = ZeroBigInt;
   if (event.block.number > BigInt.fromI32(53088320)) {
     const getBalanceContract = GetBalanceContract.bind(

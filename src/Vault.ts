@@ -20,17 +20,44 @@ import {
 import { PriceReaderABI as PriceReaderContract } from "../generated/templates/IchiQuickSwapMerklFarmData/PriceReaderABI";
 import { WithdrawAssets as WithdrawAssetsEventOld } from "../generated/templates/deprecatedData/deprecatedABI";
 import { StrategyBaseABI as StrategyContract } from "../generated/templates/StrategyData/StrategyBaseABI";
+import { VaultManagerABI as VaultManagerContract } from "../generated/templates/VaultManagerData/VaultManagerABI";
 
 import {
   ZeroBigInt,
   addressZero,
   oneEther,
-  platformAddress,
+  vaultManagerAddress,
+  priceReaderAddress,
 } from "./utils/constants";
 
 export function handleDepositAssets(event: DepositAssetsEvent): void {
   const vault = VaultEntity.load(event.address) as VaultEntity;
   const vaultContract = VaultContract.bind(event.address);
+
+  if (!vault.isInitialized) {
+    const vaultManagerContract = VaultManagerContract.bind(
+      Address.fromString(vaultManagerAddress)
+    );
+
+    const _vaultInfo = vaultManagerContract.vaultInfo(event.address);
+
+    const _amounts: Array<BigInt> = [];
+    for (let i = 0; i < _vaultInfo.value1.length; i++) {
+      _amounts.push(ZeroBigInt);
+    }
+
+    const priceReader = PriceReaderContract.bind(
+      Address.fromString(priceReaderAddress)
+    );
+
+    const assetsPrices = priceReader.getAssetsPrice(
+      _vaultInfo.value1,
+      _amounts
+    );
+
+    vault.AssetsPricesOnCreation = assetsPrices.value2;
+    vault.isInitialized = true;
+  }
 
   const _VaultUserId = event.address
     .toHexString()
