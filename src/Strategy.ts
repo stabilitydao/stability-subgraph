@@ -195,7 +195,7 @@ export function handleHardWork(event: HardWorkEvent): void {
     dailyAPRs.push(_APRArray[i].times(dailyWeights[i]));
   }
 
-  const averageDailyAPR = dailyAPRs.reduce(
+  let averageDailyAPR = dailyAPRs.reduce(
     (accumulator: BigInt, currentValue: BigInt) =>
       accumulator.plus(currentValue),
     ZeroBigInt
@@ -226,11 +226,22 @@ export function handleHardWork(event: HardWorkEvent): void {
     weeklyAPRs.push(_APRArray[i].times(weeklyWeights[i]));
   }
 
-  const averageWeeklyAPR = weeklyAPRs.reduce(
+  let averageWeeklyAPR = weeklyAPRs.reduce(
     (accumulator: BigInt, currentValue: BigInt) =>
       accumulator.plus(currentValue),
     ZeroBigInt
   );
+
+  if (BigInt.fromString(daysFromCreation).lt(BigInt.fromI32(2))) {
+    averageDailyAPR = _APRArray
+      .reduce(
+        (accumulator: BigInt, currentValue: BigInt) =>
+          accumulator.plus(currentValue),
+        ZeroBigInt
+      )
+      .div(BigInt.fromI32(_APRArray.length));
+    averageWeeklyAPR = averageDailyAPR;
+  }
 
   vaultHistoryEntity.APR24H = averageDailyAPR.div(DENOMINATOR);
   vaultHistoryEntity.APRWeekly = averageWeeklyAPR.div(DENOMINATOR);
