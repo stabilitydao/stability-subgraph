@@ -195,11 +195,13 @@ export function handleHardWork(event: HardWorkEvent): void {
     dailyAPRs.push(_APRArray[i].times(dailyWeights[i]));
   }
 
-  let averageDailyAPR = dailyAPRs.reduce(
-    (accumulator: BigInt, currentValue: BigInt) =>
-      accumulator.plus(currentValue),
-    ZeroBigInt
-  );
+  let averageDailyAPR = dailyAPRs
+    .reduce(
+      (accumulator: BigInt, currentValue: BigInt) =>
+        accumulator.plus(currentValue),
+      ZeroBigInt
+    )
+    .div(DENOMINATOR);
 
   //===========weeklyAPR===========//
   threshold = ZeroBigInt;
@@ -226,11 +228,13 @@ export function handleHardWork(event: HardWorkEvent): void {
     weeklyAPRs.push(_APRArray[i].times(weeklyWeights[i]));
   }
 
-  let averageWeeklyAPR = weeklyAPRs.reduce(
-    (accumulator: BigInt, currentValue: BigInt) =>
-      accumulator.plus(currentValue),
-    ZeroBigInt
-  );
+  let averageWeeklyAPR = weeklyAPRs
+    .reduce(
+      (accumulator: BigInt, currentValue: BigInt) =>
+        accumulator.plus(currentValue),
+      ZeroBigInt
+    )
+    .div(DENOMINATOR);
 
   if (BigInt.fromString(daysFromCreation).lt(BigInt.fromI32(2))) {
     averageDailyAPR = _APRArray
@@ -243,8 +247,8 @@ export function handleHardWork(event: HardWorkEvent): void {
     averageWeeklyAPR = averageDailyAPR;
   }
 
-  vaultHistoryEntity.APR24H = averageDailyAPR.div(DENOMINATOR);
-  vaultHistoryEntity.APRWeekly = averageWeeklyAPR.div(DENOMINATOR);
+  vaultHistoryEntity.APR24H = averageDailyAPR;
+  vaultHistoryEntity.APRWeekly = averageWeeklyAPR;
   //===========Get platform data===========//
   const platformContract = PlatformContract.bind(
     Address.fromString(platformAddress)

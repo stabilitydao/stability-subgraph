@@ -106,6 +106,7 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
   //Calculate vault.AssetsPricesOnCreation//
 
   const _amounts: Array<BigInt> = [];
+
   for (let i = 0; i < _vaultInfo.value1.length; i++) {
     _amounts.push(ZeroBigInt);
   }
