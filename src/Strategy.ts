@@ -250,6 +250,7 @@ export function handleHardWork(event: HardWorkEvent): void {
 
   vaultHistoryEntity.APR24H = averageDailyAPR;
   vaultHistoryEntity.APRWeekly = averageWeeklyAPR;
+  vaultHistoryEntity.save();
 
   //===========Earn===========//
   const usersList = vault.vaultUsersList;
