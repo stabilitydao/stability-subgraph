@@ -111,6 +111,7 @@ export function handleHardWork(event: HardWorkEvent): void {
   vaultHistoryEntity.timestamp = event.block.timestamp;
   vaultHistoryEntity.APR = event.params.apr;
   vaultHistoryEntity.APR_Compound = event.params.compoundApr;
+  vaultHistoryEntity.save();
 
   //***** Get timestamp from last HardWork to calculate days from event ******//
 
