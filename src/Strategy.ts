@@ -23,7 +23,8 @@ import {
   UserAllDataEntity,
   LastFeeAMLEntity,
 } from "../generated/schema";
-import { PlatformABI as PlatformContract } from "../generated/PlatformData/PlatformABI";
+import { IFrontendABI as FrontendContract } from "../generated/templates/StrategyData/IFrontendABI";
+
 import { ERC20UpgradeableABI } from "../generated/templates/FactoryData/ERC20UpgradeableABI";
 
 import {
@@ -35,14 +36,14 @@ import {
   YearBigDecimal,
   EtherBigDecimal,
   OneBigDecimal,
-  platformAddress,
   WeekInSecondsBigDecimal,
   DayInSecondsBigDecimal,
   DayInSecondsBigInt,
-  OneBigInt,
+  ContractPaginationBigInt,
+  frontendAddress,
 } from "./utils/constants";
 
-import { BigIntToBigDecimal, pow } from "./utils/math";
+import { pow } from "./utils/math";
 
 import { calculateVsHoldByPeriod } from "./utils/functions";
 
@@ -309,22 +310,26 @@ export function handleHardWork(event: HardWorkEvent): void {
   }
 
   //===========Get platform data===========//
-  const platformContract = PlatformContract.bind(
-    Address.fromString(platformAddress)
+  const frontendContract = FrontendContract.bind(
+    Address.fromString(frontendAddress)
   );
 
-  const getPlatformBalance = platformContract.try_getBalance(event.address);
+  const contractAssetsBalances = frontendContract.try_getBalanceAssets(
+    event.address,
+    ZeroBigInt,
+    ContractPaginationBigInt
+  );
 
-  if (!getPlatformBalance.reverted) {
-    const assetsAddresses = getPlatformBalance.value.value0;
+  if (!contractAssetsBalances.reverted) {
+    const assetsAddresses = contractAssetsBalances.value.value1;
+
+    const prices = contractAssetsBalances.value.value2;
 
     // const formattedAssetsAddresses: Bytes[] = [];
 
     // for (let i = 0; i < assetsAddresses.length; i++) {
     //   formattedAssetsAddresses.push(changetype<Bytes>(assetsAddresses[i]));
     // }
-
-    const prices = getPlatformBalance.value.value1;
 
     const assetsPrice = new Map<string, BigInt>();
 

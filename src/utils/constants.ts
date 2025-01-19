@@ -8,10 +8,12 @@ import {
   getVaultManagerAddress,
   getPriceReaderAddress,
   getDefiedgeFactoryAddress,
+  getFrontendContractAddress,
 } from "./functions";
 
 const addressZero = "0x0000000000000000000000000000000000000000";
 const platformAddress = getPlatformAddress(NETWORK);
+const frontendAddress = getFrontendContractAddress(NETWORK);
 const factoryAddress = getFactoryAddress(NETWORK);
 const vaultManagerAddress = getVaultManagerAddress(NETWORK);
 const priceReaderAddress = getPriceReaderAddress(NETWORK);
@@ -27,6 +29,7 @@ const getBalanceAddress = "0x1Ebd614F038a6cED8faBf0Be075995dd1BB549cE";
 const oneEther = BigInt.fromI32(10).pow(18);
 const ZeroBigInt = BigInt.fromI32(0);
 const OneBigInt = BigInt.fromI32(1);
+const ContractPaginationBigInt = BigInt.fromI32(100);
 const ZeroBigDecimal = BigDecimal.fromString("0");
 const OneBigDecimal = BigDecimal.fromString("1");
 const WeeksBigDecimal = BigDecimal.fromString("52");
@@ -59,4 +62,6 @@ export {
   WeekInSecondsBigDecimal,
   DayInSecondsBigInt,
   OneBigInt,
+  ContractPaginationBigInt,
+  frontendAddress,
 };
