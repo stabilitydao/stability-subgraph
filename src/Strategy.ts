@@ -321,6 +321,42 @@ export function handleHardWork(event: HardWorkEvent): void {
   );
 
   if (!contractAssetsBalances.reverted) {
+    const assetsCount = contractAssetsBalances.value.value0;
+
+    let receivedAssets = ContractPaginationBigInt;
+
+    if (assetsCount > ContractPaginationBigInt) {
+      while (receivedAssets < assetsCount) {
+        let nextPage = receivedAssets;
+
+        if (nextPage.gt(assetsCount)) {
+          nextPage = assetsCount;
+        }
+
+        const remainingContractAssetsBalances = frontendContract.try_getBalanceAssets(
+          event.address,
+          receivedAssets,
+          nextPage
+        );
+
+        contractAssetsBalances.value.value1 = contractAssetsBalances.value.value1.concat(
+          remainingContractAssetsBalances.value.value1
+        );
+
+        contractAssetsBalances.value.value2 = contractAssetsBalances.value.value2.concat(
+          remainingContractAssetsBalances.value.value2
+        );
+
+        contractAssetsBalances.value.value3 = contractAssetsBalances.value.value3.concat(
+          remainingContractAssetsBalances.value.value3
+        );
+
+        receivedAssets = receivedAssets.plus(ContractPaginationBigInt);
+      }
+    }
+
+    ////
+
     const assetsAddresses = contractAssetsBalances.value.value1;
 
     const prices = contractAssetsBalances.value.value2;
