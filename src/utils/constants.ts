@@ -9,6 +9,7 @@ import {
   getPriceReaderAddress,
   getDefiedgeFactoryAddress,
   getFrontendContractAddress,
+  getSwapperAddress,
 } from "./functions";
 
 const addressZero = "0x0000000000000000000000000000000000000000";
@@ -17,6 +18,7 @@ const frontendAddress = getFrontendContractAddress(NETWORK);
 const factoryAddress = getFactoryAddress(NETWORK);
 const vaultManagerAddress = getVaultManagerAddress(NETWORK);
 const priceReaderAddress = getPriceReaderAddress(NETWORK);
+const swapperAddress = getSwapperAddress(NETWORK);
 
 let defiedgeFactoryAddress = addressZero;
 
@@ -64,4 +66,5 @@ export {
   OneBigInt,
   ContractPaginationBigInt,
   frontendAddress,
+  swapperAddress,
 };

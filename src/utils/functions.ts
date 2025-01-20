@@ -72,6 +72,19 @@ export function getFrontendContractAddress(network: string): string {
   throw new Error("Unsupported network");
 }
 
+export function getSwapperAddress(network: string): string {
+  if (network == "matic") {
+    return "0xD84E894A6646C7407b8CD1273Ea1EFc53A423762";
+  } else if (network == "base") {
+    return "0x67e983b3B9f55A1eaA259D58E425e418f3900872";
+  } else if (network === "real") {
+    return "0xba2C4A1FD42118b48f68305Ba14977FCf82f6C20";
+  } else if (network === "sonic") {
+    return "0xe52fcf607a8328106723804de1ef65da512771be";
+  }
+  throw new Error("Unsupported network");
+}
+
 export function getDefiedgeFactoryAddress(network: string): string {
   if (network == "matic") {
     return "0x730d158D29165C55aBF368e9608Af160DD21Bd80";

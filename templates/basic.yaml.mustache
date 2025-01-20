@@ -214,8 +214,10 @@ templates:
           file: ./abis/VaultABI.json
         - name: ERC20UpgradeableABI
           file: ./abis/ERC20UpgradeableABI.json
-        - name: IFrontendABI
-          file: ./abis/IFrontendABI.json  
+        - name: PriceReaderABI
+          file: ./abis/PriceReaderABI.json
+        - name: SwapperABI
+          file: ./abis/SwapperABI.json
       eventHandlers:
         - event: HardWork(uint256,uint256,uint256,uint256,uint256,uint256,uint256[])
           handler: handleHardWork
