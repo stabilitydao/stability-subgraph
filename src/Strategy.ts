@@ -327,7 +327,7 @@ export function handleHardWork(event: HardWorkEvent): void {
 
     if (assetsCount > ContractPaginationBigInt) {
       while (receivedAssets < assetsCount) {
-        let nextPage = receivedAssets;
+        let nextPage = receivedAssets.plus(ContractPaginationBigInt);
 
         if (nextPage.gt(assetsCount)) {
           nextPage = assetsCount;
@@ -347,15 +347,9 @@ export function handleHardWork(event: HardWorkEvent): void {
           remainingContractAssetsBalances.value.value2
         );
 
-        contractAssetsBalances.value.value3 = contractAssetsBalances.value.value3.concat(
-          remainingContractAssetsBalances.value.value3
-        );
-
         receivedAssets = receivedAssets.plus(ContractPaginationBigInt);
       }
     }
-
-    ////
 
     const assetsAddresses = contractAssetsBalances.value.value1;
 
