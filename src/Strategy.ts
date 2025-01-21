@@ -73,6 +73,7 @@ export function handleHardWork(event: HardWorkEvent): void {
   vault.lastHardWork = event.block.timestamp;
   vault.assetsWithApr = changetype<Bytes[]>(vaultInfo.value3);
   vault.assetsAprs = vaultInfo.value4;
+  // @ts-ignore
   if (event.block.number > BigInt.fromI32(53088320) && NETWORK === "matic") {
     const getBalanceContract = GetBalanceContract.bind(
       Address.fromString(getBalanceAddress)
@@ -315,9 +316,10 @@ export function handleHardWork(event: HardWorkEvent): void {
   const assetsPrice = new Map<string, BigInt>();
 
   for (let i = 0; i < assetsAddresses.length; i++) {
-    let result = priceReader.getPrice(assetsAddresses[i]);
-
-    assetsPrice.set(assetsAddresses[i].toString(), result.value0);
+    let result = priceReader.try_getPrice(assetsAddresses[i]);
+    if (!result.reverted) {
+      assetsPrice.set(assetsAddresses[i].toString(), result.value.value0);
+    }
   }
 
   //======================VS HOLD======================//
