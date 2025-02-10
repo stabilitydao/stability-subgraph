@@ -122,6 +122,9 @@ type VaultHistoryEntity @entity(immutable: true) {
 
   vsHoldAPR: String
   assetsVsHoldAPR: [String!]
+
+  swapperPrices: [BigInt!]
+  multicallPrices: [BigInt!]
 }
 
 # VaultAPRsEntity -> VaultMetricsEntity
