@@ -10,7 +10,6 @@ import {
   getDefiedgeFactoryAddress,
   getFrontendContractAddress,
   getSwapperAddress,
-  getMulticallAddress,
 } from "./functions";
 
 const addressZero = "0x0000000000000000000000000000000000000000";
@@ -20,7 +19,6 @@ const factoryAddress = getFactoryAddress(NETWORK);
 const vaultManagerAddress = getVaultManagerAddress(NETWORK);
 const priceReaderAddress = getPriceReaderAddress(NETWORK);
 const swapperAddress = getSwapperAddress(NETWORK);
-const multicallAddress = getMulticallAddress(NETWORK);
 
 let defiedgeFactoryAddress = addressZero;
 
@@ -69,5 +67,4 @@ export {
   ContractPaginationBigInt,
   frontendAddress,
   swapperAddress,
-  multicallAddress,
 };

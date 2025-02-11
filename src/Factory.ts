@@ -166,6 +166,7 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
   const colorBackground = changetype<Bytes>(colorBytes.slice(3, 6));
 
   strategyEntity.strategyId = event.params.strategyId;
+  strategyEntity.vaultAddress = event.params.vault;
   strategyEntity.version = strategyContract.VERSION();
   strategyEntity.tokenId = strategies.value4[index];
   //strategyEntity.shortName =
@@ -270,8 +271,14 @@ export function handleStrategyProxyUpgraded(
 ): void {
   const strategy = StrategyEntity.load(event.params.proxy) as StrategyEntity;
   const strategyContract = StrategyContract.bind(event.params.proxy);
+
   strategy.version = strategyContract.VERSION();
   strategy.save();
+
+  const vault = new VaultEntity(strategy.vaultAddress);
+
+  vault.strategyDescription = strategyContract.description();
+  vault.save();
 }
 
 export function handleStrategyLogicConfigChanged(

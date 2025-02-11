@@ -78,6 +78,7 @@ type StrategyEntity @entity {
   pool: Bytes #address
   underlyingSymbol: String
   underlyingDecimals: String
+  vaultAddress: Bytes! #address
 }
 
 type StrategyConfigEntity @entity {
@@ -122,9 +123,6 @@ type VaultHistoryEntity @entity(immutable: true) {
 
   vsHoldAPR: String
   assetsVsHoldAPR: [String!]
-
-  swapperPrices: [BigInt!]
-  multicallPrices: [BigInt!]
 }
 
 # VaultAPRsEntity -> VaultMetricsEntity
