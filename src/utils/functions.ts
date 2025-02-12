@@ -93,6 +93,24 @@ export function getDefiedgeFactoryAddress(network: string): string {
   }
   throw new Error("Unsupported network");
 }
+
+export function getMulticallAddress(network: string): string {
+  if (network == "matic") {
+    return "0xca11bde05977b3631167028862be2a173976ca11";
+    // blockCreated: 25770160
+  } else if (network == "base") {
+    return "0xca11bde05977b3631167028862be2a173976ca11";
+    // blockCreated: 5022
+  } else if (network === "real") {
+    return "0xcA11bde05977b3631167028862bE2a173976CA11";
+    //blockCreated: 695
+  } else if (network === "sonic") {
+    return "0xca11bde05977b3631167028862be2a173976ca11";
+    // blockCreated: 60
+  }
+  throw new Error("Unsupported network");
+}
+
 export function calculateVsHoldByPeriod(
   periodAPRs: string[],
   timestamps: BigInt[],

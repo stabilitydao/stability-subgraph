@@ -28,6 +28,8 @@ import { ERC20UpgradeableABI } from "../generated/templates/FactoryData/ERC20Upg
 import { SwapperABI as SwapperContract } from "../generated/templates/SwapperData/SwapperABI";
 import { PriceReaderABI as PriceReaderContract } from "../generated/templates/IchiQuickSwapMerklFarmData/PriceReaderABI";
 
+import { MulticallABI as MulticallContract } from "../generated/templates/StrategyData/MulticallABI";
+
 import {
   vaultManagerAddress,
   getBalanceAddress,
@@ -42,6 +44,7 @@ import {
   DayInSecondsBigInt,
   priceReaderAddress,
   swapperAddress,
+  multicallAddress,
 } from "./utils/constants";
 
 import { pow } from "./utils/math";
@@ -312,24 +315,62 @@ export function handleHardWork(event: HardWorkEvent): void {
   }
 
   //===========Get assets prices===========//
-  const priceReader = PriceReaderContract.bind(
-    Address.fromString(priceReaderAddress)
-  );
-
   const swapper = SwapperContract.bind(Address.fromString(swapperAddress));
+
+  const multicallContract = MulticallContract.bind(
+    Address.fromString(multicallAddress)
+  );
 
   const assetsAddresses = swapper.allAssets();
 
   const assetsPrice = new Map<string, BigInt>();
 
+  const calls: Array<ethereum.Tuple> = [];
+
+  const getPriceSignature = Bytes.fromHexString("0x41976e09");
+
   for (let i = 0; i < assetsAddresses.length; i++) {
-    let result = priceReader.try_getPrice(assetsAddresses[i]);
-    if (!result.reverted) {
-      assetsPrice.set(assetsAddresses[i].toString(), result.value.value0);
+    const encodedAddress = ethereum.encode(
+      ethereum.Value.fromAddress(assetsAddresses[i])
+    )!;
+    if (encodedAddress) {
+      const callData = Bytes.fromUint8Array(
+        getPriceSignature.concat(encodedAddress)
+      );
+      calls.push(
+        changetype<ethereum.Tuple>([
+          ethereum.Value.fromAddress(Address.fromString(priceReaderAddress)),
+          ethereum.Value.fromBytes(callData),
+        ])
+      );
     }
   }
 
-  vaultHistoryEntity.save();
+  const callResult = multicallContract.tryCall(
+    "aggregate",
+    "aggregate((address,bytes)[]):(uint256,bytes[])",
+    [ethereum.Value.fromTupleArray(calls)]
+  );
+
+  if (callResult.reverted) {
+    log.error("Multicall failed", []);
+    return;
+  }
+
+  const returnData = callResult.value[1].toBytesArray();
+
+  for (let i = 0; i < returnData.length; i++) {
+    const decodedValue = ethereum.decode("uint256", returnData[i]);
+    if (decodedValue) {
+      const price = decodedValue.toBigInt();
+      assetsPrice.set(assetsAddresses[i].toString(), price);
+    } else {
+      log.warning("Failed to decode price for asset {}", [
+        assetsAddresses[i].toHexString(),
+      ]);
+    }
+  }
+
   //======================VS HOLD======================//
   const strategyAssets = assetsAmounts.value0;
 
