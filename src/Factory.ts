@@ -7,12 +7,14 @@ import {
   StrategyConfigEntity,
   LastFeeAMLEntity,
   VaultMetricsEntity,
+  VaultLeverageLendingMetricsEntity,
 } from "../generated/schema";
 import {
   VaultData,
   StrategyData,
   IchiQuickSwapMerklFarmData,
   IchiRetroMerklFarmData,
+  LeverageLendingStrategyData,
 } from "../generated/templates";
 
 import { PlatformABI as PlatformContract } from "../generated/PlatformData/PlatformABI";
@@ -60,6 +62,21 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
   const priceReader = PriceReaderContract.bind(
     Address.fromString(priceReaderAddress)
   );
+
+  let isLendingLeverageStrategy = false;
+
+  if (strategyContract.supportsInterface(Bytes.fromHexString("0x8581dab8"))) {
+    LeverageLendingStrategyData.create(event.params.strategy);
+    isLendingLeverageStrategy = true;
+
+    const vaultLeverageLendingMetricsEntity = new VaultLeverageLendingMetricsEntity(
+      event.params.vault
+    );
+
+    vaultLeverageLendingMetricsEntity.APRS = [];
+    vaultLeverageLendingMetricsEntity.timestamps = [];
+    vaultLeverageLendingMetricsEntity.save();
+  }
 
   const underlying = strategyContract.underlying();
   if (event.params.strategyId == "Ichi QuickSwap Merkl Farm") {
@@ -117,6 +134,7 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
   vault.lastHardWork = ZeroBigInt;
   vault.totalSupply = ZeroBigInt;
   vault.apr = ZeroBigInt;
+  vault.realAPR = ZeroBigInt;
   vault.tvl = ZeroBigInt;
   vault.sharePrice = ZeroBigInt;
   vault.vaultUsersList = [];
@@ -155,6 +173,7 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
   }
   vault.lastAssetsSum = "0";
   vault.lastAssetsPrices = [];
+  vault.isLendingLeverageStrategy = isLendingLeverageStrategy;
   vault.save();
 
   //STRATEGY ENTITY
@@ -175,6 +194,7 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
   if (strategyContract.supportsInterface(Bytes.fromHexString("0x07b0b3aa"))) {
     strategyEntity.pool = LPStrategyContract.pool();
   }
+  strategyEntity.isLendingLeverageStrategy = isLendingLeverageStrategy;
 
   //Underlying symbol && decimals
   if (underlying != Address.fromHexString(addressZero)) {

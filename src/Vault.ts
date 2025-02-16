@@ -21,6 +21,7 @@ import { PriceReaderABI as PriceReaderContract } from "../generated/templates/Ic
 import { WithdrawAssets as WithdrawAssetsEventOld } from "../generated/templates/deprecatedData/deprecatedABI";
 import { StrategyBaseABI as StrategyContract } from "../generated/templates/StrategyData/StrategyBaseABI";
 import { VaultManagerABI as VaultManagerContract } from "../generated/templates/VaultManagerData/VaultManagerABI";
+import { ILeverageLendingStrategyABI as LeverageLendingContract } from "../generated/templates/LeverageLendingStrategyData/ILeverageLendingStrategyABI";
 
 import {
   ZeroBigInt,
@@ -73,7 +74,19 @@ export function handleDepositAssets(event: DepositAssetsEvent): void {
   //===========Put new data to vaultEntity===========//
   const newTVL = vaultContract.tvl().value0;
   vault.tvl = newTVL;
-  vault.sharePrice = newTVL.times(oneEther).div(vault.totalSupply);
+
+  let _sharePrice = newTVL.times(oneEther).div(vault.totalSupply);
+
+  if (vault.isLendingLeverageStrategy) {
+    const leverageStrategyContract = LeverageLendingContract.bind(
+      changetype<Address>(vault.strategy)
+    );
+
+    _sharePrice = leverageStrategyContract.realSharePrice().value0;
+  }
+
+  vault.sharePrice = _sharePrice;
+
   if (!vault.vaultUsersList.includes(_VaultUserId)) {
     const usersList = vault.vaultUsersList;
     usersList.push(_VaultUserId);
@@ -183,7 +196,18 @@ export function handleWithdrawAssetsOld(event: WithdrawAssetsEventOld): void {
 
   const newTVL = vaultContract.tvl().value0;
   vault.tvl = newTVL;
-  vault.sharePrice = newTVL.times(oneEther).div(vault.totalSupply);
+
+  let _sharePrice = newTVL.times(oneEther).div(vault.totalSupply);
+
+  if (vault.isLendingLeverageStrategy) {
+    const leverageStrategyContract = LeverageLendingContract.bind(
+      changetype<Address>(vault.strategy)
+    );
+
+    _sharePrice = leverageStrategyContract.realSharePrice().value0;
+  }
+
+  vault.sharePrice = _sharePrice;
 
   vault.save();
 
@@ -266,7 +290,18 @@ export function handleWithdrawAssets(event: WithdrawAssetsEvent): void {
   //===========Put new data to vaultEntity===========//
   const newTVL = vaultContract.tvl().value0;
   vault.tvl = newTVL;
-  vault.sharePrice = newTVL.times(oneEther).div(vault.totalSupply);
+
+  let _sharePrice = newTVL.times(oneEther).div(vault.totalSupply);
+
+  if (vault.isLendingLeverageStrategy) {
+    const leverageStrategyContract = LeverageLendingContract.bind(
+      changetype<Address>(vault.strategy)
+    );
+
+    _sharePrice = leverageStrategyContract.realSharePrice().value0;
+  }
+
+  vault.sharePrice = _sharePrice;
   vault.save();
 
   //===========Create VaultHistoryEntity (immutable)===========//

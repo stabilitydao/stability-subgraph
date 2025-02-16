@@ -126,7 +126,9 @@ templates:
         - name: PlatformABI
           file: ./abis/PlatformABI.json
         - name: VaultManagerABI
-          file: ./abis/VaultManagerABI.json    
+          file: ./abis/VaultManagerABI.json
+        - name: ILeverageLendingStrategyABI
+          file: ./abis/ILeverageLendingStrategyABI.json      
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
@@ -156,6 +158,8 @@ templates:
       abis:
         - name: deprecatedABI
           file: ./abis/deprecatedABI.json
+        - name: ILeverageLendingStrategyABI
+          file: ./abis/ILeverageLendingStrategyABI.json  
       eventHandlers:
         - event: WithdrawAssets(indexed address,address[],uint256,uint256[])
           handler: handleWithdrawAssetsOld
@@ -209,11 +213,33 @@ templates:
         - name: SwapperABI
           file: ./abis/SwapperABI.json
         - name: MulticallABI
-          file: ./abis/MulticallABI.json     
+          file: ./abis/MulticallABI.json
       eventHandlers:
         - event: HardWork(uint256,uint256,uint256,uint256,uint256,uint256,uint256[])
           handler: handleHardWork
       file: ./src/Strategy.ts
+  - kind: ethereum
+    name: LeverageLendingStrategyData
+    network: {{network}}
+    source:
+      abi: ILeverageLendingStrategyABI
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - VaultEntity
+        - VaultLeverageLendingHistoryEntity
+        - VaultLeverageLendingMetricsEntity
+      abis:
+        - name: StrategyBaseABI
+          file: ./abis/StrategyBaseABI.json
+        - name: ILeverageLendingStrategyABI
+          file: ./abis/ILeverageLendingStrategyABI.json      
+      eventHandlers:
+        - event: LeverageLendingHardWork(int256,int256,uint256,uint256,uint256,uint256,uint256)
+          handler: handleLeverageLendingHardWork
+      file: ./src/LeverageLendingStrategy.ts    
   - kind: ethereum
     name: IchiQuickSwapMerklFarmData
     network: {{network}}
