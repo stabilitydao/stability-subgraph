@@ -36,9 +36,9 @@ WEB https://thegraph.com/explorer/subgraphs/CGkgsqaECPXXvgLySMMyzXTQh3v1zqqGTa1u
 Follow these steps to prepare and deploy a subgraph across multiple networks:
 
 1. Run the prepare command with the target network. Example: `yarn prepare matic`
-2. Execute the following commands to reset and prepare the subgraph: `yarn clean && yarn codegen & yarn build`
+2. Execute the following commands to reset and prepare the subgraph: `yarn clean && yarn codegen && yarn build`
 3. Authenticate with `graph auth --studio <key>`
-4. Deploy with `graph deploy <name>`
+4. Deploy with `graph deploy <name>` or `goldsky subgraph deploy stability-sonic/<version> --path .`
 
 ### Add chain
 
