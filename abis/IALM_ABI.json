@@ -1,0 +1,289 @@
+[
+  {
+    "type": "function",
+    "name": "needRebalance",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "positions",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple[]",
+        "internalType": "struct IALM.Position[]",
+        "components": [
+          {
+            "name": "tokenId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "tickLower",
+            "type": "int24",
+            "internalType": "int24"
+          },
+          {
+            "name": "tickUpper",
+            "type": "int24",
+            "internalType": "int24"
+          },
+          {
+            "name": "liquidity",
+            "type": "uint128",
+            "internalType": "uint128"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "preset",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "algoId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "algoName",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "presetName",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "params",
+        "type": "int24[]",
+        "internalType": "int24[]"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "rebalance",
+    "inputs": [
+      {
+        "name": "burnOldPositions",
+        "type": "bool[]",
+        "internalType": "bool[]"
+      },
+      {
+        "name": "mintNewPositions",
+        "type": "tuple[]",
+        "internalType": "struct IALM.NewPosition[]",
+        "components": [
+          {
+            "name": "tickLower",
+            "type": "int24",
+            "internalType": "int24"
+          },
+          {
+            "name": "tickUpper",
+            "type": "int24",
+            "internalType": "int24"
+          },
+          {
+            "name": "liquidity",
+            "type": "uint128",
+            "internalType": "uint128"
+          },
+          {
+            "name": "minAmount0",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "minAmount1",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setupALMParams",
+    "inputs": [
+      {
+        "name": "algoId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "params",
+        "type": "int24[]",
+        "internalType": "int24[]"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setupPriceChangeProtection",
+    "inputs": [
+      {
+        "name": "enabled",
+        "type": "bool",
+        "internalType": "bool"
+      },
+      {
+        "name": "twapInterval",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "priceThreshold",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "event",
+    "name": "ALMParams",
+    "inputs": [
+      {
+        "name": "algoId",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "params",
+        "type": "int24[]",
+        "indexed": false,
+        "internalType": "int24[]"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "PriceChangeProtectionParams",
+    "inputs": [
+      {
+        "name": "enabled",
+        "type": "bool",
+        "indexed": false,
+        "internalType": "bool"
+      },
+      {
+        "name": "twapInterval",
+        "type": "uint32",
+        "indexed": false,
+        "internalType": "uint32"
+      },
+      {
+        "name": "priceThreshold",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "Rebalance",
+    "inputs": [
+      {
+        "name": "newPosition",
+        "type": "tuple[]",
+        "indexed": false,
+        "internalType": "struct IALM.Position[]",
+        "components": [
+          {
+            "name": "tokenId",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "tickLower",
+            "type": "int24",
+            "internalType": "int24"
+          },
+          {
+            "name": "tickUpper",
+            "type": "int24",
+            "internalType": "int24"
+          },
+          {
+            "name": "liquidity",
+            "type": "uint128",
+            "internalType": "uint128"
+          }
+        ]
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "error",
+    "name": "CantDoRebalance",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "IncorrectRebalanceArgs",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "NotALM",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "NotNeedRebalance",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "PriceChangeProtection",
+    "inputs": [
+      {
+        "name": "price",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "priceBefore",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "priceThreshold",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "twapInterval",
+        "type": "uint32",
+        "internalType": "uint32"
+      }
+    ]
+  }
+]

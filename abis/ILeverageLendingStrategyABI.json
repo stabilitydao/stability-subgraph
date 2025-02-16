@@ -1,0 +1,97 @@
+[
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": false, "internalType": "int", "name": "realApr", "type": "int256" },
+      { "indexed": false, "internalType": "int", "name": "earned", "type": "int256" },
+      { "indexed": false, "internalType": "uint", "name": "realTvl", "type": "uint256" },
+      { "indexed": false, "internalType": "uint", "name": "duration", "type": "uint256" },
+      { "indexed": false, "internalType": "uint", "name": "realSharePrice", "type": "uint256" },
+      { "indexed": false, "internalType": "uint", "name": "supplyApr", "type": "uint256" },
+      { "indexed": false, "internalType": "uint", "name": "borrowApr", "type": "uint256" }
+    ],
+    "name": "LeverageLendingHardWork",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": false, "internalType": "uint", "name": "ltv", "type": "uint256" },
+      { "indexed": false, "internalType": "uint", "name": "leverage", "type": "uint256" }
+    ],
+    "name": "LeverageLendingHealth",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": false, "internalType": "uint", "name": "value", "type": "uint256" }
+    ],
+    "name": "TargetLeveragePercent",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint", "name": "newLtv", "type": "uint256" }
+    ],
+    "name": "rebalanceDebt",
+    "outputs": [
+      { "internalType": "uint", "name": "resultLtv", "type": "uint256" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint", "name": "value", "type": "uint256" }
+    ],
+    "name": "setTargetLeveragePercent",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "realTvl",
+    "outputs": [
+      { "internalType": "uint", "name": "tvl", "type": "uint256" },
+      { "internalType": "bool", "name": "trusted", "type": "bool" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "realSharePrice",
+    "outputs": [
+      { "internalType": "uint", "name": "sharePrice", "type": "uint256" },
+      { "internalType": "bool", "name": "trusted", "type": "bool" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "health",
+    "outputs": [
+      { "internalType": "uint", "name": "ltv", "type": "uint256" },
+      { "internalType": "uint", "name": "maxLtv", "type": "uint256" },
+      { "internalType": "uint", "name": "leverage", "type": "uint256" },
+      { "internalType": "uint", "name": "collateralAmount", "type": "uint256" },
+      { "internalType": "uint", "name": "debtAmount", "type": "uint256" },
+      { "internalType": "uint", "name": "targetLeveragePercent", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getSupplyAndBorrowAprs",
+    "outputs": [
+      { "internalType": "uint", "name": "supplyApr", "type": "uint256" },
+      { "internalType": "uint", "name": "borrowApr", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

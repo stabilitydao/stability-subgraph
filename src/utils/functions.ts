@@ -58,6 +58,33 @@ export function getPriceReaderAddress(network: string): string {
   }
   throw new Error("Unsupported network");
 }
+
+export function getFrontendContractAddress(network: string): string {
+  if (network == "matic") {
+    return "0xa9f5593e6a809a24fb41d1d854a577a8bf507e28";
+  } else if (network == "base") {
+    return "0x995c3bdee2830c7f96d4caa0c36f7b7b8ec60127";
+  } else if (network === "real") {
+    return "0xfd1361E0565b01B85d3c1511FEf7545D6A84d93a";
+  } else if (network === "sonic") {
+    return "0x15487495cce9210795f9C2E0e1A7238E336dFc32";
+  }
+  throw new Error("Unsupported network");
+}
+
+export function getSwapperAddress(network: string): string {
+  if (network == "matic") {
+    return "0xD84E894A6646C7407b8CD1273Ea1EFc53A423762";
+  } else if (network == "base") {
+    return "0x67e983b3B9f55A1eaA259D58E425e418f3900872";
+  } else if (network === "real") {
+    return "0xba2C4A1FD42118b48f68305Ba14977FCf82f6C20";
+  } else if (network === "sonic") {
+    return "0xe52fcf607a8328106723804de1ef65da512771be";
+  }
+  throw new Error("Unsupported network");
+}
+
 export function getDefiedgeFactoryAddress(network: string): string {
   if (network == "matic") {
     return "0x730d158D29165C55aBF368e9608Af160DD21Bd80";
@@ -66,6 +93,24 @@ export function getDefiedgeFactoryAddress(network: string): string {
   }
   throw new Error("Unsupported network");
 }
+
+export function getMulticallAddress(network: string): string {
+  if (network == "matic") {
+    return "0xca11bde05977b3631167028862be2a173976ca11";
+    // blockCreated: 25770160
+  } else if (network == "base") {
+    return "0xca11bde05977b3631167028862be2a173976ca11";
+    // blockCreated: 5022
+  } else if (network === "real") {
+    return "0xcA11bde05977b3631167028862bE2a173976CA11";
+    //blockCreated: 695
+  } else if (network === "sonic") {
+    return "0xca11bde05977b3631167028862be2a173976ca11";
+    // blockCreated: 60
+  }
+  throw new Error("Unsupported network");
+}
+
 export function calculateVsHoldByPeriod(
   periodAPRs: string[],
   timestamps: BigInt[],

@@ -15,7 +15,7 @@ if (!selectedNetworkConfig) {
 const templates = {
   basic: "templates/basic.yaml.mustache",
   real: "templates/real.yaml.mustache",
-  network: "templates/network.mustache",
+  network: "templates/network.yaml.mustache",
 };
 
 const getTemplateContent = (templatePath) =>

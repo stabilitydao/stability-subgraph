@@ -18,6 +18,7 @@ type PlatformEntity @entity {
 type VaultEntity @entity {
   id: Bytes! #address
   apr: BigInt!
+  realAPR: BigInt!
   tvl: BigInt!
   sharePrice: BigInt!
   vaultType: String!
@@ -50,10 +51,13 @@ type VaultEntity @entity {
   AssetsPricesOnCreation: [BigInt!]!
   lifeTimeAPR: BigInt!
   vaultHistoryEntity: [VaultHistoryEntity!]
+  vaultLeverageLendingHistoryEntity: [VaultLeverageLendingHistoryEntity!]
   almRebalanceHistoryEntity: [ALMRebalanceHistoryEntity!]
   initAssetsAmounts: [BigInt!]
   lastAssetsPrices: [String!]!
   lastAssetsSum: String!
+  isInitialized: Boolean!
+  isLendingLeverageStrategy: Boolean!
 }
 
 type VaultTypeEntity @entity {
@@ -77,6 +81,8 @@ type StrategyEntity @entity {
   pool: Bytes #address
   underlyingSymbol: String
   underlyingDecimals: String
+  vaultAddress: Bytes! #address
+  isLendingLeverageStrategy: Boolean!
 }
 
 type StrategyConfigEntity @entity {
@@ -123,7 +129,18 @@ type VaultHistoryEntity @entity(immutable: true) {
   assetsVsHoldAPR: [String!]
 }
 
-# VaultAPRsEntity -> VaultMetricsEntity
+type VaultLeverageLendingHistoryEntity @entity(immutable: true) {
+  id: String!
+
+  address: Bytes!
+
+  APR: BigInt
+  APR24H: BigInt
+  APRWeekly: BigInt
+
+  timestamp: BigInt!
+}
+
 type VaultMetricsEntity @entity {
   id: Bytes! #address
   APRS: [BigInt!]!
@@ -131,6 +148,12 @@ type VaultMetricsEntity @entity {
   periodVsHoldAPRs: [String!]!
   periodAsset1VsHoldAPRs: [String!]!
   periodAsset2VsHoldAPRs: [String!]!
+}
+
+type VaultLeverageLendingMetricsEntity @entity {
+  id: Bytes! #address
+  APRS: [BigInt!]!
+  timestamps: [BigInt!]!
 }
 
 type ALMRebalanceHistoryEntity @entity(immutable: true) {

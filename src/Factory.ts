@@ -7,12 +7,14 @@ import {
   StrategyConfigEntity,
   LastFeeAMLEntity,
   VaultMetricsEntity,
+  VaultLeverageLendingMetricsEntity,
 } from "../generated/schema";
 import {
   VaultData,
   StrategyData,
   IchiQuickSwapMerklFarmData,
   IchiRetroMerklFarmData,
+  LeverageLendingStrategyData,
 } from "../generated/templates";
 
 import { PlatformABI as PlatformContract } from "../generated/PlatformData/PlatformABI";
@@ -61,6 +63,21 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
     Address.fromString(priceReaderAddress)
   );
 
+  let isLendingLeverageStrategy = false;
+
+  if (strategyContract.supportsInterface(Bytes.fromHexString("0x8581dab8"))) {
+    LeverageLendingStrategyData.create(event.params.strategy);
+    isLendingLeverageStrategy = true;
+
+    const vaultLeverageLendingMetricsEntity = new VaultLeverageLendingMetricsEntity(
+      event.params.vault
+    );
+
+    vaultLeverageLendingMetricsEntity.APRS = [];
+    vaultLeverageLendingMetricsEntity.timestamps = [];
+    vaultLeverageLendingMetricsEntity.save();
+  }
+
   const underlying = strategyContract.underlying();
   if (event.params.strategyId == "Ichi QuickSwap Merkl Farm") {
     IchiQuickSwapMerklFarmData.create(strategyContract.underlying());
@@ -106,6 +123,7 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
   //Calculate vault.AssetsPricesOnCreation//
 
   const _amounts: Array<BigInt> = [];
+
   for (let i = 0; i < _vaultInfo.value1.length; i++) {
     _amounts.push(ZeroBigInt);
   }
@@ -116,6 +134,7 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
   vault.lastHardWork = ZeroBigInt;
   vault.totalSupply = ZeroBigInt;
   vault.apr = ZeroBigInt;
+  vault.realAPR = ZeroBigInt;
   vault.tvl = ZeroBigInt;
   vault.sharePrice = ZeroBigInt;
   vault.vaultUsersList = [];
@@ -144,6 +163,7 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
     .totalSupply()
     .minus(BigInt.fromI32(1));
   vault.AssetsPricesOnCreation = assetsPrices.value2;
+  vault.isInitialized = false;
   vault.lifeTimeAPR = ZeroBigInt;
   if (event.block.number > BigInt.fromI32(53088320)) {
     const getBalanceContract = GetBalanceContract.bind(
@@ -153,6 +173,7 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
   }
   vault.lastAssetsSum = "0";
   vault.lastAssetsPrices = [];
+  vault.isLendingLeverageStrategy = isLendingLeverageStrategy;
   vault.save();
 
   //STRATEGY ENTITY
@@ -164,6 +185,7 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
   const colorBackground = changetype<Bytes>(colorBytes.slice(3, 6));
 
   strategyEntity.strategyId = event.params.strategyId;
+  strategyEntity.vaultAddress = event.params.vault;
   strategyEntity.version = strategyContract.VERSION();
   strategyEntity.tokenId = strategies.value4[index];
   //strategyEntity.shortName =
@@ -172,6 +194,7 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
   if (strategyContract.supportsInterface(Bytes.fromHexString("0x07b0b3aa"))) {
     strategyEntity.pool = LPStrategyContract.pool();
   }
+  strategyEntity.isLendingLeverageStrategy = isLendingLeverageStrategy;
 
   //Underlying symbol && decimals
   if (underlying != Address.fromHexString(addressZero)) {
@@ -268,8 +291,14 @@ export function handleStrategyProxyUpgraded(
 ): void {
   const strategy = StrategyEntity.load(event.params.proxy) as StrategyEntity;
   const strategyContract = StrategyContract.bind(event.params.proxy);
+
   strategy.version = strategyContract.VERSION();
   strategy.save();
+
+  const vault = new VaultEntity(strategy.vaultAddress);
+
+  vault.strategyDescription = strategyContract.description();
+  vault.save();
 }
 
 export function handleStrategyLogicConfigChanged(
