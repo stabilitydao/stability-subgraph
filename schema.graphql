@@ -51,6 +51,7 @@ type VaultEntity @entity {
   AssetsPricesOnCreation: [BigInt!]!
   lifeTimeAPR: BigInt!
   vaultHistoryEntity: [VaultHistoryEntity!]
+  vaultLeverageLendingHistoryEntity: [VaultLeverageLendingHistoryEntity!]
   almRebalanceHistoryEntity: [ALMRebalanceHistoryEntity!]
   initAssetsAmounts: [BigInt!]
   lastAssetsPrices: [String!]!

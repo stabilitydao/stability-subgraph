@@ -175,4 +175,23 @@ export function handleLeverageLendingHardWork(event: HardWorkEvent): void {
   vaultLeverageLendingMetricsEntity.APRS = _APRArray;
   vaultLeverageLendingMetricsEntity.timestamps = _timestampsArray;
   vaultLeverageLendingMetricsEntity.save();
+
+  //===========vaultLeverageLendingHistoryEntity(VaultEntity)===========//
+  let _vaultLeverageLendingHistoryEntity =
+    vault.vaultLeverageLendingHistoryEntity;
+
+  if (_vaultLeverageLendingHistoryEntity) {
+    _vaultLeverageLendingHistoryEntity.push(
+      vaultLeverageLendingHistoryEntity.id
+    );
+  } else {
+    _vaultLeverageLendingHistoryEntity = [];
+    _vaultLeverageLendingHistoryEntity.push(
+      vaultLeverageLendingHistoryEntity.id
+    );
+  }
+
+  vault.vaultLeverageLendingHistoryEntity = _vaultLeverageLendingHistoryEntity;
+
+  vault.save();
 }
