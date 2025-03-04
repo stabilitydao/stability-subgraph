@@ -65,7 +65,7 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
 
   let isLendingLeverageStrategy = false;
 
-  if (strategyContract.supportsInterface(Bytes.fromHexString("0x8581dab8"))) {
+  if (strategyContract.supportsInterface(Bytes.fromHexString("0x8581dab8")) || strategyContract.supportsInterface(Bytes.fromHexString("0xdba0d75c"))) {
     LeverageLendingStrategyData.create(event.params.strategy);
     isLendingLeverageStrategy = true;
 
