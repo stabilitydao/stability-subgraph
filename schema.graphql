@@ -210,3 +210,19 @@ type UserVaultEntity @entity {
   deposited: BigInt!
   rewardsEarned: BigInt!
 }
+
+type PoolEntity @entity {
+  id: String! #Pool address
+  ammAdapter: Bytes #address
+  tokenIn: Bytes #address
+  tokenOut: Bytes #address
+  assetAdded: Boolean
+}
+
+type BCPoolEntity @entity {
+  id: String! #tokens addresses
+  pool: Bytes #address
+  ammAdapter: Bytes #address
+  tokenIn: Bytes #address
+  tokenOut: Bytes #address
+}

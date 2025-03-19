@@ -105,12 +105,20 @@ templates:
       language: wasm/assemblyscript
       entities:
         - SwapperEntity
+        - PoolEntity
+        - BCPoolEntity
       abis:
         - name: SwapperABI
           file: ./abis/SwapperABI.json
       eventHandlers:
         - event: BlueChipAdded((address,address,address,address))
           handler: handleBlueChipAdded
+        - event: BlueChipPoolRemoved(address,address)
+          handler: handleBlueChipRemoved    
+        - event: PoolAdded((address,address,address,address),bool)
+          handler: handlePoolAdded
+        - event: PoolRemoved(address)
+          handler: handlePoolRemoved      
       file: ./src/Swapper.ts
   - kind: ethereum
     name: VaultData
