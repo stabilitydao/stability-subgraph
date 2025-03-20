@@ -1,5 +1,5 @@
 import { Address } from "@graphprotocol/graph-ts";
-import { PlatformEntity } from "../generated/schema";
+import { AMMAdapterEntity, PlatformEntity } from "../generated/schema";
 import { SwapperData, FactoryData } from "../generated/templates";
 import {
   Addresses as AddressesEvent,
@@ -7,6 +7,7 @@ import {
   PlatformVersion as PlatformVersionEvent,
   AddDexAggregator as AddDexAggregatorEvent,
   PlatformABI as PlatformContract,
+  NewAmmAdapter as NewAmmAdapterEvent,
 } from "../generated/PlatformData/PlatformABI";
 
 import { platformAddress } from "./utils/constants";
@@ -56,4 +57,12 @@ export function handleAddDexAggregator(event: AddDexAggregatorEvent): void {
   dexAggreagators.push(event.params.router);
   platform.dexAggreagators = dexAggreagators;
   platform.save();
+}
+
+export function handleNewAmmAdapter(event: NewAmmAdapterEvent): void {
+  const adapter = new AMMAdapterEntity(event.params.proxy);
+
+  adapter.name = event.params.id;
+
+  adapter.save();
 }
