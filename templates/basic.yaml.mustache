@@ -15,6 +15,7 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - PlatformEntity
+        - AMMAdapterEntity
       abis:
         - name: PlatformABI
           file: ./abis/PlatformABI.json
@@ -27,6 +28,8 @@ dataSources:
           handler: handlePlatformVersion
         - event: AddDexAggregator(address)
           handler: handleAddDexAggregator
+        - event: NewAmmAdapter(string,address)
+          handler: handleNewAmmAdapter
       file: ./src/Platform.ts
 
 templates:

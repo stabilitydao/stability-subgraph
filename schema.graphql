@@ -226,3 +226,8 @@ type BCPoolEntity @entity {
   tokenIn: Bytes #address
   tokenOut: Bytes #address
 }
+
+type AMMAdapterEntity @entity {
+  id: Bytes! #proxy address
+  name: String
+}
