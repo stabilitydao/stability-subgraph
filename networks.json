@@ -7,10 +7,6 @@
     "address": "0x7eAeE5CfF17F7765d89F4A46b484256929C62312",
     "startBlock": 15495644
   },
-  "real": {
-    "address": "0xB7838d447deece2a9A5794De0f342B47d0c1B9DC",
-    "startBlock": 946802
-  },
   "sonic": {
     "address": "0x4Aca671A420eEB58ecafE83700686a2AD06b20D8",
     "startBlock": 1496446
