@@ -24,7 +24,7 @@ const multicallAddress = getMulticallAddress(NETWORK);
 
 let defiedgeFactoryAddress = addressZero;
 
-if (NETWORK != "real" && NETWORK != "sonic") {
+if (NETWORK != "sonic") {
   defiedgeFactoryAddress = getDefiedgeFactoryAddress(NETWORK);
 }
 

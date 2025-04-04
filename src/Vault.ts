@@ -130,13 +130,17 @@ export function handleDepositAssets(event: DepositAssetsEvent): void {
 
   if (!userVault) {
     userVault = new UserVaultEntity(_VaultUserId);
+    userVault.balance = ZeroBigInt;
     userVault.deposited = ZeroBigInt;
     userVault.rewardsEarned = ZeroBigInt;
   }
 
-  userVault.deposited = vaultContract
-    .balanceOf(event.params.account)
-    .times(vault.sharePrice);
+  const userBalance = vaultContract.balanceOf(event.params.account);
+
+  userVault.balance = userBalance;
+
+  userVault.deposited = userBalance.times(vault.sharePrice);
+
   userVault.save();
 
   //===========UserHistoryEntity && userAllDataEntity===========//
@@ -172,6 +176,7 @@ export function handleDepositAssets(event: DepositAssetsEvent): void {
 
     if (!userVault) {
       userVault = new UserVaultEntity(_VaultUserId);
+      userVault.balance = ZeroBigInt;
       userVault.deposited = ZeroBigInt;
       userVault.rewardsEarned = ZeroBigInt;
     } else {
@@ -246,9 +251,12 @@ export function handleWithdrawAssetsOld(event: WithdrawAssetsEventOld): void {
     event.params.account
   ) as UserAllDataEntity;
 
-  userVault.deposited = vaultContract
-    .balanceOf(event.params.account)
-    .times(vault.sharePrice);
+  const userBalance = vaultContract.balanceOf(event.params.account);
+
+  userVault.balance = userBalance;
+
+  userVault.deposited = userBalance.times(vault.sharePrice);
+
   userVault.save();
 
   //===========UserHistoryEntity && userAllDataEntity===========//
@@ -340,9 +348,11 @@ export function handleWithdrawAssets(event: WithdrawAssetsEvent): void {
     return;
   }
 
-  userVault.deposited = vaultContract
-    .balanceOf(event.params.owner)
-    .times(vault.sharePrice);
+  const userBalance = vaultContract.balanceOf(event.params.owner);
+
+  userVault.balance = userBalance;
+
+  userVault.deposited = userBalance.times(vault.sharePrice);
   userVault.save();
 
   //===========UserHistoryEntity && userAllDataEntity===========//
@@ -412,22 +422,28 @@ export function handleTransfer(event: TransferEvent): void {
 
     if (!fromUserVault) {
       fromUserVault = new UserVaultEntity(_VaultFromUserId);
+      fromUserVault.balance = ZeroBigInt;
       fromUserVault.rewardsEarned = ZeroBigInt;
       fromUserVault.deposited = ZeroBigInt;
     } else {
-      fromUserVault.deposited = vaultContract
-        .balanceOf(event.params.from)
-        .times(vault.sharePrice);
+      const fromUserBalance = vaultContract.balanceOf(event.params.from);
+
+      fromUserVault.balance = fromUserBalance;
+
+      fromUserVault.deposited = fromUserBalance.times(vault.sharePrice);
     }
 
     if (!toUserVault) {
       toUserVault = new UserVaultEntity(_VaultToUserId);
+      toUserVault.balance = event.params.value;
       toUserVault.rewardsEarned = ZeroBigInt;
       toUserVault.deposited = event.params.value.times(vault.sharePrice);
     } else {
-      toUserVault.deposited = vaultContract
-        .balanceOf(event.params.to)
-        .times(vault.sharePrice);
+      const toUserBalance = vaultContract.balanceOf(event.params.to);
+
+      toUserVault.balance = toUserBalance;
+
+      toUserVault.deposited = toUserBalance.times(vault.sharePrice);
     }
 
     toUserVault.save();
