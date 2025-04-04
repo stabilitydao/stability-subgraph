@@ -44,6 +44,7 @@ import {
   priceReaderAddress,
   addressZero,
 } from "./utils/constants";
+
 export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
   const vault = new VaultEntity(event.params.vault);
   const strategyEntity = new StrategyEntity(event.params.strategy);
@@ -65,7 +66,10 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
 
   let isLendingLeverageStrategy = false;
 
-  if (strategyContract.supportsInterface(Bytes.fromHexString("0x8581dab8")) || strategyContract.supportsInterface(Bytes.fromHexString("0xdba0d75c"))) {
+  if (
+    strategyContract.supportsInterface(Bytes.fromHexString("0x8581dab8")) ||
+    strategyContract.supportsInterface(Bytes.fromHexString("0xdba0d75c"))
+  ) {
     LeverageLendingStrategyData.create(event.params.strategy);
     isLendingLeverageStrategy = true;
 
@@ -129,6 +133,15 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
   }
 
   const assetsPrices = priceReader.getAssetsPrice(_vaultInfo.value1, _amounts);
+
+  const assetsDecimals: BigInt[] = _vaultInfo.value1.map<BigInt>(
+    (asset: Address) => {
+      const tokenContract = ERC20UpgradeableABI.bind(asset);
+      const decimals = tokenContract.decimals();
+      return BigInt.fromI32(decimals);
+    }
+  );
+
   /////
 
   vault.lastHardWork = ZeroBigInt;
@@ -154,6 +167,7 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
   vault.assetsProportions = strategyContract.getAssetsProportions();
   vault.strategyDescription = strategyContract.description();
   vault.strategyAssets = changetype<Bytes[]>(_vaultInfo.value1);
+  vault.strategyAssetsDecimals = assetsDecimals;
   vault.assetsWithApr = changetype<Bytes[]>(_vaultInfo.value3);
   vault.assetsAprs = _vaultInfo.value4;
   vault.vaultStatus = factoryContract.vaultStatus(event.params.vault);

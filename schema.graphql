@@ -38,6 +38,7 @@ type VaultEntity @entity {
   underlying: Bytes!
   strategySpecific: String!
   strategyAssets: [Bytes!]! #addresses
+  strategyAssetsDecimals: [BigInt!]!
   assetsWithApr: [Bytes!]! #addresses
   assetsAprs: [BigInt!]!
   lastHardWork: BigInt!
@@ -207,6 +208,7 @@ type UserAllDataEntity @entity {
 
 type UserVaultEntity @entity {
   id: String! #Vault:User address
+  balance: BigInt!
   deposited: BigInt!
   rewardsEarned: BigInt!
 }

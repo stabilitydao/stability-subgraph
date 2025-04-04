@@ -2,7 +2,7 @@ const mustache = require("mustache");
 const fs = require("fs");
 
 const networks = JSON.parse(fs.readFileSync("networks.json", "utf8"));
-const selectedNetworkKey = process.argv[2] || "matic"; // matic || base || real
+const selectedNetworkKey = process.argv[2] || "matic"; // matic || base || sonic
 const selectedNetworkConfig = networks[selectedNetworkKey];
 
 if (!selectedNetworkConfig) {
@@ -14,7 +14,6 @@ if (!selectedNetworkConfig) {
 
 const templates = {
   basic: "templates/basic.yaml.mustache",
-  real: "templates/real.yaml.mustache",
   network: "templates/network.yaml.mustache",
 };
 
@@ -22,7 +21,7 @@ const getTemplateContent = (templatePath) =>
   fs.readFileSync(templatePath, "utf8");
 
 const template = getTemplateContent(
-  selectedNetworkKey === "real" ? templates.real : templates.basic
+  selectedNetworkKey === "" ? templates.basic : templates.basic
 );
 
 const networkToDeployTemplate = getTemplateContent(templates.network);

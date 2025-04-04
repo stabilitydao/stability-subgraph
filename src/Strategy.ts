@@ -289,10 +289,7 @@ export function handleHardWork(event: HardWorkEvent): void {
 
     const rewardByToken = EARNED.times(DENOMINATOR).div(totalSupply);
 
-    const reward = vaultContract
-      .balanceOf(userAddress)
-      .times(rewardByToken)
-      .div(DENOMINATOR);
+    const reward = userVault.balance.times(rewardByToken).div(DENOMINATOR);
 
     userVault.rewardsEarned = userVault.rewardsEarned.plus(reward);
     userVault.save();
@@ -447,14 +444,6 @@ export function handleHardWork(event: HardWorkEvent): void {
     assetsPrice &&
     vault.AssetsPricesOnCreation.length
   ) {
-    const tokensDecimals: BigInt[] = strategyAssets.map<BigInt>(
-      (asset: Address) => {
-        const tokenContract = ERC20UpgradeableABI.bind(asset);
-        const decimals = tokenContract.decimals();
-        return BigInt.fromI32(decimals);
-      }
-    );
-
     // Get tokens amounts
     for (let i = 0; i < strategyAssetsAmounts.length; i++) {
       let amount: BigDecimal = BigDecimal.fromString(
@@ -462,7 +451,7 @@ export function handleHardWork(event: HardWorkEvent): void {
       ).div(
         pow(
           BigDecimal.fromString("10"),
-          BigInt.fromI32(tokensDecimals[i].toI32())
+          BigInt.fromI32(vault.strategyAssetsDecimals[i].toI32())
         )
       );
       amounts.push(amount.toString());
