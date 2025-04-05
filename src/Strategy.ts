@@ -24,9 +24,6 @@ import {
   UserAllDataEntity,
 } from "../generated/schema";
 
-import { ERC20UpgradeableABI } from "../generated/templates/FactoryData/ERC20UpgradeableABI";
-import { SwapperABI as SwapperContract } from "../generated/templates/SwapperData/SwapperABI";
-
 import { MulticallABI as MulticallContract } from "../generated/templates/StrategyData/MulticallABI";
 import { ILeverageLendingStrategyABI as LeverageLendingContract } from "../generated/templates/LeverageLendingStrategyData/ILeverageLendingStrategyABI";
 
@@ -43,9 +40,7 @@ import {
   DayInSecondsBigDecimal,
   DayInSecondsBigInt,
   priceReaderAddress,
-  swapperAddress,
   multicallAddress,
-  oneEther,
 } from "./utils/constants";
 
 import { pow } from "./utils/math";
@@ -332,13 +327,13 @@ export function handleHardWork(event: HardWorkEvent): void {
     vault.save();
   }
   //===========Get assets prices===========//
-  const swapper = SwapperContract.bind(Address.fromString(swapperAddress));
-
   const multicallContract = MulticallContract.bind(
     Address.fromString(multicallAddress)
   );
 
-  const assetsAddresses = swapper.allAssets();
+  const assetsAddresses = vault.strategyAssets.map<Address>((bytes: Bytes) =>
+    Address.fromBytes(bytes)
+  );
 
   const assetsPrice = new Map<string, BigInt>();
 
@@ -380,7 +375,7 @@ export function handleHardWork(event: HardWorkEvent): void {
     const decodedValue = ethereum.decode("uint256", returnData[i]);
     if (decodedValue) {
       const price = decodedValue.toBigInt();
-      assetsPrice.set(assetsAddresses[i].toString(), price);
+      assetsPrice.set(assetsAddresses[i].toHexString(), price);
     } else {
       log.warning("Failed to decode price for asset {}", [
         assetsAddresses[i].toHexString(),
@@ -448,12 +443,7 @@ export function handleHardWork(event: HardWorkEvent): void {
     for (let i = 0; i < strategyAssetsAmounts.length; i++) {
       let amount: BigDecimal = BigDecimal.fromString(
         strategyAssetsAmounts[i].toString()
-      ).div(
-        pow(
-          BigDecimal.fromString("10"),
-          BigInt.fromI32(vault.strategyAssetsDecimals[i].toI32())
-        )
-      );
+      ).div(pow(BigDecimal.fromString("10"), vault.strategyAssetsDecimals[i]));
       amounts.push(amount.toString());
     }
 
@@ -461,7 +451,7 @@ export function handleHardWork(event: HardWorkEvent): void {
     for (let i = 0; i < amounts.length; i++) {
       let address = strategyAssets[i];
 
-      const price = assetsPrice.get(address.toString()).toString();
+      const price = assetsPrice.get(address.toHexString()).toString();
 
       let amountInUSD: BigDecimal = BigDecimal.fromString(price)
         .div(EtherBigDecimal)
@@ -491,7 +481,7 @@ export function handleHardWork(event: HardWorkEvent): void {
     // 2) Get assets VS HOLD APR
     for (let i = 0; i < strategyAssets.length; i++) {
       let assetPrice: BigDecimal = BigDecimal.fromString(
-        assetsPrice[strategyAssets[i].toString()].toString()
+        assetsPrice[strategyAssets[i].toHexString()].toString()
       ).div(EtherBigDecimal);
 
       let assetPriceOnCreation: BigDecimal = BigDecimal.fromString(
