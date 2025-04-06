@@ -266,6 +266,7 @@ export function handleHardWork(event: HardWorkEvent): void {
 
   //===========Earn===========//
   const usersList = vault.vaultUsersList;
+
   const totalSupply = vaultContract.totalSupply();
 
   let EARNED = event.params.earned;
@@ -274,57 +275,66 @@ export function handleHardWork(event: HardWorkEvent): void {
     EARNED = ZeroBigInt;
   }
 
-  for (let i = 0; i < usersList.length; i++) {
-    let userVault = UserVaultEntity.load(usersList[i]) as UserVaultEntity;
-    if (userVault.deposited == ZeroBigInt) {
-      continue;
+  const chunkSize = 100;
+
+  for (let j = 0; j < usersList.length; j += chunkSize) {
+    const chunk = usersList.slice(j, j + chunkSize);
+    for (let i = 0; i < chunk.length; i++) {
+      const userAddressString = chunk[i];
+
+      let userVault = UserVaultEntity.load(
+        userAddressString
+      ) as UserVaultEntity;
+
+      if (userVault.deposited == ZeroBigInt) {
+        continue;
+      }
+
+      const userAddress = Address.fromString(userAddressString.split(":")[1]);
+
+      const rewardByToken = EARNED.times(DENOMINATOR).div(totalSupply);
+
+      const reward = userVault.balance.times(rewardByToken).div(DENOMINATOR);
+
+      userVault.rewardsEarned = userVault.rewardsEarned.plus(reward);
+      userVault.save();
+
+      let userHistory = new UserHistoryEntity(
+        event.transaction.hash.concatI32(event.logIndex.toI32())
+      );
+
+      let userAllDataEntity = UserAllDataEntity.load(userAddress);
+
+      if (!userAllDataEntity) {
+        const userVaults = [changetype<Bytes>(event.address)];
+
+        userAllDataEntity = new UserAllDataEntity(userAddress);
+        userAllDataEntity.rewardsEarned = ZeroBigInt;
+        userAllDataEntity.vaults = userVaults;
+        userAllDataEntity.deposited = ZeroBigInt;
+      }
+
+      userAllDataEntity.rewardsEarned = userAllDataEntity.rewardsEarned.plus(
+        reward
+      );
+      userAllDataEntity.save();
+
+      userHistory.userAddress = userAddress;
+      userHistory.rewardsEarned = userAllDataEntity.rewardsEarned;
+      userHistory.deposited = userAllDataEntity.deposited;
+      userHistory.timestamp = event.block.timestamp;
+      userHistory.save();
+
+      let usersVault = vault.userVault;
+      if (usersVault) {
+        usersVault.push(userAddressString);
+      } else {
+        usersVault = [userAddressString];
+      }
+
+      vault.userVault = usersVault;
+      vault.save();
     }
-
-    const userAddress = Address.fromString(usersList[i].split(":")[1]);
-
-    const rewardByToken = EARNED.times(DENOMINATOR).div(totalSupply);
-
-    const reward = userVault.balance.times(rewardByToken).div(DENOMINATOR);
-
-    userVault.rewardsEarned = userVault.rewardsEarned.plus(reward);
-    userVault.save();
-
-    let userHistory = new UserHistoryEntity(
-      event.transaction.hash.concatI32(event.logIndex.toI32())
-    );
-
-    let userAllDataEntity = UserAllDataEntity.load(userAddress);
-
-    if (!userAllDataEntity) {
-      const userVaults = [changetype<Bytes>(event.address)];
-
-      userAllDataEntity = new UserAllDataEntity(userAddress);
-      userAllDataEntity.rewardsEarned = ZeroBigInt;
-      userAllDataEntity.vaults = userVaults;
-      userAllDataEntity.deposited = ZeroBigInt;
-    }
-
-    userAllDataEntity.rewardsEarned = userAllDataEntity.rewardsEarned.plus(
-      reward
-    );
-    userAllDataEntity.save();
-
-    userHistory.userAddress = userAddress;
-    userHistory.rewardsEarned = userAllDataEntity.rewardsEarned;
-    userHistory.deposited = userAllDataEntity.deposited;
-    userHistory.timestamp = event.block.timestamp;
-    userHistory.save();
-
-    let usersVault = vault.userVault;
-    if (usersVault) {
-      usersVault.push(usersList[i]);
-    } else {
-      usersVault = [];
-      usersVault.push(usersList[i]);
-    }
-
-    vault.userVault = usersVault;
-    vault.save();
   }
   //===========Get assets prices===========//
   const multicallContract = MulticallContract.bind(
