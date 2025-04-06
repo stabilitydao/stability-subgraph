@@ -46,7 +46,7 @@ type VaultEntity @entity {
   hardWorkOnDeposit: Boolean!
   created: BigInt!
   userVault: [UserVaultEntity!]
-  vaultUsersList: [String!]!
+  users: BigInt!
   gasReserve: BigInt
   NFTtokenID: BigInt!
   AssetsPricesOnCreation: [BigInt!]!
@@ -204,6 +204,11 @@ type UserAllDataEntity @entity {
   vaults: [Bytes!]!
   deposited: BigInt!
   rewardsEarned: BigInt!
+}
+
+type UserEntity @entity(immutable: true) {
+  id: String! #vaultAddress:userCount
+  address: Bytes! #address
 }
 
 type UserVaultEntity @entity {

@@ -6,6 +6,7 @@ import {
   UserHistoryEntity,
   UserVaultEntity,
   UserAllDataEntity,
+  UserEntity,
 } from "../generated/schema";
 
 import {
@@ -29,6 +30,7 @@ import {
   oneEther,
   vaultManagerAddress,
   priceReaderAddress,
+  OneBigInt,
 } from "./utils/constants";
 
 export function handleDepositAssets(event: DepositAssetsEvent): void {
@@ -87,15 +89,10 @@ export function handleDepositAssets(event: DepositAssetsEvent): void {
 
   vault.sharePrice = _sharePrice;
 
-  if (!vault.vaultUsersList.includes(_VaultUserId)) {
-    const usersList = vault.vaultUsersList;
-    usersList.push(_VaultUserId);
-    vault.vaultUsersList = usersList;
-  }
-
   if (!vault.initAssetsAmounts) {
     vault.initAssetsAmounts = assetsAmounts.value1;
   }
+
   vault.save();
 
   //===========Create VaultHistoryEntity (immutable)===========//
@@ -124,11 +121,29 @@ export function handleDepositAssets(event: DepositAssetsEvent): void {
 
   vault.vaultHistoryEntity = _vaultHistoryEntity;
   vault.save();
-  //===========UserVaultEntity===========//
+  //===========UserVaultEntity + UserEntity===========//
 
   let userVault = UserVaultEntity.load(_VaultUserId);
 
+  let usersCount = vault.users;
+  const vaultAddress = event.address.toHexString();
+  const account = changetype<Bytes>(event.params.account);
+
   if (!userVault) {
+    let currentUsersCount = usersCount.plus(OneBigInt);
+
+    vault.users = currentUsersCount;
+    vault.save();
+
+    const userID = vaultAddress
+      .concat(":")
+      .concat(currentUsersCount.toHexString());
+
+    let userEntity = new UserEntity(userID);
+    userEntity.address = account;
+
+    userEntity.save();
+
     userVault = new UserVaultEntity(_VaultUserId);
     userVault.balance = ZeroBigInt;
     userVault.deposited = ZeroBigInt;
@@ -142,7 +157,6 @@ export function handleDepositAssets(event: DepositAssetsEvent): void {
   userVault.deposited = userBalance.times(vault.sharePrice);
 
   userVault.save();
-
   //===========UserHistoryEntity && userAllDataEntity===========//
 
   let userHistory = new UserHistoryEntity(
@@ -410,12 +424,6 @@ export function handleTransfer(event: TransferEvent): void {
       .toHexString()
       .concat(":")
       .concat(event.params.from.toHexString());
-
-    if (!vault.vaultUsersList.includes(_VaultToUserId)) {
-      const usersList = vault.vaultUsersList;
-      usersList.push(_VaultToUserId);
-      vault.vaultUsersList = usersList;
-    }
 
     let fromUserVault = UserVaultEntity.load(_VaultFromUserId);
     let toUserVault = UserVaultEntity.load(_VaultToUserId);

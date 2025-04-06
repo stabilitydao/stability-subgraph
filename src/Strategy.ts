@@ -22,6 +22,7 @@ import {
   UserVaultEntity,
   UserHistoryEntity,
   UserAllDataEntity,
+  UserEntity,
 } from "../generated/schema";
 
 import { MulticallABI as MulticallContract } from "../generated/templates/StrategyData/MulticallABI";
@@ -265,7 +266,7 @@ export function handleHardWork(event: HardWorkEvent): void {
   vaultHistoryEntity.save();
 
   //===========Earn===========//
-  const usersList = vault.vaultUsersList;
+  const usersCount = vault.users;
 
   const totalSupply = vaultContract.totalSupply();
 
@@ -275,66 +276,69 @@ export function handleHardWork(event: HardWorkEvent): void {
     EARNED = ZeroBigInt;
   }
 
-  const chunkSize = 100;
+  for (let i = 1; i <= usersCount.toI32(); i++) {
+    const userID = vaultAddress
+      .toHexString()
+      .concat(":")
+      .concat(BigInt.fromI32(i).toHexString());
 
-  for (let j = 0; j < usersList.length; j += chunkSize) {
-    const chunk = usersList.slice(j, j + chunkSize);
-    for (let i = 0; i < chunk.length; i++) {
-      const userAddressString = chunk[i];
+    const currentUser = UserEntity.load(userID) as UserEntity;
 
-      let userVault = UserVaultEntity.load(
-        userAddressString
-      ) as UserVaultEntity;
+    const userAddressString = vaultAddress
+      .toHexString()
+      .concat(":")
+      .concat(currentUser.address.toHexString());
 
-      if (userVault.deposited == ZeroBigInt) {
-        continue;
-      }
+    let userVault = UserVaultEntity.load(userAddressString) as UserVaultEntity;
 
-      const userAddress = Address.fromString(userAddressString.split(":")[1]);
-
-      const rewardByToken = EARNED.times(DENOMINATOR).div(totalSupply);
-
-      const reward = userVault.balance.times(rewardByToken).div(DENOMINATOR);
-
-      userVault.rewardsEarned = userVault.rewardsEarned.plus(reward);
-      userVault.save();
-
-      let userHistory = new UserHistoryEntity(
-        event.transaction.hash.concatI32(event.logIndex.toI32())
-      );
-
-      let userAllDataEntity = UserAllDataEntity.load(userAddress);
-
-      if (!userAllDataEntity) {
-        const userVaults = [changetype<Bytes>(event.address)];
-
-        userAllDataEntity = new UserAllDataEntity(userAddress);
-        userAllDataEntity.rewardsEarned = ZeroBigInt;
-        userAllDataEntity.vaults = userVaults;
-        userAllDataEntity.deposited = ZeroBigInt;
-      }
-
-      userAllDataEntity.rewardsEarned = userAllDataEntity.rewardsEarned.plus(
-        reward
-      );
-      userAllDataEntity.save();
-
-      userHistory.userAddress = userAddress;
-      userHistory.rewardsEarned = userAllDataEntity.rewardsEarned;
-      userHistory.deposited = userAllDataEntity.deposited;
-      userHistory.timestamp = event.block.timestamp;
-      userHistory.save();
-
-      let usersVault = vault.userVault;
-      if (usersVault) {
-        usersVault.push(userAddressString);
-      } else {
-        usersVault = [userAddressString];
-      }
-
-      vault.userVault = usersVault;
-      vault.save();
+    if (userVault.deposited == ZeroBigInt) {
+      continue;
     }
+
+    const userAddress = currentUser.address;
+
+    const rewardByToken = EARNED.times(DENOMINATOR).div(totalSupply);
+
+    const reward = userVault.balance.times(rewardByToken).div(DENOMINATOR);
+
+    userVault.rewardsEarned = userVault.rewardsEarned.plus(reward);
+    userVault.save();
+
+    let userHistory = new UserHistoryEntity(
+      event.transaction.hash.concatI32(event.logIndex.toI32())
+    );
+
+    let userAllDataEntity = UserAllDataEntity.load(userAddress);
+
+    if (!userAllDataEntity) {
+      const userVaults = [changetype<Bytes>(event.address)];
+
+      userAllDataEntity = new UserAllDataEntity(userAddress);
+      userAllDataEntity.rewardsEarned = ZeroBigInt;
+      userAllDataEntity.vaults = userVaults;
+      userAllDataEntity.deposited = ZeroBigInt;
+    }
+
+    userAllDataEntity.rewardsEarned = userAllDataEntity.rewardsEarned.plus(
+      reward
+    );
+    userAllDataEntity.save();
+
+    userHistory.userAddress = userAddress;
+    userHistory.rewardsEarned = userAllDataEntity.rewardsEarned;
+    userHistory.deposited = userAllDataEntity.deposited;
+    userHistory.timestamp = event.block.timestamp;
+    userHistory.save();
+
+    let usersVault = vault.userVault;
+    if (usersVault) {
+      usersVault.push(userAddressString);
+    } else {
+      usersVault = [userAddressString];
+    }
+
+    vault.userVault = usersVault;
+    vault.save();
   }
   //===========Get assets prices===========//
   const multicallContract = MulticallContract.bind(
