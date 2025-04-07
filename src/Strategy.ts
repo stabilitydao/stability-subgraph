@@ -119,6 +119,7 @@ export function handleHardWork(event: HardWorkEvent): void {
       .concat(vaultAddress.toHexString())
   );
   vaultHistoryEntity.address = vaultAddress;
+  vaultHistoryEntity.vault = vaultAddress;
   vaultHistoryEntity.sharePrice = _sharePrice;
   vaultHistoryEntity.TVL = event.params.tvl;
   vaultHistoryEntity.timestamp = event.block.timestamp;
@@ -698,17 +699,6 @@ export function handleHardWork(event: HardWorkEvent): void {
   vaultMetricsEntity.periodAsset1VsHoldAPRs = _periodAsset1VsHoldAPRs;
   vaultMetricsEntity.periodAsset2VsHoldAPRs = _periodAsset2VsHoldAPRs;
   vaultMetricsEntity.save();
-
-  //===========vaultHistoryEntity(VaultEntity)===========//
-  let _vaultHistoryEntity = vault.vaultHistoryEntity;
-  if (_vaultHistoryEntity) {
-    _vaultHistoryEntity.push(vaultHistoryEntity.id);
-  } else {
-    _vaultHistoryEntity = [];
-    _vaultHistoryEntity.push(vaultHistoryEntity.id);
-  }
-
-  vault.vaultHistoryEntity = _vaultHistoryEntity;
 
   vault.lastAssetsSum = amountsSum.toString();
   vault.lastAssetsPrices = lastAssetsPrices;

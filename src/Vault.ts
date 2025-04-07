@@ -105,22 +105,11 @@ export function handleDepositAssets(event: DepositAssetsEvent): void {
   );
   // ============================================ //
   vaultHistoryEntity.address = event.address;
+  vaultHistoryEntity.vault = event.address;
   vaultHistoryEntity.sharePrice = vault.sharePrice;
   vaultHistoryEntity.TVL = vault.tvl;
   vaultHistoryEntity.timestamp = event.block.timestamp;
   vaultHistoryEntity.save();
-
-  //===========vaultHistoryEntity(VaultEntity)===========//
-  let _vaultHistoryEntity = vault.vaultHistoryEntity;
-  if (_vaultHistoryEntity) {
-    _vaultHistoryEntity.push(vaultHistoryEntity.id);
-  } else {
-    _vaultHistoryEntity = [];
-    _vaultHistoryEntity.push(vaultHistoryEntity.id);
-  }
-
-  vault.vaultHistoryEntity = _vaultHistoryEntity;
-  vault.save();
   //===========UserVaultEntity + UserEntity===========//
 
   let userVault = UserVaultEntity.load(_VaultUserId);
@@ -239,22 +228,11 @@ export function handleWithdrawAssetsOld(event: WithdrawAssetsEventOld): void {
       .concat(event.address.toHexString())
   );
   vaultHistoryEntity.address = event.address;
+  vaultHistoryEntity.vault = event.address;
   vaultHistoryEntity.sharePrice = vault.sharePrice;
   vaultHistoryEntity.TVL = vault.tvl;
   vaultHistoryEntity.timestamp = event.block.timestamp;
   vaultHistoryEntity.save();
-
-  //===========vaultHistoryEntity(VaultEntity)===========//
-  let _vaultHistoryEntity = vault.vaultHistoryEntity;
-  if (_vaultHistoryEntity) {
-    _vaultHistoryEntity.push(vaultHistoryEntity.id);
-  } else {
-    _vaultHistoryEntity = [];
-    _vaultHistoryEntity.push(vaultHistoryEntity.id);
-  }
-
-  vault.vaultHistoryEntity = _vaultHistoryEntity;
-  vault.save();
   //===========UserVaultEntity===========//
   const _VaultUserId = event.address
     .toHexString()
@@ -335,23 +313,11 @@ export function handleWithdrawAssets(event: WithdrawAssetsEvent): void {
       .concat(event.address.toHexString())
   );
   vaultHistoryEntity.address = event.address;
+  vaultHistoryEntity.vault = event.address;
   vaultHistoryEntity.sharePrice = vault.sharePrice;
   vaultHistoryEntity.TVL = vault.tvl;
   vaultHistoryEntity.timestamp = event.block.timestamp;
   vaultHistoryEntity.save();
-
-  //===========vaultHistoryEntity(VaultEntity)===========//
-  let _vaultHistoryEntity = vault.vaultHistoryEntity;
-  if (_vaultHistoryEntity) {
-    _vaultHistoryEntity.push(vaultHistoryEntity.id);
-  } else {
-    _vaultHistoryEntity = [];
-    _vaultHistoryEntity.push(vaultHistoryEntity.id);
-  }
-
-  vault.vaultHistoryEntity = _vaultHistoryEntity;
-  vault.save();
-
   //===========UserVaultEntity===========//
   const _VaultUserId = event.address
     .toHexString()

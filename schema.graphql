@@ -51,7 +51,7 @@ type VaultEntity @entity {
   NFTtokenID: BigInt!
   AssetsPricesOnCreation: [BigInt!]!
   lifeTimeAPR: BigInt!
-  vaultHistoryEntity: [VaultHistoryEntity!]
+  vaultHistoryEntity: [VaultHistoryEntity!]! @derivedFrom(field: "vault")
   vaultLeverageLendingHistoryEntity: [VaultLeverageLendingHistoryEntity!]
   almRebalanceHistoryEntity: [ALMRebalanceHistoryEntity!]
   initAssetsAmounts: [BigInt!]
@@ -101,6 +101,7 @@ type AssetHistoryEntity @entity(immutable: true) {
 type VaultHistoryEntity @entity(immutable: true) {
   id: String!
   address: Bytes! #address
+  vault: VaultEntity!
   sharePrice: BigInt!
   TVL: BigInt
 
