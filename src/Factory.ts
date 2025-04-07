@@ -150,7 +150,7 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
   vault.realAPR = ZeroBigInt;
   vault.tvl = ZeroBigInt;
   vault.sharePrice = ZeroBigInt;
-  vault.vaultUsersList = [];
+  vault.users = ZeroBigInt;
   vault.strategy = event.params.strategy;
   vault.vaultType = event.params.vaultType;
   vault.strategyId = event.params.strategyId;

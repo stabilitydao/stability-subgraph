@@ -6,6 +6,7 @@ import {
   UserHistoryEntity,
   UserVaultEntity,
   UserAllDataEntity,
+  UserEntity,
 } from "../generated/schema";
 
 import {
@@ -29,6 +30,7 @@ import {
   oneEther,
   vaultManagerAddress,
   priceReaderAddress,
+  OneBigInt,
 } from "./utils/constants";
 
 export function handleDepositAssets(event: DepositAssetsEvent): void {
@@ -87,15 +89,10 @@ export function handleDepositAssets(event: DepositAssetsEvent): void {
 
   vault.sharePrice = _sharePrice;
 
-  if (!vault.vaultUsersList.includes(_VaultUserId)) {
-    const usersList = vault.vaultUsersList;
-    usersList.push(_VaultUserId);
-    vault.vaultUsersList = usersList;
-  }
-
   if (!vault.initAssetsAmounts) {
     vault.initAssetsAmounts = assetsAmounts.value1;
   }
+
   vault.save();
 
   //===========Create VaultHistoryEntity (immutable)===========//
@@ -108,28 +105,36 @@ export function handleDepositAssets(event: DepositAssetsEvent): void {
   );
   // ============================================ //
   vaultHistoryEntity.address = event.address;
+  vaultHistoryEntity.vault = event.address;
   vaultHistoryEntity.sharePrice = vault.sharePrice;
   vaultHistoryEntity.TVL = vault.tvl;
   vaultHistoryEntity.timestamp = event.block.timestamp;
   vaultHistoryEntity.save();
-
-  //===========vaultHistoryEntity(VaultEntity)===========//
-  let _vaultHistoryEntity = vault.vaultHistoryEntity;
-  if (_vaultHistoryEntity) {
-    _vaultHistoryEntity.push(vaultHistoryEntity.id);
-  } else {
-    _vaultHistoryEntity = [];
-    _vaultHistoryEntity.push(vaultHistoryEntity.id);
-  }
-
-  vault.vaultHistoryEntity = _vaultHistoryEntity;
-  vault.save();
-  //===========UserVaultEntity===========//
+  //===========UserVaultEntity + UserEntity===========//
 
   let userVault = UserVaultEntity.load(_VaultUserId);
 
+  let usersCount = vault.users;
+  const vaultAddress = event.address.toHexString();
+  const account = changetype<Bytes>(event.params.account);
+
   if (!userVault) {
+    let currentUsersCount = usersCount.plus(OneBigInt);
+
+    vault.users = currentUsersCount;
+    vault.save();
+
+    const userID = vaultAddress
+      .concat(":")
+      .concat(currentUsersCount.toHexString());
+
+    let userEntity = new UserEntity(userID);
+    userEntity.address = account;
+
+    userEntity.save();
+
     userVault = new UserVaultEntity(_VaultUserId);
+    userVault.vault = event.address;
     userVault.balance = ZeroBigInt;
     userVault.deposited = ZeroBigInt;
     userVault.rewardsEarned = ZeroBigInt;
@@ -142,7 +147,6 @@ export function handleDepositAssets(event: DepositAssetsEvent): void {
   userVault.deposited = userBalance.times(vault.sharePrice);
 
   userVault.save();
-
   //===========UserHistoryEntity && userAllDataEntity===========//
 
   let userHistory = new UserHistoryEntity(
@@ -176,6 +180,7 @@ export function handleDepositAssets(event: DepositAssetsEvent): void {
 
     if (!userVault) {
       userVault = new UserVaultEntity(_VaultUserId);
+      userVault.vault = userAllDataEntity.vaults[i];
       userVault.balance = ZeroBigInt;
       userVault.deposited = ZeroBigInt;
       userVault.rewardsEarned = ZeroBigInt;
@@ -225,22 +230,11 @@ export function handleWithdrawAssetsOld(event: WithdrawAssetsEventOld): void {
       .concat(event.address.toHexString())
   );
   vaultHistoryEntity.address = event.address;
+  vaultHistoryEntity.vault = event.address;
   vaultHistoryEntity.sharePrice = vault.sharePrice;
   vaultHistoryEntity.TVL = vault.tvl;
   vaultHistoryEntity.timestamp = event.block.timestamp;
   vaultHistoryEntity.save();
-
-  //===========vaultHistoryEntity(VaultEntity)===========//
-  let _vaultHistoryEntity = vault.vaultHistoryEntity;
-  if (_vaultHistoryEntity) {
-    _vaultHistoryEntity.push(vaultHistoryEntity.id);
-  } else {
-    _vaultHistoryEntity = [];
-    _vaultHistoryEntity.push(vaultHistoryEntity.id);
-  }
-
-  vault.vaultHistoryEntity = _vaultHistoryEntity;
-  vault.save();
   //===========UserVaultEntity===========//
   const _VaultUserId = event.address
     .toHexString()
@@ -321,23 +315,11 @@ export function handleWithdrawAssets(event: WithdrawAssetsEvent): void {
       .concat(event.address.toHexString())
   );
   vaultHistoryEntity.address = event.address;
+  vaultHistoryEntity.vault = event.address;
   vaultHistoryEntity.sharePrice = vault.sharePrice;
   vaultHistoryEntity.TVL = vault.tvl;
   vaultHistoryEntity.timestamp = event.block.timestamp;
   vaultHistoryEntity.save();
-
-  //===========vaultHistoryEntity(VaultEntity)===========//
-  let _vaultHistoryEntity = vault.vaultHistoryEntity;
-  if (_vaultHistoryEntity) {
-    _vaultHistoryEntity.push(vaultHistoryEntity.id);
-  } else {
-    _vaultHistoryEntity = [];
-    _vaultHistoryEntity.push(vaultHistoryEntity.id);
-  }
-
-  vault.vaultHistoryEntity = _vaultHistoryEntity;
-  vault.save();
-
   //===========UserVaultEntity===========//
   const _VaultUserId = event.address
     .toHexString()
@@ -411,17 +393,12 @@ export function handleTransfer(event: TransferEvent): void {
       .concat(":")
       .concat(event.params.from.toHexString());
 
-    if (!vault.vaultUsersList.includes(_VaultToUserId)) {
-      const usersList = vault.vaultUsersList;
-      usersList.push(_VaultToUserId);
-      vault.vaultUsersList = usersList;
-    }
-
     let fromUserVault = UserVaultEntity.load(_VaultFromUserId);
     let toUserVault = UserVaultEntity.load(_VaultToUserId);
 
     if (!fromUserVault) {
       fromUserVault = new UserVaultEntity(_VaultFromUserId);
+      fromUserVault.vault = event.address;
       fromUserVault.balance = ZeroBigInt;
       fromUserVault.rewardsEarned = ZeroBigInt;
       fromUserVault.deposited = ZeroBigInt;
@@ -435,6 +412,7 @@ export function handleTransfer(event: TransferEvent): void {
 
     if (!toUserVault) {
       toUserVault = new UserVaultEntity(_VaultToUserId);
+      toUserVault.vault = event.address;
       toUserVault.balance = event.params.value;
       toUserVault.rewardsEarned = ZeroBigInt;
       toUserVault.deposited = event.params.value.times(vault.sharePrice);

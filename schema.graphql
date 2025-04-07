@@ -45,13 +45,13 @@ type VaultEntity @entity {
   vaultStatus: BigInt!
   hardWorkOnDeposit: Boolean!
   created: BigInt!
-  userVault: [UserVaultEntity!]
-  vaultUsersList: [String!]!
+  userVault: [UserVaultEntity!]! @derivedFrom(field: "vault")
+  users: BigInt!
   gasReserve: BigInt
   NFTtokenID: BigInt!
   AssetsPricesOnCreation: [BigInt!]!
   lifeTimeAPR: BigInt!
-  vaultHistoryEntity: [VaultHistoryEntity!]
+  vaultHistoryEntity: [VaultHistoryEntity!]! @derivedFrom(field: "vault")
   vaultLeverageLendingHistoryEntity: [VaultLeverageLendingHistoryEntity!]
   almRebalanceHistoryEntity: [ALMRebalanceHistoryEntity!]
   initAssetsAmounts: [BigInt!]
@@ -101,6 +101,7 @@ type AssetHistoryEntity @entity(immutable: true) {
 type VaultHistoryEntity @entity(immutable: true) {
   id: String!
   address: Bytes! #address
+  vault: VaultEntity!
   sharePrice: BigInt!
   TVL: BigInt
 
@@ -206,8 +207,14 @@ type UserAllDataEntity @entity {
   rewardsEarned: BigInt!
 }
 
+type UserEntity @entity(immutable: true) {
+  id: String! #vaultAddress:userCount
+  address: Bytes! #address
+}
+
 type UserVaultEntity @entity {
   id: String! #Vault:User address
+  vault: VaultEntity!
   balance: BigInt!
   deposited: BigInt!
   rewardsEarned: BigInt!

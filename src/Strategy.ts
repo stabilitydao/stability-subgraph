@@ -22,10 +22,8 @@ import {
   UserVaultEntity,
   UserHistoryEntity,
   UserAllDataEntity,
+  UserEntity,
 } from "../generated/schema";
-
-import { ERC20UpgradeableABI } from "../generated/templates/FactoryData/ERC20UpgradeableABI";
-import { SwapperABI as SwapperContract } from "../generated/templates/SwapperData/SwapperABI";
 
 import { MulticallABI as MulticallContract } from "../generated/templates/StrategyData/MulticallABI";
 import { ILeverageLendingStrategyABI as LeverageLendingContract } from "../generated/templates/LeverageLendingStrategyData/ILeverageLendingStrategyABI";
@@ -43,9 +41,7 @@ import {
   DayInSecondsBigDecimal,
   DayInSecondsBigInt,
   priceReaderAddress,
-  swapperAddress,
   multicallAddress,
-  oneEther,
 } from "./utils/constants";
 
 import { pow } from "./utils/math";
@@ -123,6 +119,7 @@ export function handleHardWork(event: HardWorkEvent): void {
       .concat(vaultAddress.toHexString())
   );
   vaultHistoryEntity.address = vaultAddress;
+  vaultHistoryEntity.vault = vaultAddress;
   vaultHistoryEntity.sharePrice = _sharePrice;
   vaultHistoryEntity.TVL = event.params.tvl;
   vaultHistoryEntity.timestamp = event.block.timestamp;
@@ -270,7 +267,8 @@ export function handleHardWork(event: HardWorkEvent): void {
   vaultHistoryEntity.save();
 
   //===========Earn===========//
-  const usersList = vault.vaultUsersList;
+  const usersCount = vault.users;
+
   const totalSupply = vaultContract.totalSupply();
 
   let EARNED = event.params.earned;
@@ -279,13 +277,28 @@ export function handleHardWork(event: HardWorkEvent): void {
     EARNED = ZeroBigInt;
   }
 
-  for (let i = 0; i < usersList.length; i++) {
-    let userVault = UserVaultEntity.load(usersList[i]) as UserVaultEntity;
+  for (let i = 1; i <= usersCount.toI32(); i++) {
+    const userID = vaultAddress
+      .toHexString()
+      .concat(":")
+      .concat(BigInt.fromI32(i).toHexString());
+
+    const currentUser = UserEntity.load(userID) as UserEntity;
+
+    const userAddressString = vaultAddress
+      .toHexString()
+      .concat(":")
+      .concat(currentUser.address.toHexString());
+
+    let userVault = UserVaultEntity.load(userAddressString) as UserVaultEntity;
+
+    userVault.vault = vaultAddress;
+
     if (userVault.deposited == ZeroBigInt) {
       continue;
     }
 
-    const userAddress = Address.fromString(usersList[i].split(":")[1]);
+    const userAddress = currentUser.address;
 
     const rewardByToken = EARNED.times(DENOMINATOR).div(totalSupply);
 
@@ -319,26 +332,15 @@ export function handleHardWork(event: HardWorkEvent): void {
     userHistory.deposited = userAllDataEntity.deposited;
     userHistory.timestamp = event.block.timestamp;
     userHistory.save();
-
-    let usersVault = vault.userVault;
-    if (usersVault) {
-      usersVault.push(usersList[i]);
-    } else {
-      usersVault = [];
-      usersVault.push(usersList[i]);
-    }
-
-    vault.userVault = usersVault;
-    vault.save();
   }
   //===========Get assets prices===========//
-  const swapper = SwapperContract.bind(Address.fromString(swapperAddress));
-
   const multicallContract = MulticallContract.bind(
     Address.fromString(multicallAddress)
   );
 
-  const assetsAddresses = swapper.allAssets();
+  const assetsAddresses = vault.strategyAssets.map<Address>((bytes: Bytes) =>
+    Address.fromBytes(bytes)
+  );
 
   const assetsPrice = new Map<string, BigInt>();
 
@@ -380,7 +382,7 @@ export function handleHardWork(event: HardWorkEvent): void {
     const decodedValue = ethereum.decode("uint256", returnData[i]);
     if (decodedValue) {
       const price = decodedValue.toBigInt();
-      assetsPrice.set(assetsAddresses[i].toString(), price);
+      assetsPrice.set(assetsAddresses[i].toHexString(), price);
     } else {
       log.warning("Failed to decode price for asset {}", [
         assetsAddresses[i].toHexString(),
@@ -448,12 +450,7 @@ export function handleHardWork(event: HardWorkEvent): void {
     for (let i = 0; i < strategyAssetsAmounts.length; i++) {
       let amount: BigDecimal = BigDecimal.fromString(
         strategyAssetsAmounts[i].toString()
-      ).div(
-        pow(
-          BigDecimal.fromString("10"),
-          BigInt.fromI32(vault.strategyAssetsDecimals[i].toI32())
-        )
-      );
+      ).div(pow(BigDecimal.fromString("10"), vault.strategyAssetsDecimals[i]));
       amounts.push(amount.toString());
     }
 
@@ -461,7 +458,7 @@ export function handleHardWork(event: HardWorkEvent): void {
     for (let i = 0; i < amounts.length; i++) {
       let address = strategyAssets[i];
 
-      const price = assetsPrice.get(address.toString()).toString();
+      const price = assetsPrice.get(address.toHexString()).toString();
 
       let amountInUSD: BigDecimal = BigDecimal.fromString(price)
         .div(EtherBigDecimal)
@@ -491,7 +488,7 @@ export function handleHardWork(event: HardWorkEvent): void {
     // 2) Get assets VS HOLD APR
     for (let i = 0; i < strategyAssets.length; i++) {
       let assetPrice: BigDecimal = BigDecimal.fromString(
-        assetsPrice[strategyAssets[i].toString()].toString()
+        assetsPrice[strategyAssets[i].toHexString()].toString()
       ).div(EtherBigDecimal);
 
       let assetPriceOnCreation: BigDecimal = BigDecimal.fromString(
@@ -702,17 +699,6 @@ export function handleHardWork(event: HardWorkEvent): void {
   vaultMetricsEntity.periodAsset1VsHoldAPRs = _periodAsset1VsHoldAPRs;
   vaultMetricsEntity.periodAsset2VsHoldAPRs = _periodAsset2VsHoldAPRs;
   vaultMetricsEntity.save();
-
-  //===========vaultHistoryEntity(VaultEntity)===========//
-  let _vaultHistoryEntity = vault.vaultHistoryEntity;
-  if (_vaultHistoryEntity) {
-    _vaultHistoryEntity.push(vaultHistoryEntity.id);
-  } else {
-    _vaultHistoryEntity = [];
-    _vaultHistoryEntity.push(vaultHistoryEntity.id);
-  }
-
-  vault.vaultHistoryEntity = _vaultHistoryEntity;
 
   vault.lastAssetsSum = amountsSum.toString();
   vault.lastAssetsPrices = lastAssetsPrices;
