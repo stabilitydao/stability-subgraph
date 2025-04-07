@@ -45,7 +45,7 @@ type VaultEntity @entity {
   vaultStatus: BigInt!
   hardWorkOnDeposit: Boolean!
   created: BigInt!
-  userVault: [UserVaultEntity!]
+  userVault: [UserVaultEntity!]! @derivedFrom(field: "vault")
   users: BigInt!
   gasReserve: BigInt
   NFTtokenID: BigInt!
@@ -213,6 +213,7 @@ type UserEntity @entity(immutable: true) {
 
 type UserVaultEntity @entity {
   id: String! #Vault:User address
+  vault: VaultEntity!
   balance: BigInt!
   deposited: BigInt!
   rewardsEarned: BigInt!

@@ -291,6 +291,8 @@ export function handleHardWork(event: HardWorkEvent): void {
 
     let userVault = UserVaultEntity.load(userAddressString) as UserVaultEntity;
 
+    userVault.vault = vaultAddress;
+
     if (userVault.deposited == ZeroBigInt) {
       continue;
     }
@@ -329,16 +331,6 @@ export function handleHardWork(event: HardWorkEvent): void {
     userHistory.deposited = userAllDataEntity.deposited;
     userHistory.timestamp = event.block.timestamp;
     userHistory.save();
-
-    let usersVault = vault.userVault;
-    if (usersVault) {
-      usersVault.push(userAddressString);
-    } else {
-      usersVault = [userAddressString];
-    }
-
-    vault.userVault = usersVault;
-    vault.save();
   }
   //===========Get assets prices===========//
   const multicallContract = MulticallContract.bind(
