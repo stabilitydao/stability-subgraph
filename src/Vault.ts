@@ -134,6 +134,7 @@ export function handleDepositAssets(event: DepositAssetsEvent): void {
     userEntity.save();
 
     userVault = new UserVaultEntity(_VaultUserId);
+    userVault.vault = event.address;
     userVault.balance = ZeroBigInt;
     userVault.deposited = ZeroBigInt;
     userVault.rewardsEarned = ZeroBigInt;
@@ -179,6 +180,7 @@ export function handleDepositAssets(event: DepositAssetsEvent): void {
 
     if (!userVault) {
       userVault = new UserVaultEntity(_VaultUserId);
+      userVault.vault = userAllDataEntity.vaults[i];
       userVault.balance = ZeroBigInt;
       userVault.deposited = ZeroBigInt;
       userVault.rewardsEarned = ZeroBigInt;
@@ -396,6 +398,7 @@ export function handleTransfer(event: TransferEvent): void {
 
     if (!fromUserVault) {
       fromUserVault = new UserVaultEntity(_VaultFromUserId);
+      fromUserVault.vault = event.address;
       fromUserVault.balance = ZeroBigInt;
       fromUserVault.rewardsEarned = ZeroBigInt;
       fromUserVault.deposited = ZeroBigInt;
@@ -409,6 +412,7 @@ export function handleTransfer(event: TransferEvent): void {
 
     if (!toUserVault) {
       toUserVault = new UserVaultEntity(_VaultToUserId);
+      toUserVault.vault = event.address;
       toUserVault.balance = event.params.value;
       toUserVault.rewardsEarned = ZeroBigInt;
       toUserVault.deposited = event.params.value.times(vault.sharePrice);
