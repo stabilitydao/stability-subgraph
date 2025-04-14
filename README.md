@@ -1,6 +1,10 @@
-# stability-subgraph
+# 🦋 Stability Subgraph
 
 ## Deployments
+
+### Sonic
+
+Queries (HTTP): https://api.goldsky.com/api/public/project_cm2v16o5ct0ql01vr3m5o0vt2/subgraphs/stability-sonic/0.0.33/gn
 
 ### Polygon
 
@@ -17,12 +21,6 @@ https://gateway.thegraph.com/api/[api-key]/subgraphs/id/FRK5vEJXX9w5Pt3nqeqGRX5s
 
 WEB
 https://thegraph.com/explorer/subgraphs/FRK5vEJXX9w5Pt3nqeqGRX5s7k29AWCb7aXTfDwT6S8j?view=Query&chain=arbitrum-one
-
-### Sonic
-
-Queries (HTTP): https://api.studio.thegraph.com/query/72279/stability-sonic/v0.0.16
-
-WEB https://thegraph.com/explorer/subgraphs/CGkgsqaECPXXvgLySMMyzXTQh3v1zqqGTa1uRf5AbpZx?view=Query&chain=arbitrum-one
 
 ## How to dev
 
