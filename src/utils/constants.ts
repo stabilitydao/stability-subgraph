@@ -30,6 +30,12 @@ if (NETWORK != "sonic") {
 
 const getBalanceAddress = "0x1Ebd614F038a6cED8faBf0Be075995dd1BB549cE";
 
+const xSTBLAddress = "0x902215dd96a291b256a3aef6c4dee62d2a9b80cb";
+
+const revenueRouterAddress = "0x23b8cc22c4c82545f4b451b11e2f17747a730810";
+
+const stakingAddress = "0x17a7cf838a7c91de47552a9f65822b547f9a6997";
+
 const oneEther = BigInt.fromI32(10).pow(18);
 const ZeroBigInt = BigInt.fromI32(0);
 const OneBigInt = BigInt.fromI32(1);
@@ -40,6 +46,8 @@ const WeeksBigDecimal = BigDecimal.fromString("52");
 const DayInSecondsBigDecimal = BigDecimal.fromString("86400");
 const DayInSecondsBigInt = BigInt.fromI32(86400);
 const WeekInSecondsBigDecimal = BigDecimal.fromString("604800");
+const WeekInSecondsBigInt = BigInt.fromI32(604800);
+const OneYearInSecondsBigDecimal = BigDecimal.fromString("31536000");
 const OneHundredBigDecimal = BigDecimal.fromString("100");
 const YearBigDecimal = BigDecimal.fromString("365");
 const EtherBigDecimal = BigDecimal.fromString("1000000000000000000");
@@ -70,4 +78,9 @@ export {
   frontendAddress,
   swapperAddress,
   multicallAddress,
+  xSTBLAddress,
+  revenueRouterAddress,
+  stakingAddress,
+  WeekInSecondsBigInt,
+  OneYearInSecondsBigDecimal,
 };

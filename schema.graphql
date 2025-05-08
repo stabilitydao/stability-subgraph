@@ -240,3 +240,10 @@ type AMMAdapterEntity @entity {
   id: Bytes! #proxy address
   name: String
 }
+
+type XSTBLHistoryEntity @entity(immutable: true) {
+  id: Bytes!
+  APR: String!
+  totalSupply: BigInt!
+  timestamp: BigInt!
+}
