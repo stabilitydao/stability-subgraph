@@ -13,7 +13,7 @@ if (!selectedNetworkConfig) {
 }
 
 const templates = {
-  basic: "templates/basic.yaml.mustache",
+  schema: "templates/schema.yaml.mustache",
   network: "templates/network.yaml.mustache",
 };
 
@@ -21,7 +21,7 @@ const getTemplateContent = (templatePath) =>
   fs.readFileSync(templatePath, "utf8");
 
 const template = getTemplateContent(
-  selectedNetworkKey === "" ? templates.basic : templates.basic
+  selectedNetworkKey === "" ? templates.schema : templates.schema
 );
 
 const networkToDeployTemplate = getTemplateContent(templates.network);

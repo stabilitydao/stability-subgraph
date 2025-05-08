@@ -355,3 +355,27 @@ templates:
       # - event: ChangeProtocolPerformanceFee(address,uint256)
       #   handler: handleChangeProtocolPerformanceFee
       file: ./src/DefiEdgeFactory.ts
+  - kind: ethereum
+    name: XSTBLData
+    network: {{network}}
+    source:
+      abi: XSTBLABI
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - XSTBLHistoryEntity
+      abis:
+        - name: XSTBLABI
+          file: ./abis/XSTBLABI.json
+        - name: RevenueRouterABI
+          file: ./abis/RevenueRouterABI.json
+        - name: XStakingABI
+          file: ./abis/XStakingABI.json    
+      eventHandlers:
+        - event: Enter(indexed address,uint256)
+          handler: handleEnter
+        - event: InstantExit(indexed address,uint256)
+          handler: handleExit
+      file: ./src/XSTBL.ts
