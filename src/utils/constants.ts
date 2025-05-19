@@ -22,6 +22,8 @@ const priceReaderAddress = getPriceReaderAddress(NETWORK);
 const swapperAddress = getSwapperAddress(NETWORK);
 const multicallAddress = getMulticallAddress(NETWORK);
 
+const metaVaultFactoryAddress = "0xa190302880acf9decc4447363640f589000ef601";
+
 let defiedgeFactoryAddress = addressZero;
 
 if (NETWORK != "sonic") {
@@ -83,4 +85,5 @@ export {
   stakingAddress,
   WeekInSecondsBigInt,
   OneYearInSecondsBigDecimal,
+  metaVaultFactoryAddress,
 };

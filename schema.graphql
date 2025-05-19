@@ -12,6 +12,7 @@ type PlatformEntity @entity {
   swapper: Bytes # address
   dexAggreagators: [Bytes!] # address[]
   bcAssets: [Bytes!] # address[]
+  metaVaultFactory: Bytes # address
   version: String
 }
 
@@ -246,4 +247,34 @@ type XSTBLHistoryEntity @entity(immutable: true) {
   APR: String!
   totalSupply: BigInt!
   timestamp: BigInt!
+}
+
+type MetaVaultFactoryEntity @entity {
+  id: Bytes! #address
+  metaVaults: [Bytes!]!
+  wrappedMetaVaults: [Bytes!]!
+}
+
+type MetaVaultEntity @entity {
+  id: Bytes! #address
+  name: String
+  symbol: String
+  decimals: String
+  APR: BigInt
+  sharePrice: BigInt
+  tvl: BigInt
+  deposited: [BigInt!]!
+  withdrawn: [BigInt!]!
+  assets: [Bytes!]!
+  vaults: [Bytes!]!
+}
+
+type WrappedMetaVaultEntity @entity {
+  id: Bytes! #address
+  name: String
+  symbol: String
+  decimals: String
+  deposited: BigInt!
+  withdrawn: BigInt!
+  asset: Bytes!
 }
