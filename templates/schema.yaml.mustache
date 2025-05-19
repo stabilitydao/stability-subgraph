@@ -16,6 +16,7 @@ dataSources:
       entities:
         - PlatformEntity
         - AMMAdapterEntity
+        - MetaVaultFactoryEntity
       abis:
         - name: PlatformABI
           file: ./abis/PlatformABI.json
@@ -379,3 +380,77 @@ templates:
         - event: InstantExit(indexed address,uint256)
           handler: handleExit
       file: ./src/XSTBL.ts
+  - kind: ethereum
+    name: MetaVaultFactoryData
+    network: {{network}}
+    source:
+      abi: MetaVaultFactoryABI
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - MetaVaultFactoryEntity
+        - MetaVaultEntity
+        - WrappedMetaVaultEntity
+      abis:
+        - name: MetaVaultFactoryABI
+          file: ./abis/MetaVaultFactoryABI.json
+        - name: MetaVaultABI
+          file: ./abis/MetaVaultABI.json
+        - name: WrappedMetaVaultABI    
+          file: ./abis/WrappedMetaVaultABI.json  
+      eventHandlers:
+        - event: NewMetaVault(address,string,address,string,string,address[],uint256[])
+          handler: handleNewMetaVault
+        - event: NewWrappedMetaVault(address,address)
+          handler: handleNewWrappedMetaVault  
+      file: ./src/MetaVaultFactory.ts      
+  - kind: ethereum
+    name: MetaVaultData
+    network: {{network}}
+    source:
+      abi: MetaVaultABI
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - MetaVaultEntity
+      abis:
+        - name: MetaVaultABI
+          file: ./abis/MetaVaultABI.json
+      eventHandlers:
+        - event: APR(uint256,int256,uint256,uint256,uint256)
+          handler: handleAPR
+        - event: DepositAssets(indexed address,address[],uint256[],uint256)
+          handler: handleDepositAssets
+        - event: WithdrawAssets(indexed address,indexed address,address[],uint256,uint256[])
+          handler: handleWithdrawAssets
+        - event: VaultName(string)
+          handler: handleVaultName
+        - event: VaultSymbol(string)
+          handler: handleVaultSymbol
+        - event: AddVault(address)
+          handler: handleAddVault  
+      file: ./src/MetaVault.ts      
+  - kind: ethereum
+    name: WrappedMetaVaultData
+    network: {{network}}
+    source:
+      abi: WrappedMetaVaultABI
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - WrappedMetaVaultEntity
+      abis:
+        - name: WrappedMetaVaultABI
+          file: ./abis/WrappedMetaVaultABI.json
+      eventHandlers:
+        - event: Deposit(indexed address,indexed address,uint256,uint256)
+          handler: handleDeposit
+        - event: Withdraw(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleWithdraw
+      file: ./src/WrappedMetaVault.ts       

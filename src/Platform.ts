@@ -1,6 +1,15 @@
 import { Address } from "@graphprotocol/graph-ts";
-import { AMMAdapterEntity, PlatformEntity } from "../generated/schema";
-import { SwapperData, FactoryData } from "../generated/templates";
+import {
+  AMMAdapterEntity,
+  PlatformEntity,
+  MetaVaultFactoryEntity,
+} from "../generated/schema";
+import {
+  SwapperData,
+  FactoryData,
+  MetaVaultFactoryData,
+} from "../generated/templates";
+
 import {
   Addresses as AddressesEvent,
   ContractInitialized as ContractInitializedEvent,
@@ -10,7 +19,7 @@ import {
   NewAmmAdapter as NewAmmAdapterEvent,
 } from "../generated/PlatformData/PlatformABI";
 
-import { platformAddress } from "./utils/constants";
+import { metaVaultFactoryAddress, platformAddress } from "./utils/constants";
 
 export function handleAddresses(event: AddressesEvent): void {
   const platform = PlatformEntity.load(event.address) as PlatformEntity;
@@ -29,7 +38,18 @@ export function handleAddresses(event: AddressesEvent): void {
   platform.swapper = event.params.swapper_;
   platform.buildingPayPerVaultToken = result.value0[4];
   platform.governance = result.value0[5];
+  platform.metaVaultFactory = Address.fromString(metaVaultFactoryAddress);
 
+  const metaVaultFactory = new MetaVaultFactoryEntity(
+    Address.fromString(metaVaultFactoryAddress)
+  );
+
+  MetaVaultFactoryData.create(Address.fromString(metaVaultFactoryAddress));
+
+  metaVaultFactory.metaVaults = [];
+  metaVaultFactory.wrappedMetaVaults = [];
+
+  metaVaultFactory.save();
   platform.save();
 }
 

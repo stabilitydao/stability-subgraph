@@ -24,8 +24,14 @@
     "type": "error"
   },
   { "inputs": [], "name": "IncorrectInitParams", "type": "error" },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "ltv", "type": "uint256" }],
+    "name": "IncorrectLtv",
+    "type": "error"
+  },
   { "inputs": [], "name": "IncorrectMsgSender", "type": "error" },
   { "inputs": [], "name": "IncorrectZeroArgument", "type": "error" },
+  { "inputs": [], "name": "InsufficientBalance", "type": "error" },
   { "inputs": [], "name": "InvalidInitialization", "type": "error" },
   { "inputs": [], "name": "NoNewVersion", "type": "error" },
   { "inputs": [], "name": "NotEnoughAllowedBBToken", "type": "error" },
@@ -39,8 +45,6 @@
   { "inputs": [], "name": "NotPlatform", "type": "error" },
   { "inputs": [], "name": "NotTheOwner", "type": "error" },
   { "inputs": [], "name": "NotVault", "type": "error" },
-  { "inputs": [], "name": "RewardIsTooBig", "type": "error" },
-  { "inputs": [], "name": "RewardIsTooSmall", "type": "error" },
   { "inputs": [], "name": "SameVersion", "type": "error" },
   {
     "inputs": [
@@ -275,6 +279,25 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "vault",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "platformFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "CustomVaultFee",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "receiver",
         "type": "address"
       }
@@ -324,6 +347,19 @@
       }
     ],
     "name": "Initialized",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "metaVaultFactory",
+        "type": "address"
+      }
+    ],
+    "name": "MetaVaultFactory",
     "type": "event"
   },
   {
@@ -516,6 +552,19 @@
       }
     ],
     "name": "RemoveDexAggregator",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "revenueRouter_",
+        "type": "address"
+      }
+    ],
+    "name": "RevenueRouter",
     "type": "event"
   },
   {
@@ -801,13 +850,6 @@
   },
   {
     "inputs": [],
-    "name": "bridge",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "buildingPayPerVaultToken",
     "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
     "stateMutability": "view",
@@ -893,43 +935,11 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "yourAccount", "type": "address" }
+      { "internalType": "address", "name": "vault", "type": "address" }
     ],
-    "name": "getBalance",
+    "name": "getCustomVaultFee",
     "outputs": [
-      { "internalType": "address[]", "name": "token", "type": "address[]" },
-      {
-        "internalType": "uint256[]",
-        "name": "tokenPrice",
-        "type": "uint256[]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "tokenUserBalance",
-        "type": "uint256[]"
-      },
-      { "internalType": "address[]", "name": "vault", "type": "address[]" },
-      {
-        "internalType": "uint256[]",
-        "name": "vaultSharePrice",
-        "type": "uint256[]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "vaultUserBalance",
-        "type": "uint256[]"
-      },
-      { "internalType": "address[]", "name": "nft", "type": "address[]" },
-      {
-        "internalType": "uint256[]",
-        "name": "nftUserBalance",
-        "type": "uint256[]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "buildingPayPerVaultTokenBalance",
-        "type": "uint256"
-      }
+      { "internalType": "uint256", "name": "fee", "type": "uint256" }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -1095,6 +1105,13 @@
   },
   {
     "inputs": [],
+    "name": "metaVaultFactory",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "minInitialBoostDuration",
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
@@ -1251,11 +1268,28 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "revenueRouter",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       { "internalType": "address", "name": "bbToken", "type": "address" },
       { "internalType": "uint256", "name": "vaultsToBuild", "type": "uint256" }
     ],
     "name": "setAllowedBBTokenVaults",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "vault", "type": "address" },
+      { "internalType": "uint256", "name": "platformFee", "type": "uint256" }
+    ],
+    "name": "setCustomVaultFee",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1363,8 +1397,11 @@
             "type": "address"
           },
           { "internalType": "address", "name": "zap", "type": "address" },
-          { "internalType": "address", "name": "bridge", "type": "address" },
-          { "internalType": "address", "name": "rebalancer", "type": "address" }
+          {
+            "internalType": "address",
+            "name": "revenueRouter",
+            "type": "address"
+          }
         ],
         "internalType": "struct IPlatform.SetupAddresses",
         "name": "addresses",
@@ -1417,18 +1454,22 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "bridge_", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "metaVaultFactory_",
+        "type": "address"
+      }
     ],
-    "name": "setupBridge",
+    "name": "setupMetaVaultFactory",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "rebalancer_", "type": "address" }
+      { "internalType": "address", "name": "revenueRouter_", "type": "address" }
     ],
-    "name": "setupRebalancer",
+    "name": "setupRevenueRouter",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
