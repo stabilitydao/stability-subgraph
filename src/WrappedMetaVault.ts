@@ -24,11 +24,9 @@ export function handleWithdraw(event: WithdrawEvent): void {
     event.address
   ) as WrappedMetaVaultEntity;
 
-  const prevWithdrawn = wrappedMetaVault.withdrawn;
   const prevDeposited = wrappedMetaVault.deposited;
   const assets = event.params.assets;
 
-  wrappedMetaVault.withdrawn = prevWithdrawn.plus(assets);
   wrappedMetaVault.deposited = prevDeposited.ge(assets)
     ? prevDeposited.minus(assets)
     : ZeroBigInt;

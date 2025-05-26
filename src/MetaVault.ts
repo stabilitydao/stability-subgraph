@@ -29,16 +29,14 @@ export function handleDepositAssets(event: DepositAssetsEvent): void {
   const metaVault = MetaVaultEntity.load(event.address) as MetaVaultEntity;
 
   const amounts = event.params.amounts;
-  const prevDeposited = metaVault.deposited || [];
 
-  const newDeposited: BigInt[] = [];
+  let deposited = metaVault.deposited;
 
   for (let i = 0; i < amounts.length; i++) {
-    const previous = i < prevDeposited.length ? prevDeposited[i] : ZeroBigInt;
-    newDeposited.push(previous.plus(amounts[i]));
+    deposited = deposited.plus(amounts[i]);
   }
 
-  metaVault.deposited = newDeposited;
+  metaVault.deposited = deposited;
   metaVault.save();
 }
 
@@ -47,29 +45,13 @@ export function handleWithdrawAssets(event: WithdrawAssetsEvent): void {
 
   const amountsOut = event.params.amountsOut;
 
-  const prevWithdrawn = metaVault.withdrawn;
-  const prevDeposited = metaVault.deposited;
-
-  const newWithdrawn: BigInt[] = [];
-  const newDeposited: BigInt[] = [];
+  let deposited = metaVault.deposited;
 
   for (let i = 0; i < amountsOut.length; i++) {
-    const withdrawnPrev =
-      i < prevWithdrawn.length ? prevWithdrawn[i] : ZeroBigInt;
-    const depositedPrev =
-      i < prevDeposited.length ? prevDeposited[i] : ZeroBigInt;
-
-    newWithdrawn.push(withdrawnPrev.plus(amountsOut[i]));
-
-    const newDeposit = depositedPrev.ge(amountsOut[i])
-      ? depositedPrev.minus(amountsOut[i])
-      : ZeroBigInt;
-
-    newDeposited.push(newDeposit);
+    deposited = deposited.minus(amountsOut[i]);
   }
 
-  metaVault.withdrawn = newWithdrawn;
-  metaVault.deposited = newDeposited;
+  metaVault.deposited = deposited;
 
   metaVault.save();
 }

@@ -46,8 +46,7 @@ export function handleNewMetaVault(event: NewMetaVaultEvent): void {
   metaVault.symbol = symbol;
   metaVault.decimals = BigInt.fromI32(decimals).toString();
   metaVault.assets = assets.map<Bytes>((address) => changetype<Bytes>(address));
-  metaVault.deposited = [];
-  metaVault.withdrawn = [];
+  metaVault.deposited = ZeroBigInt;
   metaVault.vaults = [];
 
   metaVault.save();
@@ -88,7 +87,6 @@ export function handleNewWrappedMetaVault(
   wrappedMetaVault.decimals = BigInt.fromI32(decimals).toString();
   wrappedMetaVault.asset = asset;
   wrappedMetaVault.deposited = ZeroBigInt;
-  wrappedMetaVault.withdrawn = ZeroBigInt;
 
   wrappedMetaVault.save();
 }
