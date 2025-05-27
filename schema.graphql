@@ -263,8 +263,7 @@ type MetaVaultEntity @entity {
   APR: BigInt
   sharePrice: BigInt
   tvl: BigInt
-  deposited: [BigInt!]!
-  withdrawn: [BigInt!]!
+  deposited: BigInt!
   assets: [Bytes!]!
   vaults: [Bytes!]!
 }
@@ -275,6 +274,5 @@ type WrappedMetaVaultEntity @entity {
   symbol: String
   decimals: String
   deposited: BigInt!
-  withdrawn: BigInt!
   asset: Bytes!
 }
