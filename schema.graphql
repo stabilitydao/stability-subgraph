@@ -260,12 +260,16 @@ type MetaVaultEntity @entity {
   name: String
   symbol: String
   decimals: String
-  APR: BigInt
-  sharePrice: BigInt
+  type: String!
+  lastAPRTimestamp: BigInt!
+  APR: BigInt!
+  sharePrice: BigInt!
   tvl: BigInt
   deposited: BigInt!
   assets: [Bytes!]!
   vaults: [Bytes!]!
+  users: BigInt!
+  userMetaVault: [UserMetaVaultEntity!]! @derivedFrom(field: "metaVault")
 }
 
 type WrappedMetaVaultEntity @entity {
@@ -275,4 +279,17 @@ type WrappedMetaVaultEntity @entity {
   decimals: String
   deposited: BigInt!
   asset: Bytes!
+}
+
+type UserMetaVaultEntity @entity {
+  id: String! #Vault:User address
+  metaVault: MetaVaultEntity!
+  balance: BigInt!
+  deposited: BigInt!
+  rewardsEarned: BigInt!
+}
+
+type UserMetaEntity @entity(immutable: true) {
+  id: String! #vaultAddress:userCount
+  address: Bytes! #address
 }
