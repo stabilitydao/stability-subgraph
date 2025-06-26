@@ -266,6 +266,18 @@ type MetaVaultEntity @entity {
   deposited: BigInt!
   assets: [Bytes!]!
   vaults: [Bytes!]!
+  metaVaultHistoryEntity: [MetaVaultHistoryEntity!]!
+    @derivedFrom(field: "metaVault")
+}
+
+type MetaVaultHistoryEntity @entity(immutable: true) {
+  id: String!
+  address: Bytes! #address
+  metaVault: MetaVaultEntity!
+  APR: BigInt
+  sharePrice: BigInt
+  tvl: BigInt
+  timestamp: BigInt!
 }
 
 type WrappedMetaVaultEntity @entity {

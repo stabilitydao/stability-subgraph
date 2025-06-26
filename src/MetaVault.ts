@@ -1,6 +1,6 @@
 import { BigInt, Bytes } from "@graphprotocol/graph-ts";
 
-import { MetaVaultEntity } from "../generated/schema";
+import { MetaVaultEntity, MetaVaultHistoryEntity } from "../generated/schema";
 
 import { MetaVaultABI as MetaVaultContract } from "../generated/templates/MetaVaultData/MetaVaultABI";
 
@@ -23,6 +23,23 @@ export function handleAPR(event: APREvent): void {
   metaVault.tvl = event.params.tvl;
 
   metaVault.save();
+
+  let metaVaultHistoryEntity = new MetaVaultHistoryEntity(
+    event.transaction.hash
+      .concatI32(event.transaction.nonce.toI32())
+      .toHexString()
+      .concat(":")
+      .concat(event.address.toHexString())
+  );
+
+  metaVaultHistoryEntity.address = event.address;
+  metaVaultHistoryEntity.metaVault = event.address;
+  metaVaultHistoryEntity.APR = event.params.apr;
+  metaVaultHistoryEntity.sharePrice = event.params.sharePrice;
+  metaVaultHistoryEntity.tvl = event.params.tvl;
+  metaVaultHistoryEntity.timestamp = event.block.timestamp;
+
+  metaVaultHistoryEntity.save();
 }
 
 export function handleDepositAssets(event: DepositAssetsEvent): void {
@@ -38,6 +55,23 @@ export function handleDepositAssets(event: DepositAssetsEvent): void {
 
   metaVault.deposited = deposited;
   metaVault.save();
+
+  let metaVaultHistoryEntity = new MetaVaultHistoryEntity(
+    event.transaction.hash
+      .concatI32(event.transaction.nonce.toI32())
+      .toHexString()
+      .concat(":")
+      .concat(event.address.toHexString())
+  );
+
+  metaVaultHistoryEntity.address = event.address;
+  metaVaultHistoryEntity.metaVault = event.address;
+  metaVaultHistoryEntity.APR = metaVault.APR;
+  metaVaultHistoryEntity.sharePrice = metaVault.sharePrice;
+  metaVaultHistoryEntity.tvl = metaVault.tvl;
+  metaVaultHistoryEntity.timestamp = event.block.timestamp;
+
+  metaVaultHistoryEntity.save();
 }
 
 export function handleWithdrawAssets(event: WithdrawAssetsEvent): void {
@@ -54,6 +88,23 @@ export function handleWithdrawAssets(event: WithdrawAssetsEvent): void {
   metaVault.deposited = deposited;
 
   metaVault.save();
+
+  let metaVaultHistoryEntity = new MetaVaultHistoryEntity(
+    event.transaction.hash
+      .concatI32(event.transaction.nonce.toI32())
+      .toHexString()
+      .concat(":")
+      .concat(event.address.toHexString())
+  );
+
+  metaVaultHistoryEntity.address = event.address;
+  metaVaultHistoryEntity.metaVault = event.address;
+  metaVaultHistoryEntity.APR = metaVault.APR;
+  metaVaultHistoryEntity.sharePrice = metaVault.sharePrice;
+  metaVaultHistoryEntity.tvl = metaVault.tvl;
+  metaVaultHistoryEntity.timestamp = event.block.timestamp;
+
+  metaVaultHistoryEntity.save();
 }
 
 export function handleVaultName(event: VaultNameEvent): void {
