@@ -41,13 +41,19 @@ export function handleNewMetaVault(event: NewMetaVaultEvent): void {
   const symbol = metaVaultContract.symbol();
   const decimals = metaVaultContract.decimals();
   const assets = metaVaultContract.assets();
+  const type = metaVaultContract.vaultType();
 
   metaVault.name = name;
   metaVault.symbol = symbol;
   metaVault.decimals = BigInt.fromI32(decimals).toString();
   metaVault.assets = assets.map<Bytes>((address) => changetype<Bytes>(address));
   metaVault.deposited = ZeroBigInt;
+  metaVault.type = type;
   metaVault.vaults = [];
+  metaVault.users = ZeroBigInt;
+  metaVault.sharePrice = ZeroBigInt;
+  metaVault.APR = ZeroBigInt;
+  metaVault.lastAPRTimestamp = ZeroBigInt;
 
   metaVault.save();
 }
