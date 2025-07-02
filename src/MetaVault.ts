@@ -226,9 +226,7 @@ export function handleWithdrawAssets(event: WithdrawAssetsEvent): void {
       .concat(":")
       .concat(event.params.sender.toHexString());
 
-    let userMetaVault = UserMetaVaultEntity.load(
-      _MetaVaultUserId
-    ) as UserMetaVaultEntity;
+    let userMetaVault = UserMetaVaultEntity.load(_MetaVaultUserId);
 
     if (userMetaVault === null) {
       userMetaVault = new UserMetaVaultEntity(_MetaVaultUserId);
@@ -283,6 +281,7 @@ export function handleAddVault(event: AddVaultEvent): void {
 }
 
 export function handleTransfer(event: TransferEvent): void {
+  const metaVault = MetaVaultEntity.load(event.address) as MetaVaultEntity;
   const metaVaultContract = MetaVaultContract.bind(event.address);
 
   const spenderUserId = event.address
@@ -319,6 +318,9 @@ export function handleTransfer(event: TransferEvent): void {
 
   spenderUser.balance = spenderBalance;
   receiverUser.balance = receiverBalance;
+
+  spenderUser.deposited = spenderBalance.times(metaVault.sharePrice);
+  receiverUser.deposited = receiverBalance.times(metaVault.sharePrice);
 
   spenderUser.save();
   receiverUser.save();
