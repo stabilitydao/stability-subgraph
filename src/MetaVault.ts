@@ -219,7 +219,6 @@ export function handleWithdrawAssets(event: WithdrawAssetsEvent): void {
   metaVaultHistoryEntity.timestamp = event.block.timestamp;
 
   metaVaultHistoryEntity.save();
-
   //===========UserMetaVaultEntity===========//
   if (metaVault.type == "MetaVault") {
     const _MetaVaultUserId = event.address
@@ -240,6 +239,7 @@ export function handleWithdrawAssets(event: WithdrawAssetsEvent): void {
     const userBalance = metaVaultContract.balanceOf(event.params.sender);
 
     userMetaVault.balance = userBalance;
+
     userMetaVault.deposited = userBalance.times(metaVault.sharePrice);
 
     userMetaVault.save();
@@ -281,6 +281,7 @@ export function handleAddVault(event: AddVaultEvent): void {
 }
 
 export function handleTransfer(event: TransferEvent): void {
+  const metaVault = MetaVaultEntity.load(event.address) as MetaVaultEntity;
   const metaVaultContract = MetaVaultContract.bind(event.address);
 
   const spenderUserId = event.address
@@ -317,6 +318,9 @@ export function handleTransfer(event: TransferEvent): void {
 
   spenderUser.balance = spenderBalance;
   receiverUser.balance = receiverBalance;
+
+  spenderUser.deposited = spenderBalance.times(metaVault.sharePrice);
+  receiverUser.deposited = receiverBalance.times(metaVault.sharePrice);
 
   spenderUser.save();
   receiverUser.save();
