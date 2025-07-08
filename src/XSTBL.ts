@@ -8,9 +8,15 @@ import {
 
 import { RevenueRouterABI as RevenueRouterContract } from "../generated/templates/XSTBLData/RevenueRouterABI";
 
-import { XStakingABI as XStakingContract } from "../generated/templates/XSTBLData/XStakingABI";
+import {
+  XStakingABI as XStakingContract,
+  NotifyReward as NotifyRewardEvent,
+} from "../generated/templates/XSTBLData/XStakingABI";
 
-import { XSTBLHistoryEntity } from "../generated/schema";
+import {
+  XStakingNotifyRewardHistoryEntity,
+  XSTBLHistoryEntity,
+} from "../generated/schema";
 
 import {
   xSTBLAddress,
@@ -84,4 +90,15 @@ export function handleExit(event: ExitEvent): void {
   // xSTBLHistoryEntity.timestamp = event.block.timestamp;
   // xSTBLHistoryEntity.APR = APR.toString();
   // xSTBLHistoryEntity.save();
+}
+
+export function handleNotifyReward(event: NotifyRewardEvent): void {
+  const xStakingNotifyRewardHistoryEntity = new XStakingNotifyRewardHistoryEntity(
+    event.transaction.hash
+  );
+
+  xStakingNotifyRewardHistoryEntity.timestamp = event.block.timestamp;
+  xStakingNotifyRewardHistoryEntity.amount = event.params.amount;
+
+  xStakingNotifyRewardHistoryEntity.save();
 }

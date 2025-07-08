@@ -249,6 +249,12 @@ type XSTBLHistoryEntity @entity(immutable: true) {
   timestamp: BigInt!
 }
 
+type XStakingNotifyRewardHistoryEntity @entity(immutable: true) {
+  id: Bytes!
+  timestamp: BigInt!
+  amount: BigInt!
+}
+
 type MetaVaultFactoryEntity @entity {
   id: Bytes! #address
   metaVaults: [Bytes!]!
