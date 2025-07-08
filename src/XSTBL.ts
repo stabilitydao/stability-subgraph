@@ -8,10 +8,7 @@ import {
 
 import { RevenueRouterABI as RevenueRouterContract } from "../generated/templates/XSTBLData/RevenueRouterABI";
 
-import {
-  XStakingABI as XStakingContract,
-  NotifyReward as NotifyRewardEvent,
-} from "../generated/templates/XSTBLData/XStakingABI";
+import { NotifyReward as NotifyRewardEvent } from "../generated/templates/XSTBLData/XStakingABI";
 
 import {
   XStakingNotifyRewardHistoryEntity,
@@ -92,13 +89,3 @@ export function handleExit(event: ExitEvent): void {
   // xSTBLHistoryEntity.save();
 }
 
-export function handleNotifyReward(event: NotifyRewardEvent): void {
-  const xStakingNotifyRewardHistoryEntity = new XStakingNotifyRewardHistoryEntity(
-    event.transaction.hash
-  );
-
-  xStakingNotifyRewardHistoryEntity.timestamp = event.block.timestamp;
-  xStakingNotifyRewardHistoryEntity.amount = event.params.amount;
-
-  xStakingNotifyRewardHistoryEntity.save();
-}

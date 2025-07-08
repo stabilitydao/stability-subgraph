@@ -381,6 +381,27 @@ templates:
           handler: handleExit
       file: ./src/XSTBL.ts
   - kind: ethereum
+    name: XStakingData
+    network: {{network}}
+    source:
+      abi: XStakingABI
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - XStakingNotifyRewardHistoryEntity
+      abis:
+        - name: XStakingABI
+          file: ./abis/XStakingABI.json    
+      eventHandlers:
+        - event: NotifyReward(indexed address,uint256)
+          handler: handleNotifyReward
+
+      file: ./src/XStaking.ts
+
+  
+  - kind: ethereum
     name: MetaVaultFactoryData
     network: {{network}}
     source:
@@ -419,6 +440,7 @@ templates:
         - MetaVaultEntity
         - UserMetaVaultEntity
         - UserMetaEntity
+        - MetaVaultHistoryEntity
       abis:
         - name: MetaVaultABI
           file: ./abis/MetaVaultABI.json
@@ -434,7 +456,9 @@ templates:
         - event: VaultSymbol(string)
           handler: handleVaultSymbol
         - event: AddVault(address)
-          handler: handleAddVault  
+          handler: handleAddVault
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
       file: ./src/MetaVault.ts      
   - kind: ethereum
     name: WrappedMetaVaultData
@@ -457,4 +481,6 @@ templates:
           handler: handleDeposit
         - event: Withdraw(indexed address,indexed address,indexed address,uint256,uint256)
           handler: handleWithdraw
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
       file: ./src/WrappedMetaVault.ts       
