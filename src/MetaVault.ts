@@ -1,4 +1,4 @@
-import { BigInt, Bytes, BigDecimal } from "@graphprotocol/graph-ts";
+import { BigInt, Bytes, BigDecimal, Address } from "@graphprotocol/graph-ts";
 
 import {
   MetaVaultEntity,
@@ -17,6 +17,8 @@ import {
   AddVault as AddVaultEvent,
   Transfer as TransferEvent,
 } from "../generated/templates/MetaVaultData/MetaVaultABI";
+
+import { WrappedMetaVaultABI as WrappedMetaVaultContract } from "../generated/templates/WrappedMetaVaultData/WrappedMetaVaultABI";
 
 import { ZeroBigInt, OneBigInt } from "./utils/constants";
 
@@ -176,7 +178,21 @@ export function handleDepositAssets(event: DepositAssetsEvent): void {
       userMetaVault.rewardsEarned = ZeroBigInt;
     }
 
-    const userBalance = metaVaultContract.balanceOf(event.params.account);
+    let wrappedMetaVaultUserBalance = ZeroBigInt;
+
+    if (metaVault.wrappedMetaVaultId) {
+      const wrappedMetaVaultContract = WrappedMetaVaultContract.bind(
+        changetype<Address>(metaVault.wrappedMetaVaultId)
+      );
+
+      wrappedMetaVaultUserBalance = wrappedMetaVaultContract.balanceOf(
+        event.params.account
+      );
+    }
+
+    const userBalance = metaVaultContract
+      .balanceOf(event.params.account)
+      .plus(wrappedMetaVaultUserBalance);
 
     userMetaVault.balance = userBalance;
 
@@ -236,7 +252,21 @@ export function handleWithdrawAssets(event: WithdrawAssetsEvent): void {
       userMetaVault.rewardsEarned = ZeroBigInt;
     }
 
-    const userBalance = metaVaultContract.balanceOf(event.params.sender);
+    let wrappedMetaVaultUserBalance = ZeroBigInt;
+
+    if (metaVault.wrappedMetaVaultId) {
+      const wrappedMetaVaultContract = WrappedMetaVaultContract.bind(
+        changetype<Address>(metaVault.wrappedMetaVaultId)
+      );
+
+      wrappedMetaVaultUserBalance = wrappedMetaVaultContract.balanceOf(
+        event.params.sender
+      );
+    }
+
+    const userBalance = metaVaultContract
+      .balanceOf(event.params.sender)
+      .plus(wrappedMetaVaultUserBalance);
 
     userMetaVault.balance = userBalance;
 
@@ -313,8 +343,27 @@ export function handleTransfer(event: TransferEvent): void {
     receiverUser.rewardsEarned = ZeroBigInt;
   }
 
-  const spenderBalance = metaVaultContract.balanceOf(event.params.from);
-  const receiverBalance = metaVaultContract.balanceOf(event.params.to);
+  let wrappedMetaVaultSenderBalance = ZeroBigInt;
+  let wrappedMetaVaultReceiverBalance = ZeroBigInt;
+  if (metaVault.wrappedMetaVaultId) {
+    const wrappedMetaVaultContract = WrappedMetaVaultContract.bind(
+      changetype<Address>(metaVault.wrappedMetaVaultId)
+    );
+
+    wrappedMetaVaultSenderBalance = wrappedMetaVaultContract.balanceOf(
+      event.params.from
+    );
+    wrappedMetaVaultReceiverBalance = wrappedMetaVaultContract.balanceOf(
+      event.params.to
+    );
+  }
+
+  const spenderBalance = metaVaultContract
+    .balanceOf(event.params.from)
+    .plus(wrappedMetaVaultSenderBalance);
+  const receiverBalance = metaVaultContract
+    .balanceOf(event.params.to)
+    .plus(wrappedMetaVaultReceiverBalance);
 
   spenderUser.balance = spenderBalance;
   receiverUser.balance = receiverBalance;

@@ -1,5 +1,5 @@
 import { XStakingNotifyRewardHistoryEntity } from "../generated/schema";
-import { NotifyReward as NotifyRewardEvent } from "../generated/templates/XSTBLData/XStakingABI";
+import { NotifyReward as NotifyRewardEvent } from "../generated/templates/XStakingData/XStakingABI";
 
 export function handleNotifyReward(event: NotifyRewardEvent): void {
   const xStakingNotifyRewardHistoryEntity = new XStakingNotifyRewardHistoryEntity(
