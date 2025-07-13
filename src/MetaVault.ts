@@ -244,7 +244,7 @@ export function handleWithdrawAssets(event: WithdrawAssetsEvent): void {
 
     let userMetaVault = UserMetaVaultEntity.load(_MetaVaultUserId);
 
-    if (userMetaVault === null) {
+    if (!userMetaVault) {
       userMetaVault = new UserMetaVaultEntity(_MetaVaultUserId);
       userMetaVault.metaVault = event.address;
       userMetaVault.balance = ZeroBigInt;
@@ -312,65 +312,103 @@ export function handleAddVault(event: AddVaultEvent): void {
 
 export function handleTransfer(event: TransferEvent): void {
   const metaVault = MetaVaultEntity.load(event.address) as MetaVaultEntity;
-  const metaVaultContract = MetaVaultContract.bind(event.address);
+  if (metaVault.type == "MetaVault") {
+    const metaVaultContract = MetaVaultContract.bind(event.address);
 
-  const spenderUserId = event.address
-    .toHexString()
-    .concat(":")
-    .concat(event.params.from.toHexString());
+    const spenderUserId = event.address
+      .toHexString()
+      .concat(":")
+      .concat(event.params.from.toHexString());
 
-  const receiverUserId = event.address
-    .toHexString()
-    .concat(":")
-    .concat(event.params.to.toHexString());
+    const receiverUserId = event.address
+      .toHexString()
+      .concat(":")
+      .concat(event.params.to.toHexString());
 
-  let spenderUser = UserMetaVaultEntity.load(spenderUserId);
-  let receiverUser = UserMetaVaultEntity.load(receiverUserId);
+    let spenderUser = UserMetaVaultEntity.load(spenderUserId);
+    let receiverUser = UserMetaVaultEntity.load(receiverUserId);
 
-  if (spenderUser === null) {
-    spenderUser = new UserMetaVaultEntity(spenderUserId);
-    spenderUser.metaVault = event.address;
-    spenderUser.balance = ZeroBigInt;
-    spenderUser.deposited = ZeroBigInt;
-    spenderUser.rewardsEarned = ZeroBigInt;
+    let usersCount = metaVault.users;
+
+    if (!spenderUser) {
+      usersCount = usersCount.plus(OneBigInt);
+
+      metaVault.users = usersCount;
+      metaVault.save();
+
+      const metaVaultAddress = event.address.toHexString();
+      const account = changetype<Bytes>(event.params.from);
+
+      const userID = metaVaultAddress
+        .concat(":")
+        .concat(usersCount.toHexString());
+
+      let userEntity = new UserMetaEntity(userID);
+      userEntity.address = account;
+
+      userEntity.save();
+
+      spenderUser = new UserMetaVaultEntity(spenderUserId);
+      spenderUser.metaVault = event.address;
+      spenderUser.balance = ZeroBigInt;
+      spenderUser.deposited = ZeroBigInt;
+      spenderUser.rewardsEarned = ZeroBigInt;
+    }
+
+    if (!receiverUser) {
+      usersCount = usersCount.plus(OneBigInt);
+
+      metaVault.users = usersCount;
+      metaVault.save();
+
+      const metaVaultAddress = event.address.toHexString();
+      const account = changetype<Bytes>(event.params.to);
+
+      const userID = metaVaultAddress
+        .concat(":")
+        .concat(usersCount.toHexString());
+
+      let userEntity = new UserMetaEntity(userID);
+      userEntity.address = account;
+
+      userEntity.save();
+
+      receiverUser = new UserMetaVaultEntity(receiverUserId);
+      receiverUser.metaVault = event.address;
+      receiverUser.balance = ZeroBigInt;
+      receiverUser.deposited = ZeroBigInt;
+      receiverUser.rewardsEarned = ZeroBigInt;
+    }
+
+    let wrappedMetaVaultSenderBalance = ZeroBigInt;
+    let wrappedMetaVaultReceiverBalance = ZeroBigInt;
+    if (metaVault.wrappedMetaVaultId) {
+      const wrappedMetaVaultContract = WrappedMetaVaultContract.bind(
+        changetype<Address>(metaVault.wrappedMetaVaultId)
+      );
+
+      wrappedMetaVaultSenderBalance = wrappedMetaVaultContract.balanceOf(
+        event.params.from
+      );
+      wrappedMetaVaultReceiverBalance = wrappedMetaVaultContract.balanceOf(
+        event.params.to
+      );
+    }
+
+    const spenderBalance = metaVaultContract
+      .balanceOf(event.params.from)
+      .plus(wrappedMetaVaultSenderBalance);
+    const receiverBalance = metaVaultContract
+      .balanceOf(event.params.to)
+      .plus(wrappedMetaVaultReceiverBalance);
+
+    spenderUser.balance = spenderBalance;
+    receiverUser.balance = receiverBalance;
+
+    spenderUser.deposited = spenderBalance.times(metaVault.sharePrice);
+    receiverUser.deposited = receiverBalance.times(metaVault.sharePrice);
+
+    spenderUser.save();
+    receiverUser.save();
   }
-
-  if (receiverUser === null) {
-    receiverUser = new UserMetaVaultEntity(receiverUserId);
-    receiverUser.metaVault = event.address;
-    receiverUser.balance = ZeroBigInt;
-    receiverUser.deposited = ZeroBigInt;
-    receiverUser.rewardsEarned = ZeroBigInt;
-  }
-
-  let wrappedMetaVaultSenderBalance = ZeroBigInt;
-  let wrappedMetaVaultReceiverBalance = ZeroBigInt;
-  if (metaVault.wrappedMetaVaultId) {
-    const wrappedMetaVaultContract = WrappedMetaVaultContract.bind(
-      changetype<Address>(metaVault.wrappedMetaVaultId)
-    );
-
-    wrappedMetaVaultSenderBalance = wrappedMetaVaultContract.balanceOf(
-      event.params.from
-    );
-    wrappedMetaVaultReceiverBalance = wrappedMetaVaultContract.balanceOf(
-      event.params.to
-    );
-  }
-
-  const spenderBalance = metaVaultContract
-    .balanceOf(event.params.from)
-    .plus(wrappedMetaVaultSenderBalance);
-  const receiverBalance = metaVaultContract
-    .balanceOf(event.params.to)
-    .plus(wrappedMetaVaultReceiverBalance);
-
-  spenderUser.balance = spenderBalance;
-  receiverUser.balance = receiverBalance;
-
-  spenderUser.deposited = spenderBalance.times(metaVault.sharePrice);
-  receiverUser.deposited = receiverBalance.times(metaVault.sharePrice);
-
-  spenderUser.save();
-  receiverUser.save();
 }
