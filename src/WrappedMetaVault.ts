@@ -48,7 +48,6 @@ export function handleDeposit(event: DepositEvent): void {
 
       if (!userMetaVault) {
         let usersCount = metaVault.users;
-        const metaVaultAddress = event.address.toHexString();
         const account = changetype<Bytes>(event.params.sender);
 
         let currentUsersCount = usersCount.plus(OneBigInt);
@@ -57,6 +56,7 @@ export function handleDeposit(event: DepositEvent): void {
         metaVault.save();
 
         const userID = metaVaultAddress
+          .toHexString()
           .concat(":")
           .concat(currentUsersCount.toHexString());
 
