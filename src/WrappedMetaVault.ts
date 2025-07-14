@@ -185,10 +185,10 @@ export function handleTransfer(event: TransferEvent): void {
         metaVault.users = usersCount;
         metaVault.save();
 
-        const metaVaultAddress = event.address.toHexString();
         const account = changetype<Bytes>(event.params.from);
 
         const userID = metaVaultAddress
+          .toHexString()
           .concat(":")
           .concat(usersCount.toHexString());
 
@@ -210,10 +210,10 @@ export function handleTransfer(event: TransferEvent): void {
         metaVault.users = usersCount;
         metaVault.save();
 
-        const metaVaultAddress = event.address.toHexString();
-        const account = changetype<Bytes>(event.params.from);
+        const account = changetype<Bytes>(event.params.to);
 
         const userID = metaVaultAddress
+          .toHexString()
           .concat(":")
           .concat(usersCount.toHexString());
 
