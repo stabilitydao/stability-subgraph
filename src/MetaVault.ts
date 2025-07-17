@@ -29,10 +29,19 @@ export function handleAPR(event: APREvent): void {
 
   const lastAPRTimestamp = metaVault.lastAPRTimestamp;
 
+  const currentTimestamp = event.block.timestamp;
+  const secondsInDay = 86400;
+  const daysSinceLastAPR = currentTimestamp
+    .minus(lastAPRTimestamp)
+    .div(BigInt.fromI32(secondsInDay));
+
   metaVault.APR = event.params.apr;
   metaVault.sharePrice = event.params.sharePrice;
   metaVault.tvl = event.params.tvl;
-  metaVault.lastAPRTimestamp = event.block.timestamp;
+
+  if (daysSinceLastAPR.gt(ZeroBigInt)) {
+    metaVault.lastAPRTimestamp = currentTimestamp;
+  }
 
   metaVault.save();
 
@@ -45,29 +54,20 @@ export function handleAPR(event: APREvent): void {
       .concat(event.address.toHexString())
   );
 
+  metaVaultHistoryEntity.timestamp = event.block.timestamp;
   metaVaultHistoryEntity.address = event.address;
   metaVaultHistoryEntity.metaVault = event.address;
   metaVaultHistoryEntity.APR = event.params.apr;
   metaVaultHistoryEntity.sharePrice = event.params.sharePrice;
   metaVaultHistoryEntity.tvl = event.params.tvl;
-  metaVaultHistoryEntity.timestamp = event.block.timestamp;
 
   metaVaultHistoryEntity.save();
   //===========Earn===========//
   if (metaVault.type == "MetaVault") {
     const usersCount = metaVault.users;
-    const currentTimestamp = event.block.timestamp;
     const apr = metaVault.APR;
-    const lastTimestamp = lastAPRTimestamp;
 
-    const secondsInDay = 86400;
-    const daysSinceLastAPR = currentTimestamp
-      .minus(lastTimestamp)
-      .div(BigInt.fromI32(secondsInDay));
-
-    if (daysSinceLastAPR.equals(ZeroBigInt)) {
-      return;
-    }
+    if (daysSinceLastAPR.equals(ZeroBigInt)) return;
 
     for (let i = 1; i <= usersCount.toI32(); i++) {
       const userID = vaultAddress
