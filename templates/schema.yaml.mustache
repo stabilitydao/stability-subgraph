@@ -32,7 +32,28 @@ dataSources:
         - event: NewAmmAdapter(string,address)
           handler: handleNewAmmAdapter
       file: ./src/Platform.ts
-
+{{#xStakingAddress}}
+  - kind: ethereum
+    name: XStakingData
+    network: {{network}}
+    source:
+      address: "{{xStakingAddress}}"
+      abi: XStakingABI
+      startBlock: 17443021
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - XStakingNotifyRewardHistoryEntity
+      abis:
+        - name: XStakingABI
+          file: ./abis/XStakingABI.json
+      eventHandlers:
+        - event: NotifyReward(indexed address,uint256)
+          handler: handleNotifyReward
+      file: ./src/XStaking.ts  
+{{/xStakingAddress}}
 templates:
   - kind: ethereum
     name: FactoryData
@@ -397,10 +418,7 @@ templates:
       eventHandlers:
         - event: NotifyReward(indexed address,uint256)
           handler: handleNotifyReward
-
       file: ./src/XStaking.ts
-
-  
   - kind: ethereum
     name: MetaVaultFactoryData
     network: {{network}}
