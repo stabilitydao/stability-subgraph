@@ -16,6 +16,7 @@ import {
   VaultSymbol as VaultSymbolEvent,
   AddVault as AddVaultEvent,
   Transfer as TransferEvent,
+  RemoveVault as RemoveVaultEvent,
 } from "../generated/templates/MetaVaultData/MetaVaultABI";
 
 import { WrappedMetaVaultABI as WrappedMetaVaultContract } from "../generated/templates/WrappedMetaVaultData/WrappedMetaVaultABI";
@@ -306,6 +307,29 @@ export function handleAddVault(event: AddVaultEvent): void {
   metaVault.vaults = vaults;
 
   metaVault.assets = assets.map<Bytes>((address) => changetype<Bytes>(address));
+
+  metaVault.save();
+}
+
+export function handleRemoveVault(event: RemoveVaultEvent): void {
+  const metaVault = MetaVaultEntity.load(event.address) as MetaVaultEntity;
+
+  const removedVault = event.params.vault;
+  const updatedVaults: Bytes[] = [];
+
+  for (let i = 0; i < metaVault.vaults.length; i++) {
+    if (metaVault.vaults[i].toHexString() != removedVault.toHexString()) {
+      updatedVaults.push(metaVault.vaults[i]);
+    }
+  }
+
+  metaVault.vaults = updatedVaults;
+
+  const metaVaultContract = MetaVaultContract.bind(event.address);
+  const updatedAssets = metaVaultContract.assets();
+  metaVault.assets = updatedAssets.map<Bytes>((addr) =>
+    changetype<Bytes>(addr)
+  );
 
   metaVault.save();
 }

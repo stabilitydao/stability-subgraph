@@ -477,6 +477,8 @@ templates:
           handler: handleVaultSymbol
         - event: AddVault(address)
           handler: handleAddVault
+        - event: RemoveVault(address)
+          handler: handleRemoveVault
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
       file: ./src/MetaVault.ts      
