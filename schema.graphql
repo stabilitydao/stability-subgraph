@@ -46,6 +46,7 @@ type VaultEntity @entity {
   vaultStatus: BigInt!
   hardWorkOnDeposit: Boolean!
   created: BigInt!
+  launchDate: BigInt
   userVault: [UserVaultEntity!]! @derivedFrom(field: "vault")
   users: BigInt!
   gasReserve: BigInt
