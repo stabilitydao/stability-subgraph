@@ -54,6 +54,28 @@ dataSources:
           handler: handleNotifyReward
       file: ./src/XStaking.ts  
 {{/xStakingAddress}}
+{{#vaultPriceOracleAddress}}
+  - kind: ethereum
+    name: VaultPriceOracleData
+    network: {{network}}
+    source:
+      address: "{{vaultPriceOracleAddress}}"
+      abi: VaultPriceOracleABI
+      startBlock: 44433193
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - PriceHistoryEntity
+      abis:
+        - name: VaultPriceOracleABI
+          file: ./abis/IVaultPriceOracleABI.json
+      eventHandlers:
+        - event: PriceUpdated(indexed address,uint256,uint256,uint256)
+          handler: handlePriceUpdated
+      file: ./src/VaultPriceOracle.ts
+{{/vaultPriceOracleAddress}}
 templates:
   - kind: ethereum
     name: FactoryData

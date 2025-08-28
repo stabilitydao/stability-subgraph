@@ -313,3 +313,11 @@ type UserMetaEntity @entity(immutable: true) {
   id: String! #vaultAddress:userCount
   address: Bytes! #address
 }
+
+type PriceHistoryEntity @entity(immutable: true) {
+  id: ID!
+  vault: Bytes! #address
+  price: BigInt!
+  round: BigInt!
+  timestamp: BigInt!
+}
