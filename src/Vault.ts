@@ -60,6 +60,7 @@ export function handleDepositAssets(event: DepositAssetsEvent): void {
 
     vault.AssetsPricesOnCreation = assetsPrices.value2;
     vault.isInitialized = true;
+    vault.launchDate = event.block.timestamp;
   }
 
   const _VaultUserId = event.address

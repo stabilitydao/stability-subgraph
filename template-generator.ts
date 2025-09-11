@@ -30,6 +30,8 @@ const templateData = {
   network: selectedNetworkKey,
   address: selectedNetworkConfig.address,
   startBlock: selectedNetworkConfig.startBlock,
+  xStakingAddress: selectedNetworkConfig.xStakingAddress,
+  vaultPriceOracleAddress: selectedNetworkConfig.vaultPriceOracleAddress,
 };
 
 fs.writeFileSync(

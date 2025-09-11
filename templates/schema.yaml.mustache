@@ -32,7 +32,50 @@ dataSources:
         - event: NewAmmAdapter(string,address)
           handler: handleNewAmmAdapter
       file: ./src/Platform.ts
-
+{{#xStakingAddress}}
+  - kind: ethereum
+    name: XStakingData
+    network: {{network}}
+    source:
+      address: "{{xStakingAddress}}"
+      abi: XStakingABI
+      startBlock: 17443021
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - XStakingNotifyRewardHistoryEntity
+      abis:
+        - name: XStakingABI
+          file: ./abis/XStakingABI.json
+      eventHandlers:
+        - event: NotifyReward(indexed address,uint256)
+          handler: handleNotifyReward
+      file: ./src/XStaking.ts  
+{{/xStakingAddress}}
+{{#vaultPriceOracleAddress}}
+  - kind: ethereum
+    name: VaultPriceOracleData
+    network: {{network}}
+    source:
+      address: "{{vaultPriceOracleAddress}}"
+      abi: VaultPriceOracleABI
+      startBlock: 44433193
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - PriceHistoryEntity
+      abis:
+        - name: VaultPriceOracleABI
+          file: ./abis/IVaultPriceOracleABI.json
+      eventHandlers:
+        - event: PriceUpdated(indexed address,uint256,uint256,uint256)
+          handler: handlePriceUpdated
+      file: ./src/VaultPriceOracle.ts
+{{/vaultPriceOracleAddress}}
 templates:
   - kind: ethereum
     name: FactoryData
@@ -381,6 +424,24 @@ templates:
           handler: handleExit
       file: ./src/XSTBL.ts
   - kind: ethereum
+    name: XStakingData
+    network: {{network}}
+    source:
+      abi: XStakingABI
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - XStakingNotifyRewardHistoryEntity
+      abis:
+        - name: XStakingABI
+          file: ./abis/XStakingABI.json    
+      eventHandlers:
+        - event: NotifyReward(indexed address,uint256)
+          handler: handleNotifyReward
+      file: ./src/XStaking.ts
+  - kind: ethereum
     name: MetaVaultFactoryData
     network: {{network}}
     source:
@@ -419,9 +480,12 @@ templates:
         - MetaVaultEntity
         - UserMetaVaultEntity
         - UserMetaEntity
+        - MetaVaultHistoryEntity
       abis:
         - name: MetaVaultABI
           file: ./abis/MetaVaultABI.json
+        - name: WrappedMetaVaultABI
+          file: ./abis/WrappedMetaVaultABI.json
       eventHandlers:
         - event: APR(uint256,int256,uint256,uint256,uint256)
           handler: handleAPR
@@ -434,7 +498,11 @@ templates:
         - event: VaultSymbol(string)
           handler: handleVaultSymbol
         - event: AddVault(address)
-          handler: handleAddVault  
+          handler: handleAddVault
+        - event: RemoveVault(address)
+          handler: handleRemoveVault
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
       file: ./src/MetaVault.ts      
   - kind: ethereum
     name: WrappedMetaVaultData
@@ -447,12 +515,18 @@ templates:
       language: wasm/assemblyscript
       entities:
         - WrappedMetaVaultEntity
+        - UserMetaEntity
+        - UserMetaVaultEntity
       abis:
         - name: WrappedMetaVaultABI
           file: ./abis/WrappedMetaVaultABI.json
+        - name: MetaVaultABI
+          file: ./abis/MetaVaultABI.json
       eventHandlers:
         - event: Deposit(indexed address,indexed address,uint256,uint256)
           handler: handleDeposit
         - event: Withdraw(indexed address,indexed address,indexed address,uint256,uint256)
           handler: handleWithdraw
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
       file: ./src/WrappedMetaVault.ts       

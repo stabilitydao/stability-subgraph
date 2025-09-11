@@ -1,4 +1,4 @@
-import { BigInt, Bytes, BigDecimal } from "@graphprotocol/graph-ts";
+import { BigInt, Bytes, BigDecimal, Address } from "@graphprotocol/graph-ts";
 
 import {
   MetaVaultEntity,
@@ -16,7 +16,10 @@ import {
   VaultSymbol as VaultSymbolEvent,
   AddVault as AddVaultEvent,
   Transfer as TransferEvent,
+  RemoveVault as RemoveVaultEvent,
 } from "../generated/templates/MetaVaultData/MetaVaultABI";
+
+import { WrappedMetaVaultABI as WrappedMetaVaultContract } from "../generated/templates/WrappedMetaVaultData/WrappedMetaVaultABI";
 
 import { ZeroBigInt, OneBigInt } from "./utils/constants";
 
@@ -27,10 +30,19 @@ export function handleAPR(event: APREvent): void {
 
   const lastAPRTimestamp = metaVault.lastAPRTimestamp;
 
+  const currentTimestamp = event.block.timestamp;
+  const secondsInDay = 86400;
+  const daysSinceLastAPR = currentTimestamp
+    .minus(lastAPRTimestamp)
+    .div(BigInt.fromI32(secondsInDay));
+
   metaVault.APR = event.params.apr;
   metaVault.sharePrice = event.params.sharePrice;
   metaVault.tvl = event.params.tvl;
-  metaVault.lastAPRTimestamp = event.block.timestamp;
+
+  if (daysSinceLastAPR.gt(ZeroBigInt)) {
+    metaVault.lastAPRTimestamp = currentTimestamp;
+  }
 
   metaVault.save();
 
@@ -43,29 +55,20 @@ export function handleAPR(event: APREvent): void {
       .concat(event.address.toHexString())
   );
 
+  metaVaultHistoryEntity.timestamp = event.block.timestamp;
   metaVaultHistoryEntity.address = event.address;
   metaVaultHistoryEntity.metaVault = event.address;
   metaVaultHistoryEntity.APR = event.params.apr;
   metaVaultHistoryEntity.sharePrice = event.params.sharePrice;
   metaVaultHistoryEntity.tvl = event.params.tvl;
-  metaVaultHistoryEntity.timestamp = event.block.timestamp;
 
   metaVaultHistoryEntity.save();
   //===========Earn===========//
   if (metaVault.type == "MetaVault") {
     const usersCount = metaVault.users;
-    const currentTimestamp = event.block.timestamp;
     const apr = metaVault.APR;
-    const lastTimestamp = lastAPRTimestamp;
 
-    const secondsInDay = 86400;
-    const daysSinceLastAPR = currentTimestamp
-      .minus(lastTimestamp)
-      .div(BigInt.fromI32(secondsInDay));
-
-    if (daysSinceLastAPR.equals(ZeroBigInt)) {
-      return;
-    }
+    if (daysSinceLastAPR.equals(ZeroBigInt)) return;
 
     for (let i = 1; i <= usersCount.toI32(); i++) {
       const userID = vaultAddress
@@ -176,7 +179,21 @@ export function handleDepositAssets(event: DepositAssetsEvent): void {
       userMetaVault.rewardsEarned = ZeroBigInt;
     }
 
-    const userBalance = metaVaultContract.balanceOf(event.params.account);
+    let wrappedMetaVaultUserBalance = ZeroBigInt;
+
+    if (metaVault.wrappedMetaVaultId) {
+      const wrappedMetaVaultContract = WrappedMetaVaultContract.bind(
+        changetype<Address>(metaVault.wrappedMetaVaultId)
+      );
+
+      wrappedMetaVaultUserBalance = wrappedMetaVaultContract.balanceOf(
+        event.params.account
+      );
+    }
+
+    const userBalance = metaVaultContract
+      .balanceOf(event.params.account)
+      .plus(wrappedMetaVaultUserBalance);
 
     userMetaVault.balance = userBalance;
 
@@ -228,7 +245,7 @@ export function handleWithdrawAssets(event: WithdrawAssetsEvent): void {
 
     let userMetaVault = UserMetaVaultEntity.load(_MetaVaultUserId);
 
-    if (userMetaVault === null) {
+    if (!userMetaVault) {
       userMetaVault = new UserMetaVaultEntity(_MetaVaultUserId);
       userMetaVault.metaVault = event.address;
       userMetaVault.balance = ZeroBigInt;
@@ -236,7 +253,21 @@ export function handleWithdrawAssets(event: WithdrawAssetsEvent): void {
       userMetaVault.rewardsEarned = ZeroBigInt;
     }
 
-    const userBalance = metaVaultContract.balanceOf(event.params.sender);
+    let wrappedMetaVaultUserBalance = ZeroBigInt;
+
+    if (metaVault.wrappedMetaVaultId) {
+      const wrappedMetaVaultContract = WrappedMetaVaultContract.bind(
+        changetype<Address>(metaVault.wrappedMetaVaultId)
+      );
+
+      wrappedMetaVaultUserBalance = wrappedMetaVaultContract.balanceOf(
+        event.params.sender
+      );
+    }
+
+    const userBalance = metaVaultContract
+      .balanceOf(event.params.sender)
+      .plus(wrappedMetaVaultUserBalance);
 
     userMetaVault.balance = userBalance;
 
@@ -280,48 +311,128 @@ export function handleAddVault(event: AddVaultEvent): void {
   metaVault.save();
 }
 
+export function handleRemoveVault(event: RemoveVaultEvent): void {
+  const metaVault = MetaVaultEntity.load(event.address) as MetaVaultEntity;
+
+  const removedVault = event.params.vault;
+  const updatedVaults: Bytes[] = [];
+
+  for (let i = 0; i < metaVault.vaults.length; i++) {
+    if (metaVault.vaults[i].toHexString() != removedVault.toHexString()) {
+      updatedVaults.push(metaVault.vaults[i]);
+    }
+  }
+
+  metaVault.vaults = updatedVaults;
+
+  const metaVaultContract = MetaVaultContract.bind(event.address);
+  const updatedAssets = metaVaultContract.assets();
+  metaVault.assets = updatedAssets.map<Bytes>((addr) =>
+    changetype<Bytes>(addr)
+  );
+
+  metaVault.save();
+}
+
 export function handleTransfer(event: TransferEvent): void {
   const metaVault = MetaVaultEntity.load(event.address) as MetaVaultEntity;
-  const metaVaultContract = MetaVaultContract.bind(event.address);
+  if (metaVault.type == "MetaVault") {
+    const metaVaultContract = MetaVaultContract.bind(event.address);
 
-  const spenderUserId = event.address
-    .toHexString()
-    .concat(":")
-    .concat(event.params.from.toHexString());
+    const spenderUserId = event.address
+      .toHexString()
+      .concat(":")
+      .concat(event.params.from.toHexString());
 
-  const receiverUserId = event.address
-    .toHexString()
-    .concat(":")
-    .concat(event.params.to.toHexString());
+    const receiverUserId = event.address
+      .toHexString()
+      .concat(":")
+      .concat(event.params.to.toHexString());
 
-  let spenderUser = UserMetaVaultEntity.load(spenderUserId);
-  let receiverUser = UserMetaVaultEntity.load(receiverUserId);
+    let spenderUser = UserMetaVaultEntity.load(spenderUserId);
+    let receiverUser = UserMetaVaultEntity.load(receiverUserId);
 
-  if (spenderUser === null) {
-    spenderUser = new UserMetaVaultEntity(spenderUserId);
-    spenderUser.metaVault = event.address;
-    spenderUser.balance = ZeroBigInt;
-    spenderUser.deposited = ZeroBigInt;
-    spenderUser.rewardsEarned = ZeroBigInt;
+    let usersCount = metaVault.users;
+
+    if (!spenderUser) {
+      usersCount = usersCount.plus(OneBigInt);
+
+      metaVault.users = usersCount;
+      metaVault.save();
+
+      const metaVaultAddress = event.address.toHexString();
+      const account = changetype<Bytes>(event.params.from);
+
+      const userID = metaVaultAddress
+        .concat(":")
+        .concat(usersCount.toHexString());
+
+      let userEntity = new UserMetaEntity(userID);
+      userEntity.address = account;
+
+      userEntity.save();
+
+      spenderUser = new UserMetaVaultEntity(spenderUserId);
+      spenderUser.metaVault = event.address;
+      spenderUser.balance = ZeroBigInt;
+      spenderUser.deposited = ZeroBigInt;
+      spenderUser.rewardsEarned = ZeroBigInt;
+    }
+
+    if (!receiverUser) {
+      usersCount = usersCount.plus(OneBigInt);
+
+      metaVault.users = usersCount;
+      metaVault.save();
+
+      const metaVaultAddress = event.address.toHexString();
+      const account = changetype<Bytes>(event.params.to);
+
+      const userID = metaVaultAddress
+        .concat(":")
+        .concat(usersCount.toHexString());
+
+      let userEntity = new UserMetaEntity(userID);
+      userEntity.address = account;
+
+      userEntity.save();
+
+      receiverUser = new UserMetaVaultEntity(receiverUserId);
+      receiverUser.metaVault = event.address;
+      receiverUser.balance = ZeroBigInt;
+      receiverUser.deposited = ZeroBigInt;
+      receiverUser.rewardsEarned = ZeroBigInt;
+    }
+
+    let wrappedMetaVaultSenderBalance = ZeroBigInt;
+    let wrappedMetaVaultReceiverBalance = ZeroBigInt;
+    if (metaVault.wrappedMetaVaultId) {
+      const wrappedMetaVaultContract = WrappedMetaVaultContract.bind(
+        changetype<Address>(metaVault.wrappedMetaVaultId)
+      );
+
+      wrappedMetaVaultSenderBalance = wrappedMetaVaultContract.balanceOf(
+        event.params.from
+      );
+      wrappedMetaVaultReceiverBalance = wrappedMetaVaultContract.balanceOf(
+        event.params.to
+      );
+    }
+
+    const spenderBalance = metaVaultContract
+      .balanceOf(event.params.from)
+      .plus(wrappedMetaVaultSenderBalance);
+    const receiverBalance = metaVaultContract
+      .balanceOf(event.params.to)
+      .plus(wrappedMetaVaultReceiverBalance);
+
+    spenderUser.balance = spenderBalance;
+    receiverUser.balance = receiverBalance;
+
+    spenderUser.deposited = spenderBalance.times(metaVault.sharePrice);
+    receiverUser.deposited = receiverBalance.times(metaVault.sharePrice);
+
+    spenderUser.save();
+    receiverUser.save();
   }
-
-  if (receiverUser === null) {
-    receiverUser = new UserMetaVaultEntity(receiverUserId);
-    receiverUser.metaVault = event.address;
-    receiverUser.balance = ZeroBigInt;
-    receiverUser.deposited = ZeroBigInt;
-    receiverUser.rewardsEarned = ZeroBigInt;
-  }
-
-  const spenderBalance = metaVaultContract.balanceOf(event.params.from);
-  const receiverBalance = metaVaultContract.balanceOf(event.params.to);
-
-  spenderUser.balance = spenderBalance;
-  receiverUser.balance = receiverBalance;
-
-  spenderUser.deposited = spenderBalance.times(metaVault.sharePrice);
-  receiverUser.deposited = receiverBalance.times(metaVault.sharePrice);
-
-  spenderUser.save();
-  receiverUser.save();
 }

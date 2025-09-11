@@ -46,6 +46,7 @@ type VaultEntity @entity {
   vaultStatus: BigInt!
   hardWorkOnDeposit: Boolean!
   created: BigInt!
+  launchDate: BigInt
   userVault: [UserVaultEntity!]! @derivedFrom(field: "vault")
   users: BigInt!
   gasReserve: BigInt
@@ -249,6 +250,12 @@ type XSTBLHistoryEntity @entity(immutable: true) {
   timestamp: BigInt!
 }
 
+type XStakingNotifyRewardHistoryEntity @entity(immutable: true) {
+  id: Bytes!
+  timestamp: BigInt!
+  amount: BigInt!
+}
+
 type MetaVaultFactoryEntity @entity {
   id: Bytes! #address
   metaVaults: [Bytes!]!
@@ -269,6 +276,7 @@ type MetaVaultEntity @entity {
   assets: [Bytes!]!
   vaults: [Bytes!]!
   users: BigInt!
+  wrappedMetaVaultId: Bytes
   userMetaVault: [UserMetaVaultEntity!]! @derivedFrom(field: "metaVault")
   metaVaultHistoryEntity: [MetaVaultHistoryEntity!]!
     @derivedFrom(field: "metaVault")
@@ -304,4 +312,12 @@ type UserMetaVaultEntity @entity {
 type UserMetaEntity @entity(immutable: true) {
   id: String! #vaultAddress:userCount
   address: Bytes! #address
+}
+
+type PriceHistoryEntity @entity(immutable: true) {
+  id: ID!
+  vault: Bytes! #address
+  price: BigInt!
+  round: BigInt!
+  timestamp: BigInt!
 }

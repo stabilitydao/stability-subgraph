@@ -95,4 +95,11 @@ export function handleNewWrappedMetaVault(
   wrappedMetaVault.deposited = ZeroBigInt;
 
   wrappedMetaVault.save();
+
+  const metaVaultAddress = wrappedMetaVaultContract.metaVault();
+  const metaVault = MetaVaultEntity.load(metaVaultAddress);
+  if (metaVault) {
+    metaVault.wrappedMetaVaultId = wrappedMetaVault.id;
+    metaVault.save();
+  }
 }
