@@ -12,5 +12,9 @@
     "xStakingAddress": "0x17a7cf838a7c91de47552a9f65822b547f9a6997",
     "startBlock": 1496446,
     "vaultPriceOracleAddress": "0x3137a6498d03df485d75af9a866bbe73fd1124ea"
+  },
+  "avax": {
+    "address": "0x94ae77b4e2dbF7799f7c41da3F50aBeE12Fde70e",
+    "startBlock": 68586447
   }
 }
