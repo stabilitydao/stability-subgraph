@@ -20,6 +20,7 @@ import {
 } from "../generated/PlatformData/PlatformABI";
 
 import { metaVaultFactoryAddress, platformAddress } from "./utils/constants";
+import { log } from "@graphprotocol/graph-ts";
 
 export function handleAddresses(event: AddressesEvent): void {
   const platform = PlatformEntity.load(event.address) as PlatformEntity;
@@ -56,6 +57,16 @@ export function handleAddresses(event: AddressesEvent): void {
 export function handleContractInitialized(
   event: ContractInitializedEvent
 ): void {
+  log.info("ContractInitialized event at block {} tx {} ", [
+    event.block.number.toString(),
+    event.transaction.hash.toHexString()
+  ]);
+
+  log.info("ContractInitialized event received. Platform: {}", [
+    event.params.platform.toHexString()
+  ]);
+
+
   const platform = new PlatformEntity(event.params.platform);
   platform.save();
 }

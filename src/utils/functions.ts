@@ -13,6 +13,8 @@ export function getPlatformAddress(network: string): string {
     return "0x7eAeE5CfF17F7765d89F4A46b484256929C62312";
   } else if (network === "sonic") {
     return "0x4Aca671A420eEB58ecafE83700686a2AD06b20D8";
+  } else if (network === "avalanche") {
+    return "0x94ae77b4e2dbF7799f7c41da3F50aBeE12Fde70e"
   }
 
   throw new Error("Unsupported network");
@@ -25,6 +27,8 @@ export function getFactoryAddress(network: string): string {
     return "0xe01E62dAe952501e884624423132e50E7B77Ba3c";
   } else if (network === "sonic") {
     return "0xc184a3ecca684f2621c903a7943d85fa42f56671";
+  } else if (network === "avalanche") {
+    return "0x75954965331d7b9a6fdd2dc024512b8f36da4dbc"
   }
   throw new Error("Unsupported network");
 }
@@ -36,6 +40,8 @@ export function getVaultManagerAddress(network: string): string {
     return "0x2ba8C6A519CEDB6d1C35cEb14E8642625E91F77C";
   } else if (network === "sonic") {
     return "0x589a504f2ee9d054b483c700fa814863d639381e";
+  } else if (network === "avalanche") {
+    return "0xe845fc737fead52fc134d426e5ba0ee0a02b901a"
   }
   throw new Error("Unsupported network");
 }
@@ -47,6 +53,8 @@ export function getPriceReaderAddress(network: string): string {
     return "0x41408b3e0f279634E3cd59E2D76EF6b149d6D418";
   } else if (network === "sonic") {
     return "0x422025182dd83a610bfa8b20550dcccdf94dc549";
+  } else if (network === "avalanche"){
+    return "0x0a45e97aceba96650f47da979bde3a8642f26739"
   }
   throw new Error("Unsupported network");
 }
@@ -58,6 +66,8 @@ export function getFrontendContractAddress(network: string): string {
     return "0x995c3bdee2830c7f96d4caa0c36f7b7b8ec60127";
   } else if (network === "sonic") {
     return "0x15487495cce9210795f9C2E0e1A7238E336dFc32";
+  }  else if (network === "avalanche") {
+    return "0x4377cfeB93448B23Df47d9A8e16cc2c7Cb1b2066"
   }
   throw new Error("Unsupported network");
 }
@@ -69,6 +79,8 @@ export function getSwapperAddress(network: string): string {
     return "0x67e983b3B9f55A1eaA259D58E425e418f3900872";
   } else if (network === "sonic") {
     return "0xe52fcf607a8328106723804de1ef65da512771be";
+  } else if (network === "avalanche") {
+    return "0x3222eb4824ceb0e9ccfe11018c83429105dfe00f "
   }
   throw new Error("Unsupported network");
 }
@@ -92,6 +104,8 @@ export function getMulticallAddress(network: string): string {
   } else if (network === "sonic") {
     return "0xca11bde05977b3631167028862be2a173976ca11";
     // blockCreated: 60
+  } else if (network === "avalanche") {
+    return "0xca11bde05977b3631167028862be2a173976ca11"
   }
   throw new Error("Unsupported network");
 }
