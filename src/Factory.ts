@@ -180,12 +180,6 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
   vault.AssetsPricesOnCreation = assetsPrices.value2;
   vault.isInitialized = false;
   vault.lifeTimeAPR = ZeroBigInt;
-  if (event.block.number > BigInt.fromI32(53088320)) {
-    const getBalanceContract = GetBalanceContract.bind(
-      Address.fromString(getBalanceAddress)
-    );
-    vault.gasReserve = getBalanceContract.getBalance(event.params.vault);
-  }
   vault.lastAssetsSum = "0";
   vault.lastAssetsPrices = [];
   vault.isLendingLeverageStrategy = isLendingLeverageStrategy;
