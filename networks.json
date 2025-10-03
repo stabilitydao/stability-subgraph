@@ -14,7 +14,7 @@
     "vaultPriceOracleAddress": "0x3137a6498d03df485d75af9a866bbe73fd1124ea"
   },
   "avalanche": {
-    "address": "0x94ae77b4e2dbF7799f7c41da3F50aBeE12Fde70e",
+    "address": "0x72b931a12aacda6729b4f8f76454855cb5195941",
     "startBlock": 68586245
   }
 }

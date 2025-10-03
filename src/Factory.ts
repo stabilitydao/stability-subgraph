@@ -1,4 +1,4 @@
-import { Address, Bytes, BigInt, ethereum } from "@graphprotocol/graph-ts";
+import { Address, Bytes, BigInt, ethereum, log } from "@graphprotocol/graph-ts";
 
 import {
   VaultTypeEntity,
@@ -186,20 +186,11 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
   vault.save();
 
   //STRATEGY ENTITY
-  let strategies = factoryContract.strategies();
-  let index = strategies.value0.indexOf(event.params.strategyId);
-
-  const colorBytes = strategies.value6[index];
-  const color = changetype<Bytes>(colorBytes.slice(0, 3));
-  const colorBackground = changetype<Bytes>(colorBytes.slice(3, 6));
 
   strategyEntity.strategyId = event.params.strategyId;
   strategyEntity.vaultAddress = event.params.vault;
   strategyEntity.version = strategyContract.VERSION();
-  strategyEntity.tokenId = strategies.value4[index];
   //strategyEntity.shortName =
-  strategyEntity.color = color;
-  strategyEntity.colorBackground = colorBackground;
   if (strategyContract.supportsInterface(Bytes.fromHexString("0x07b0b3aa"))) {
     strategyEntity.pool = LPStrategyContract.pool();
   }

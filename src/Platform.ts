@@ -26,6 +26,7 @@ export function handleAddresses(event: AddressesEvent): void {
   const platform = PlatformEntity.load(event.address) as PlatformEntity;
   const platformContract = PlatformContract.bind(event.address);
   const result = platformContract.getData();
+  
   SwapperData.create(event.params.swapper_);
   FactoryData.create(event.params.factory_);
 
