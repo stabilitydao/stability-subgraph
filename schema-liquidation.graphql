@@ -1,0 +1,14 @@
+type LiquidationEntity @entity(immutable: true) {
+  id: ID!
+  pool: Bytes!
+  collateralAsset: Bytes!
+  debtAsset: Bytes!
+  user: Bytes!
+  debtToCover: BigInt!
+  liquidatedCollateralAmount: BigInt!
+  liquidator: Bytes!
+  receiveAToken: Boolean!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}

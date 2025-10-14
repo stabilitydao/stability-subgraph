@@ -78,8 +78,8 @@ type StrategyEntity @entity {
   strategyId: String!
   tokenId: BigInt!
   #shortName: String! #??
-  color: Bytes!
-  colorBackground: Bytes!
+  color: Bytes
+  colorBackground: Bytes
   version: String!
   pool: Bytes #address
   underlyingSymbol: String

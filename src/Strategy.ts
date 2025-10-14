@@ -430,10 +430,14 @@ export function handleHardWork(event: HardWorkEvent): void {
     EtherBigDecimal
   );
 
-  let periodSharePricePercentDiff = sharePrice
-    .minus(lastSharePrice)
-    .div(lastSharePrice)
-    .times(OneHundredBigDecimal);
+  let periodSharePricePercentDiff = ZeroBigDecimal;
+
+  if (lastSharePrice.gt(ZeroBigDecimal)) {
+    periodSharePricePercentDiff = sharePrice
+      .minus(lastSharePrice)
+      .div(lastSharePrice)
+      .times(OneHundredBigDecimal);
+  }
 
   let lifetimeSharePricePercentDiff = sharePrice
     .minus(sharePriceOnCreation)
@@ -474,7 +478,7 @@ export function handleHardWork(event: HardWorkEvent): void {
 
     // Get assets proportions
     for (let i = 0; i < amountsInUSD.length; i++) {
-      if (amountsInUSD[i]) {
+      if (amountsInUSD[i] && amountsSum.gt(ZeroBigDecimal)) {
         let proportion = BigDecimal.fromString(amountsInUSD[i])
           .div(amountsSum)
           .times(OneHundredBigDecimal);
@@ -514,23 +518,31 @@ export function handleHardWork(event: HardWorkEvent): void {
         OneHundredBigDecimal
       ).times(BigDecimal.fromString(proportions[i]));
 
-      const lifetimeProportionPrice: BigDecimal = startProportion.div(
-        assetPriceOnCreation
-      );
+      let lifetimeProportionPrice: BigDecimal = ZeroBigDecimal;
+      let lifetimePresentAmount: BigDecimal = ZeroBigDecimal;
 
-      const lifetimePresentAmount: BigDecimal = lifetimeProportionPrice.times(
-        assetPrice
-      );
+      if (assetPriceOnCreation.gt(ZeroBigDecimal)) {
+        lifetimeProportionPrice = startProportion.div(assetPriceOnCreation);
+        lifetimePresentAmount = lifetimeProportionPrice.times(assetPrice);
+      }
 
-      priceDifference = assetPrice
-        .minus(lastAssetPrice)
-        .div(lastAssetPrice)
-        .times(OneHundredBigDecimal);
+      if (lastAssetPrice.gt(ZeroBigDecimal)) {
+        priceDifference = assetPrice
+          .minus(lastAssetPrice)
+          .div(lastAssetPrice)
+          .times(OneHundredBigDecimal);
+      } else {
+        priceDifference = ZeroBigDecimal;
+      }
 
-      const lifetimePriceDifference: BigDecimal = assetPrice
-        .minus(assetPriceOnCreation)
-        .div(assetPriceOnCreation)
-        .times(OneHundredBigDecimal);
+      let lifetimePriceDifference: BigDecimal = ZeroBigDecimal;
+
+      if (assetPriceOnCreation.gt(ZeroBigDecimal)) {
+        lifetimePriceDifference = assetPrice
+          .minus(assetPriceOnCreation)
+          .div(assetPriceOnCreation)
+          .times(OneHundredBigDecimal);
+      }
 
       const percentDiff: BigDecimal = periodSharePricePercentDiff.minus(
         priceDifference

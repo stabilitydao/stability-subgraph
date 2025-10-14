@@ -8,6 +8,7 @@ import {
   LastFeeAMLEntity,
   VaultMetricsEntity,
   VaultLeverageLendingMetricsEntity,
+  PlatformEntity,
 } from "../generated/schema";
 import {
   VaultData,
@@ -35,6 +36,7 @@ import { VaultManagerABI as VaultManagerContract } from "../generated/templates/
 import { VaultAndStrategy as VaultAndStrategyEvent } from "../generated/templates/FactoryData/FactoryABI";
 import { getBalanceABI as GetBalanceContract } from "../generated/templates/StrategyData/getBalanceABI";
 import { PriceReaderABI as PriceReaderContract } from "../generated/templates/IchiQuickSwapMerklFarmData/PriceReaderABI";
+import { StrategyLogicABI as StrategyLogicContract } from "../generated/templates/StrategyData/StrategyLogicABI";
 
 import {
   ZeroBigInt,
@@ -57,6 +59,12 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
   const vaultManagerContract = VaultManagerContract.bind(
     Address.fromString(vaultManagerAddress)
   );
+  const platform = PlatformEntity.load(
+    Address.fromString(platformAddress)
+  ) as PlatformEntity;
+  const strategyLogic = Address.fromBytes(platform.strategyLogic as Bytes);
+  const strategyLogicContract = StrategyLogicContract.bind(strategyLogic);
+
   const _vaultInfo = vaultManagerContract.vaultInfo(event.params.vault);
   const vaultContract = VaultContract.bind(event.params.vault);
   const factoryContract = FactoryContract.bind(event.address);
@@ -112,6 +120,21 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
     );
     lastFeeAMLEntity.timestamps = [event.block.timestamp];
     lastFeeAMLEntity.save();
+  }
+
+  const totalSupply = strategyLogicContract.totalSupply();
+  let foundTokenId: BigInt = BigInt.fromI32(-1);
+  for (
+    let i = BigInt.fromI32(0);
+    i.lt(totalSupply);
+    i = i.plus(BigInt.fromI32(1))
+  ) {
+    const strategyLogicIdResult = strategyLogicContract.tokenStrategyLogic(i);
+
+    if (strategyLogicIdResult == event.params.strategyId) {
+      foundTokenId = i;
+      break;
+    }
   }
 
   const vaultMetricsEntity = new VaultMetricsEntity(event.params.vault);
@@ -186,7 +209,7 @@ export function handleVaultAndStrategy(event: VaultAndStrategyEvent): void {
   vault.save();
 
   //STRATEGY ENTITY
-
+  strategyEntity.tokenId = foundTokenId;
   strategyEntity.strategyId = event.params.strategyId;
   strategyEntity.vaultAddress = event.params.vault;
   strategyEntity.version = strategyContract.VERSION();
