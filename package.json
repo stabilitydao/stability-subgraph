@@ -3,6 +3,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "prepare": "node template-generator.ts",
+    "prepare:liquidation": "node template-generator.liquidation.ts",
     "clean": "graph clean",
     "codegen": "graph codegen",
     "build": "graph build",

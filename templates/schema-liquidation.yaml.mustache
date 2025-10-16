@@ -1,0 +1,69 @@
+specVersion: 0.0.5
+schema:
+  file: ./schemas/liquidation/schema.graphql
+
+dataSources:
+  - kind: ethereum
+    name: Brunch gen2
+    network: sonic
+    source:
+      address: "0x6D8Aa37DfAa98d2a14da39cfeD36975F97fc3f85"
+      abi: PoolABI
+      startBlock: 45841700
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - LiquidationEntity
+      abis:
+        - name: PoolABI
+          file: ./abis/PoolABI.json
+      eventHandlers:
+        - event: LiquidationCall(indexed address,indexed address,indexed address,uint256,uint256,address,bool)
+          handler: handleLiquidationCall
+      file: ./src/liquidation/Liquidation.ts
+
+  - kind: ethereum
+    name: wmetaUSD gen2
+    network: sonic
+    source:
+      address: "0x909ba6aC1A9D34fE97Cb459C2CA9b6Ff986676F7"
+      abi: PoolABI
+      startBlock: 47388062
+
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - LiquidationEntity
+      abis:
+        - name: PoolABI
+          file: ./abis/PoolABI.json
+      eventHandlers:
+        - event: LiquidationCall(indexed address,indexed address,indexed address,uint256,uint256,address,bool)
+          handler: handleLiquidationCall
+      file: ./src/liquidation/Liquidation.ts
+
+  - kind: ethereum
+    name: Main
+    network: sonic
+    source:
+      address: "0xaa1C02a83362BcE106dFf6eB65282fE8B97A1665"
+      abi: PoolABI
+      startBlock: 6767660
+
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - LiquidationEntity
+      abis:
+        - name: PoolABI
+          file: ./abis/PoolABI.json
+      eventHandlers:
+        - event: LiquidationCall(indexed address,indexed address,indexed address,uint256,uint256,address,bool)
+          handler: handleLiquidationCall
+      file: ./src/liquidation/Liquidation.ts

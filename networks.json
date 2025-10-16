@@ -12,5 +12,13 @@
     "xStakingAddress": "0x17a7cf838a7c91de47552a9f65822b547f9a6997",
     "startBlock": 1496446,
     "vaultPriceOracleAddress": "0x3137a6498d03df485d75af9a866bbe73fd1124ea"
+  },
+  "avalanche": {
+    "address": "0x72b931a12aacda6729b4f8f76454855cb5195941",
+    "startBlock": 68586245
+  },
+  "plasma-mainnet": {
+    "address": "0xd4d6ad656f64e8644afa18e7ccc9372e0cd256f0",
+    "startBlock": 3533054
   }
 }

@@ -11,6 +11,7 @@ import {
   getFrontendContractAddress,
   getSwapperAddress,
   getMulticallAddress,
+  getMetaVaultsFactoryAddress,
 } from "./functions";
 
 const addressZero = "0x0000000000000000000000000000000000000000";
@@ -22,11 +23,15 @@ const priceReaderAddress = getPriceReaderAddress(NETWORK);
 const swapperAddress = getSwapperAddress(NETWORK);
 const multicallAddress = getMulticallAddress(NETWORK);
 
-const metaVaultFactoryAddress = "0xa190302880acf9decc4447363640f589000ef601";
+const metaVaultFactoryAddress = getMetaVaultsFactoryAddress(NETWORK);
 
 let defiedgeFactoryAddress = addressZero;
 
-if (NETWORK != "sonic") {
+if (
+  NETWORK != "sonic" &&
+  NETWORK != "avalanche" &&
+  NETWORK != "plasma-mainnet"
+) {
   defiedgeFactoryAddress = getDefiedgeFactoryAddress(NETWORK);
 }
 
