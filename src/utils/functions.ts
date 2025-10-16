@@ -15,6 +15,8 @@ export function getPlatformAddress(network: string): string {
     return "0x4Aca671A420eEB58ecafE83700686a2AD06b20D8";
   } else if (network === "avalanche") {
     return "0x72b931a12aacda6729b4f8f76454855cb5195941";
+  } else if (network === "plasma-mainnet") {
+    return "0xd4d6ad656f64e8644afa18e7ccc9372e0cd256f0";
   }
 
   throw new Error("Unsupported network");
@@ -29,6 +31,8 @@ export function getFactoryAddress(network: string): string {
     return "0xc184a3ecca684f2621c903a7943d85fa42f56671";
   } else if (network === "avalanche") {
     return "0xe9d2fcad6b691a1642587a2b61886a173632ed00";
+  } else if (network === "plasma-mainnet") {
+    return "0x4c5758e3c454a260d98238706ca6f4802cc52746";
   }
   throw new Error("Unsupported network");
 }
@@ -36,6 +40,8 @@ export function getFactoryAddress(network: string): string {
 export function getMetaVaultsFactoryAddress(network: string): string {
   if (network == "avalanche") {
     return "0x2FA6cc5E1dc2F6Dd8806a3969f2E7fcBf5f75e89";
+  } else if (network == "plasma-mainnet") {
+    return "0xbd5296dc2603942f116b375c8ee373674be86f56";
   } else {
     return "0xa190302880acf9decc4447363640f589000ef601";
   }
@@ -50,6 +56,8 @@ export function getVaultManagerAddress(network: string): string {
     return "0x589a504f2ee9d054b483c700fa814863d639381e";
   } else if (network === "avalanche") {
     return "0x9d718c2a305caf6ffbd96aaadc3808fc488417c1";
+  } else if (network === "plasma-mainnet") {
+    return "0x22d031e45a02d6472786b9d7a4fd78f1733d6990";
   }
   throw new Error("Unsupported network");
 }
@@ -63,6 +71,8 @@ export function getPriceReaderAddress(network: string): string {
     return "0x422025182dd83a610bfa8b20550dcccdf94dc549";
   } else if (network === "avalanche") {
     return "0x0a45e97aceba96650f47da979bde3a8642f26739";
+  } else if (network === "plasma-mainnet") {
+    return "0xd4af1b538c826e1e90b695314042ab6fd0e7f4aa";
   }
   throw new Error("Unsupported network");
 }
@@ -76,6 +86,8 @@ export function getFrontendContractAddress(network: string): string {
     return "0x15487495cce9210795f9C2E0e1A7238E336dFc32";
   } else if (network === "avalanche") {
     return "0x4377cfeB93448B23Df47d9A8e16cc2c7Cb1b2066";
+  } else if (network === "plasma-mainnet") {
+    return "0x70e804364175e23F1c30dFa03BFb19d936E5E81c"
   }
   throw new Error("Unsupported network");
 }
@@ -89,6 +101,8 @@ export function getSwapperAddress(network: string): string {
     return "0xe52fcf607a8328106723804de1ef65da512771be";
   } else if (network === "avalanche") {
     return "0x16549a43c566cdc648a9aaea6bed1d860b7b586a";
+  } else if (network === "plasma-mainnet") {
+    return "0x54f22378e03bea25a05a071b60357d31ce535bb9";
   }
   throw new Error("Unsupported network");
 }
@@ -113,6 +127,8 @@ export function getMulticallAddress(network: string): string {
     return "0xca11bde05977b3631167028862be2a173976ca11";
     // blockCreated: 60
   } else if (network === "avalanche") {
+    return "0xca11bde05977b3631167028862be2a173976ca11";
+  } else if (network === "plasma-mainnet") {
     return "0xca11bde05977b3631167028862be2a173976ca11";
   }
   throw new Error("Unsupported network");

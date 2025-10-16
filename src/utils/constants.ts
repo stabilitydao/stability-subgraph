@@ -27,7 +27,11 @@ const metaVaultFactoryAddress = getMetaVaultsFactoryAddress(NETWORK);
 
 let defiedgeFactoryAddress = addressZero;
 
-if (NETWORK != "sonic" && NETWORK != "avalanche") {
+if (
+  NETWORK != "sonic" &&
+  NETWORK != "avalanche" &&
+  NETWORK != "plasma-mainnet"
+) {
   defiedgeFactoryAddress = getDefiedgeFactoryAddress(NETWORK);
 }
 

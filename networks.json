@@ -16,5 +16,9 @@
   "avalanche": {
     "address": "0x72b931a12aacda6729b4f8f76454855cb5195941",
     "startBlock": 68586245
+  },
+  "plasma-mainnet": {
+    "address": "0xd4d6ad656f64e8644afa18e7ccc9372e0cd256f0",
+    "startBlock": 3533054
   }
 }

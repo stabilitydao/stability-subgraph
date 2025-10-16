@@ -45,3 +45,25 @@ dataSources:
         - event: LiquidationCall(indexed address,indexed address,indexed address,uint256,uint256,address,bool)
           handler: handleLiquidationCall
       file: ./src/liquidation/Liquidation.ts
+
+  - kind: ethereum
+    name: Main
+    network: sonic
+    source:
+      address: "0xaa1C02a83362BcE106dFf6eB65282fE8B97A1665"
+      abi: PoolABI
+      startBlock: 6767660
+
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - LiquidationEntity
+      abis:
+        - name: PoolABI
+          file: ./abis/PoolABI.json
+      eventHandlers:
+        - event: LiquidationCall(indexed address,indexed address,indexed address,uint256,uint256,address,bool)
+          handler: handleLiquidationCall
+      file: ./src/liquidation/Liquidation.ts
