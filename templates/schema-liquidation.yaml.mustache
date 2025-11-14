@@ -5,55 +5,99 @@ schema:
 dataSources:
   - kind: ethereum
     name: Brunch gen2
-    network: sonic
+    network: {{network}}
     source:
-      address: "0x6D8Aa37DfAa98d2a14da39cfeD36975F97fc3f85"
-      abi: PoolABI
-      startBlock: 45841700
+      address: "0x546eF43c9Edd9f5108E7b054AB81Df73fBE4F73A" # PoolAddressesProvider
+      abi: PoolAddressProviderABI
+      startBlock: 45841594
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
-      entities:
-        - LiquidationEntity
+      entities: []
       abis:
-        - name: PoolABI
-          file: ./abis/PoolABI.json
+        - name: PoolAddressProviderABI
+          file: ./abis/PoolAddressProviderABI.json
       eventHandlers:
-        - event: LiquidationCall(indexed address,indexed address,indexed address,uint256,uint256,address,bool)
-          handler: handleLiquidationCall
-      file: ./src/liquidation/Liquidation.ts
+        - event: ProxyCreated(indexed bytes32,indexed address,indexed address)
+          handler: handleProxyCreated
+        - event: ACLManagerUpdated(indexed address,indexed address)
+          handler: handleACLManagerUpdated
+      file: ./src/liquidation/PoolAddressProvider.ts
 
   - kind: ethereum
     name: wmetaUSD gen2
-    network: sonic
+    network: {{network}}
     source:
-      address: "0x909ba6aC1A9D34fE97Cb459C2CA9b6Ff986676F7"
-      abi: PoolABI
-      startBlock: 47388062
+      address: "0xE8385DEcBCFf931799dd6689677299CA73A9F644"
+      abi: PoolAddressProviderABI
+      startBlock: 47387958
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities: []
+      abis:
+        - name: PoolAddressProviderABI
+          file: ./abis/PoolAddressProviderABI.json
+      eventHandlers:
+        - event: ProxyCreated(indexed bytes32,indexed address,indexed address)
+          handler: handleProxyCreated
+        - event: ACLManagerUpdated(indexed address,indexed address)
+          handler: handleACLManagerUpdated
+      file: ./src/liquidation/PoolAddressProvider.ts
 
+  - kind: ethereum
+    name: STBL
+    network: {{network}}
+    source:
+      address: "0x234888531C4a6AFeF6935DD7DB9F9D5325b68715"
+      abi: PoolAddressProviderABI
+      startBlock: 52806537
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities: []
+      abis:
+        - name: PoolAddressProviderABI
+          file: ./abis/PoolAddressProviderABI.json
+      eventHandlers:
+        - event: ProxyCreated(indexed bytes32,indexed address,indexed address)
+          handler: handleProxyCreated
+        - event: ACLManagerUpdated(indexed address,indexed address)
+          handler: handleACLManagerUpdated
+      file: ./src/liquidation/PoolAddressProvider.ts
+
+templates:
+  - name: ACLManager
+    kind: ethereum/contract
+    network: {{network}}
+    source:
+      abi: ACLManagerABI
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
-        - LiquidationEntity
+        - ACLRole
       abis:
-        - name: PoolABI
-          file: ./abis/PoolABI.json
+        - name: ACLManagerABI
+          file: ./abis/ACLManagerABI.json
+        - name: PoolAddressProviderABI
+          file: ./abis/PoolAddressProviderABI.json
       eventHandlers:
-        - event: LiquidationCall(indexed address,indexed address,indexed address,uint256,uint256,address,bool)
-          handler: handleLiquidationCall
-      file: ./src/liquidation/Liquidation.ts
+        - event: RoleGranted(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleGranted
+        - event: RoleRevoked(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleRevoked
+      file: ./src/liquidation/ACLManager.ts
 
-  - kind: ethereum
-    name: Main
-    network: sonic
+  - name: Pool
+    kind: ethereum/contract
+    network: {{network}}
     source:
-      address: "0xaa1C02a83362BcE106dFf6eB65282fE8B97A1665"
       abi: PoolABI
-      startBlock: 6767660
-
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7

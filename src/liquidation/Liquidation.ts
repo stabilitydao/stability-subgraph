@@ -1,5 +1,5 @@
 import { LiquidationEntity } from "../../generated/schema";
-import { LiquidationCall as LiquidationCallABI } from "../../generated/Brunch gen2/PoolABI";
+import { LiquidationCall as LiquidationCallABI } from "../../generated/templates/Pool/PoolABI";
 
 export function handleLiquidationCall(event: LiquidationCallABI): void {
   const id = event.transaction.hash.toHex() + "-" + event.logIndex.toString();

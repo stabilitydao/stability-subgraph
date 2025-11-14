@@ -12,3 +12,17 @@ type LiquidationEntity @entity(immutable: true) {
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
+
+type ACLRoleEntity @entity {
+  id: ID!
+  role: Bytes!
+  roleName: String!
+  account: Bytes!
+  sender: Bytes!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+  transactionHash: Bytes!
+  active: Boolean!
+  pool: Bytes!
+  poolAddressProvider: Bytes!
+}

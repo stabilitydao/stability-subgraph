@@ -67,7 +67,13 @@ export function handleHardWork(event: HardWorkEvent): void {
     vaultAddress
   ) as VaultMetricsEntity;
 
-  const vaultInfo = vaultManagerContract.vaultInfo(vaultAddress);
+  const vaultInfoResult = vaultManagerContract.try_vaultInfo(vaultAddress);
+
+  if (vaultInfoResult.reverted) {
+    return;
+  }
+
+  const vaultInfo = vaultInfoResult.value;
 
   const lastSharePrice = BigDecimal.fromString(vault.sharePrice.toString()).div(
     EtherBigDecimal
@@ -492,7 +498,7 @@ export function handleHardWork(event: HardWorkEvent): void {
     // 2) Get assets VS HOLD APR
     for (let i = 0; i < strategyAssets.length; i++) {
       let assetPrice: BigDecimal = BigDecimal.fromString(
-        assetsPrice[strategyAssets[i].toHexString()].toString()
+        assetsPrice.get(strategyAssets[i].toHexString()).toString()
       ).div(EtherBigDecimal);
 
       let assetPriceOnCreation: BigDecimal = BigDecimal.fromString(
