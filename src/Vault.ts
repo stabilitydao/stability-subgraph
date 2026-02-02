@@ -1,4 +1,10 @@
-import { Address, BigInt, Bytes, BigDecimal } from "@graphprotocol/graph-ts";
+import {
+  Address,
+  BigInt,
+  Bytes,
+  BigDecimal,
+  log,
+} from "@graphprotocol/graph-ts";
 
 import {
   VaultEntity,
@@ -140,13 +146,21 @@ export function handleDepositAssets(event: DepositAssetsEvent): void {
     userVault.deposited = ZeroBigInt;
     userVault.rewardsEarned = ZeroBigInt;
   }
+  const balanceResult = vaultContract.try_balanceOf(event.params.account);
 
-  const userBalance = vaultContract.balanceOf(event.params.account);
+  let userBalance = ZeroBigInt;
+
+  if (balanceResult.reverted) {
+    log.warning("Vault balanceOf reverted (depositAssets) for {} tx {}", [
+      event.params.account.toHexString(),
+      event.transaction.hash.toHexString(),
+    ]);
+  } else {
+    userBalance = balanceResult.value;
+  }
 
   userVault.balance = userBalance;
-
   userVault.deposited = userBalance.times(vault.sharePrice);
-
   userVault.save();
   //===========UserHistoryEntity && userAllDataEntity===========//
 
@@ -246,12 +260,21 @@ export function handleWithdrawAssetsOld(event: WithdrawAssetsEventOld): void {
     event.params.account
   ) as UserAllDataEntity;
 
-  const userBalance = vaultContract.balanceOf(event.params.account);
+  const balanceResult = vaultContract.try_balanceOf(event.params.account);
+
+  let userBalance = ZeroBigInt;
+
+  if (balanceResult.reverted) {
+    log.warning("Vault balanceOf reverted (withdrawAssetsOld) for {} tx {}", [
+      event.params.account.toHexString(),
+      event.transaction.hash.toHexString(),
+    ]);
+  } else {
+    userBalance = balanceResult.value;
+  }
 
   userVault.balance = userBalance;
-
   userVault.deposited = userBalance.times(vault.sharePrice);
-
   userVault.save();
 
   //===========UserHistoryEntity && userAllDataEntity===========//
@@ -331,10 +354,20 @@ export function handleWithdrawAssets(event: WithdrawAssetsEvent): void {
     return;
   }
 
-  const userBalance = vaultContract.balanceOf(event.params.owner);
+  const balanceResult = vaultContract.try_balanceOf(event.params.owner);
+
+  let userBalance = ZeroBigInt;
+
+  if (balanceResult.reverted) {
+    log.warning("Vault balanceOf reverted (withdrawAssets) for {} tx {}", [
+      event.params.owner.toHexString(),
+      event.transaction.hash.toHexString(),
+    ]);
+  } else {
+    userBalance = balanceResult.value;
+  }
 
   userVault.balance = userBalance;
-
   userVault.deposited = userBalance.times(vault.sharePrice);
   userVault.save();
 
@@ -404,11 +437,21 @@ export function handleTransfer(event: TransferEvent): void {
       fromUserVault.rewardsEarned = ZeroBigInt;
       fromUserVault.deposited = ZeroBigInt;
     } else {
-      const fromUserBalance = vaultContract.balanceOf(event.params.from);
+      const fromBalanceResult = vaultContract.try_balanceOf(event.params.from);
 
-      fromUserVault.balance = fromUserBalance;
-
-      fromUserVault.deposited = fromUserBalance.times(vault.sharePrice);
+      if (fromBalanceResult.reverted) {
+        log.warning("Vault balanceOf reverted (transfer from) for {} tx {}", [
+          event.params.from.toHexString(),
+          event.transaction.hash.toHexString(),
+        ]);
+        fromUserVault.balance = ZeroBigInt;
+        fromUserVault.deposited = ZeroBigInt;
+      } else {
+        fromUserVault.balance = fromBalanceResult.value;
+        fromUserVault.deposited = fromBalanceResult.value.times(
+          vault.sharePrice
+        );
+      }
     }
 
     if (!toUserVault) {
@@ -418,11 +461,19 @@ export function handleTransfer(event: TransferEvent): void {
       toUserVault.rewardsEarned = ZeroBigInt;
       toUserVault.deposited = event.params.value.times(vault.sharePrice);
     } else {
-      const toUserBalance = vaultContract.balanceOf(event.params.to);
+      const toBalanceResult = vaultContract.try_balanceOf(event.params.to);
 
-      toUserVault.balance = toUserBalance;
-
-      toUserVault.deposited = toUserBalance.times(vault.sharePrice);
+      if (toBalanceResult.reverted) {
+        log.warning("Vault balanceOf reverted (transfer to) for {} tx {}", [
+          event.params.to.toHexString(),
+          event.transaction.hash.toHexString(),
+        ]);
+        toUserVault.balance = ZeroBigInt;
+        toUserVault.deposited = ZeroBigInt;
+      } else {
+        toUserVault.balance = toBalanceResult.value;
+        toUserVault.deposited = toBalanceResult.value.times(vault.sharePrice);
+      }
     }
 
     toUserVault.save();

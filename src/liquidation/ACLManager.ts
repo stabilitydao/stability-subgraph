@@ -6,7 +6,7 @@ import {
 import { ACLRoleEntity } from "../../generated/schema";
 import { BigInt, Bytes } from "@graphprotocol/graph-ts";
 import { ACLManagerABI as ACLManager } from "../../generated/templates/ACLManager/ACLManagerABI";
-import { PoolAddressProviderABI as PoolAddressProvider } from "../../generated/templates/ACLManager/PoolAddressProviderABI";
+import { PoolAddressProviderABI as PoolAddressProvider } from "../../generated/templates/PoolAddressProvider/PoolAddressProviderABI";
 
 export function handleRoleGranted(event: RoleGrantedEvent): void {
   let id = buildId(

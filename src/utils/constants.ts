@@ -1,5 +1,4 @@
 import { BigDecimal, BigInt } from "@graphprotocol/graph-ts";
-
 import { NETWORK } from "./network";
 
 import {

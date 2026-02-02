@@ -6,6 +6,8 @@ type LiquidationEntity @entity(immutable: true) {
   user: Bytes!
   debtToCover: BigInt!
   liquidatedCollateralAmount: BigInt!
+  collateralAssetPrice: BigInt!
+  debtAssetPrice: BigInt!
   liquidator: Bytes!
   receiveAToken: Boolean!
   blockNumber: BigInt!
@@ -25,4 +27,27 @@ type ACLRoleEntity @entity {
   active: Boolean!
   pool: Bytes!
   poolAddressProvider: Bytes!
+}
+
+type ReserveHistoryEntity @entity {
+  id: ID!
+  timestamp: BigInt!
+  pool: Bytes!
+  reserve: Bytes!
+  totalSupply: BigInt!
+  totalStableDebt: BigInt!
+  totalVariableDebt: BigInt!
+  totalDebt: BigInt!
+  utilization: BigInt!
+  liquidityRate: BigInt!
+  stableBorrowRate: BigInt!
+  variableBorrowRate: BigInt!
+  liquidityIndex: BigInt!
+  variableBorrowIndex: BigInt!
+  lastUpdateTimestamp: BigInt!
+}
+
+type SnapshotState @entity {
+  id: ID!
+  lastSnapshotTimestamp: BigInt!
 }
