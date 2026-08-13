@@ -1,0 +1,5 @@
+type XStakingNotifyRewardHistoryEntity @entity(immutable: true) {
+  id: Bytes!
+  timestamp: BigInt!
+  amount: BigInt!
+}

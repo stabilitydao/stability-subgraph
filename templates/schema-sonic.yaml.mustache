@@ -1,0 +1,24 @@
+specVersion: 0.0.5
+schema:
+  file: ./schemas/sonic/schema.graphql
+dataSources:
+  - kind: ethereum
+    name: XStakingData
+    network: {{network}}
+    source:
+      address: "{{xStakingAddress}}"
+      abi: XStakingABI
+      startBlock: {{xStakingStartBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - XStakingNotifyRewardHistoryEntity
+      abis:
+        - name: XStakingABI
+          file: ./abis/XStakingABI.json
+      eventHandlers:
+        - event: NotifyReward(indexed address,uint256)
+          handler: handleNotifyReward
+      file: ./src/XStakingSonic.ts

@@ -4,7 +4,21 @@
 
 ### Sonic
 
-Queries (HTTP): https://api.goldsky.com/api/public/project_cm2v16o5ct0ql01vr3m5o0vt2/subgraphs/stability-sonic/0.0.33/gn
+The Sonic deployment is intentionally minimal. It indexes only xStaking
+`NotifyReward` events used by host-agent to build the weekly Stability revenue
+chart. Vaults, vault users, strategies, points/gems, and price-oracle data are
+not indexed on Sonic.
+
+The retained GraphQL API is:
+
+```graphql
+xstakingNotifyRewardHistoryEntities {
+  timestamp
+  amount
+}
+```
+
+The deployment URL is published through the `@stabilitydao/stability` package.
 
 ### Polygon
 
@@ -28,7 +42,9 @@ https://thegraph.com/explorer/subgraphs/FRK5vEJXX9w5Pt3nqeqGRX5s7k29AWCb7aXTfDwT
 
 Follow these steps to prepare and deploy a subgraph across multiple networks:
 
-1. Run the prepare command with the target network. Example: `yarn prepare matic`
+1. Run the prepare command with the target network. Example: `yarn prepare matic`.
+   `yarn prepare sonic` generates the revenue-only Sonic manifest; other
+   networks generate the full manifest.
 2. Execute the following commands to reset and prepare the subgraph: `yarn clean && yarn codegen && yarn build`
 3. Authenticate with `graph auth --studio <key>`
 4. Deploy with `graph deploy <name>` or `goldsky subgraph deploy stability-sonic/<version> --path .`
