@@ -13,7 +13,8 @@ if (!selectedNetworkConfig) {
 }
 
 const templates = {
-  schema: "templates/schema.yaml.mustache",
+  fullSchema: "templates/schema.yaml.mustache",
+  sonicSchema: "templates/schema-sonic.yaml.mustache",
   network: "templates/network.yaml.mustache",
 };
 
@@ -21,7 +22,9 @@ const getTemplateContent = (templatePath) =>
   fs.readFileSync(templatePath, "utf8");
 
 const template = getTemplateContent(
-  selectedNetworkKey === "" ? templates.schema : templates.schema
+  selectedNetworkKey === "sonic"
+    ? templates.sonicSchema
+    : templates.fullSchema
 );
 
 const networkToDeployTemplate = getTemplateContent(templates.network);
@@ -31,8 +34,19 @@ const templateData = {
   address: selectedNetworkConfig.address,
   startBlock: selectedNetworkConfig.startBlock,
   xStakingAddress: selectedNetworkConfig.xStakingAddress,
+  xStakingStartBlock: selectedNetworkConfig.xStakingStartBlock,
   vaultPriceOracleAddress: selectedNetworkConfig.vaultPriceOracleAddress,
 };
+
+if (
+  selectedNetworkKey === "sonic" &&
+  (!templateData.xStakingAddress || !templateData.xStakingStartBlock)
+) {
+  console.error(
+    'Sonic requires "xStakingAddress" and "xStakingStartBlock" in networks.json'
+  );
+  process.exit(1);
+}
 
 fs.writeFileSync(
   "subgraph.yaml",

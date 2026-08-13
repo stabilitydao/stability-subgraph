@@ -10,6 +10,7 @@
   "sonic": {
     "address": "0x4Aca671A420eEB58ecafE83700686a2AD06b20D8",
     "xStakingAddress": "0x17a7cf838a7c91de47552a9f65822b547f9a6997",
+    "xStakingStartBlock": 17826311,
     "startBlock": 1496446,
     "vaultPriceOracleAddress": "0x3137a6498d03df485d75af9a866bbe73fd1124ea"
   },
